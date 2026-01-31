@@ -5,6 +5,7 @@ RUN apt-get update && \
     apt-get install -y zip && \
     apt-get install -y mariadb-client && \
     apt-get install -y npm && \
+    apt-get install -y dos2unix && \
     apt-get autoclean
 
 # Install PHP extensions

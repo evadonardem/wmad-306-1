@@ -16,7 +16,7 @@ services:
       mailtrap:
         condition: service_healthy
     command: >
-      bash -c "/scripts/init.sh && apache2-foreground"
+      bash -c "dos2unix /scripts/* && chmod +x /scripts/* && /scripts/init.sh && apache2-foreground"
   db:
     image: "mysql:9.6.0"
     environment:
