@@ -2,7 +2,7 @@ services:
   web:
     build: .
     ports:
-      - "8000:80"
+      - "8001:80"
       - "5173:5173"
     networks:
       - db_network

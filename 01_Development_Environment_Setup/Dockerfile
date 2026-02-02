@@ -1,19 +1,38 @@
 FROM php:8.3-apache
 
 # Install system dependencies
-RUN apt-get update && \
-    apt-get install -y zip && \
-    apt-get install -y mariadb-client && \
-    apt-get install -y npm && \
-    apt-get install -y dos2unix && \
-    apt-get autoclean
+RUN apt-get update && apt-get install -y \
+    curl \
+    dos2unix \
+    git \ 
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libonig-dev \
+    libpng-dev \
+    libwebp-dev \
+    libxml2-dev \
+    mariadb-client \
+    npm \
+    unzip \
+    zip \
+    && apt-get autoclean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions
+# Configure and install PHP extensions required by Laravel
+RUN docker-php-ext-configure gd \
+    --with-freetype \
+    --with-jpeg \
+    --with-webp
+
 RUN docker-php-ext-install \
     bcmath \
     ctype \
+    exif \
+    gd \
+    mbstring \
     pdo \
     pdo_mysql \
+    pcntl \
     sockets
 
 # Install Composer
