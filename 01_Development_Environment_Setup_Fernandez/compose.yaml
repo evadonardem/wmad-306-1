@@ -8,6 +8,7 @@ services:
     networks:
       - db_network
       - mailtrap_network
+
     volumes:
       - ./_setup/web_scripts:/scripts
       - ./src:/var/www/html
