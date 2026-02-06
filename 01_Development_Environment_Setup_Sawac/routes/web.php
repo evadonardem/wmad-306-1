@@ -6,7 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 
 Route::get('/', function () {
-    return "Succesfully installed Laravel Josie";
+    return "Succesfully installed Laravel Sawac";
 });
 
 Route::get('/about', function () {
