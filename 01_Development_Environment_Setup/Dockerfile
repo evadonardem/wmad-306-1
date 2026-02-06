@@ -40,6 +40,7 @@ COPY --from=composer/composer:latest-bin /composer /usr/bin/composer
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
+COPY ./_setup/web_scripts/apache.conf /etc/apache2/sites-available/000-default.conf
 
 # Install NVM and Node.js LTS
 ENV NVM_VERSION=master

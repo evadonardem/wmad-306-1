@@ -15,7 +15,7 @@ else
     php artisan --version
 fi
 
-chmod -R 777 $WORKDIR/storage $WORKDIR/bootstrap/cache
-chmod -R 777 $WORKDIR/database/database.sqlite
+chown -R www-data:www-data /var/www/html
+chmod -R 775 /var/www/html
 
 echo "Initialization complete."

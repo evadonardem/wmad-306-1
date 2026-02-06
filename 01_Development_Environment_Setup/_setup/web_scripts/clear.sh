@@ -11,5 +11,4 @@ find $WORKDIR \
   ! -name '_setup' \
   ! -name 'Dockerfile' \
   ! -name 'compose.yaml' \
-  ! -name '.htaccess' \
   -exec rm -rf {} +

@@ -1,15 +1,16 @@
 services:
   web:
     build: .
+    user: "${UID}:${GID}"
     ports:
-      - "8001:80"
+      - "8000:80"
       - "5173:5173"
     networks:
       - db_network
       - mailtrap_network
     volumes:
       - ./_setup/web_scripts:/scripts
-      - ./:/var/www/html
+      - ./src:/var/www/html
     depends_on:
       db:
         condition: service_healthy
