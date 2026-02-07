@@ -50,3 +50,6 @@ RUN nvm use --lts | bash
 
 # Set working directory
 WORKDIR /var/www/html
+
+# Increase Composer timeout to prevent process timeout errors
+ENV COMPOSER_PROCESS_TIMEOUT=800
