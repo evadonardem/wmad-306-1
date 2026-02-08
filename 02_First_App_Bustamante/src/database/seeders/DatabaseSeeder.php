@@ -15,11 +15,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        User::factory(100)->create();
 
         User::factory()->create([
-            'name' => 'Test User',
+            'first_name' => 'Test',
+            'last_name' => 'User',
+            'gender' => ['male', 'female'][array_rand(['male', 'female'])], // random gender
             'email' => 'test@example.com',
+            // optional: set a password if your factory doesn't handle it
+            'password' => bcrypt('password123'),
         ]);
     }
 }
