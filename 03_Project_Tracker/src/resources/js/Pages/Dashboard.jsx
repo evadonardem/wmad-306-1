@@ -10,6 +10,8 @@ import {
     TextField,
     Typography,
     Divider,
+    Chip,
+    Stack,
 } from '@mui/material';
 
 import ProjectChromaGrid from "@/Components/ProjectChromaGrid";
@@ -70,13 +72,26 @@ export default function Dashboard({ projects }) {
 
                     <Typography
                         sx={{
-                            mb: 4,
+                            mb: 2,
                             color: "text.secondary",
                             fontSize: "1.05rem",
                         }}
                     >
                         Manage your projects and track tasks in a clean modern dashboard.
                     </Typography>
+
+                    {/* Quick Stats */}
+                    <Stack direction="row" spacing={2} sx={{ mb: 4 }} flexWrap="wrap">
+                        <Chip
+                            label={`Total Projects: ${projects.length}`}
+                            sx={{
+                                fontWeight: "bold",
+                                borderRadius: 3,
+                                background: "#e0f2fe",
+                                color: "#0369a1",
+                            }}
+                        />
+                    </Stack>
 
                     {/* Add Project Form */}
                     <Card

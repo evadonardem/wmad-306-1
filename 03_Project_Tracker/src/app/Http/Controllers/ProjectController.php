@@ -12,8 +12,23 @@ class ProjectController extends Controller
     public function index()
     {
         $projects = Project::where('user_id', Auth::id())
+            ->withCount([
+                'tasks',
+                'tasks as done_tasks_count' => function ($query) {
+                    $query->where('status', true);
+                }
+            ])
             ->latest()
             ->get();
+
+        foreach ($projects as $project) {
+            $total = $project->tasks_count;
+            $done = $project->done_tasks_count;
+
+            $project->progress = $total > 0 ? round(($done / $total) * 100) : 0;
+        }
+
+        $projects = $projects->sortBy('progress')->values();
 
         return Inertia::render('Dashboard', [
             'projects' => $projects,
@@ -45,7 +60,10 @@ class ProjectController extends Controller
             'description' => ['nullable', 'string'],
         ]);
 
-        $project->update($validated);
+        $project->update([
+            'title' => $validated['title'],
+            'description' => $validated['description'] ?? null,
+        ]);
 
         return redirect()->route('dashboard');
     }

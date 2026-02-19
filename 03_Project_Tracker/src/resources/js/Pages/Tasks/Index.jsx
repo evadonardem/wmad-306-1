@@ -36,6 +36,7 @@ export default function Index({ project, tasks }) {
         e.preventDefault();
 
         post(route('projects.tasks.store', project.id), {
+            preserveScroll: true,
             onSuccess: () => reset(),
         });
     };
@@ -43,7 +44,9 @@ export default function Index({ project, tasks }) {
     const deleteTask = (taskId) => {
         if (!confirm("Are you sure you want to delete this task?")) return;
 
-        router.delete(route('projects.tasks.destroy', [project.id, taskId]));
+        router.delete(route('projects.tasks.destroy', [project.id, taskId]), {
+            preserveScroll: true,
+        });
     };
 
     const toggleStatus = (task) => {
@@ -85,7 +88,6 @@ export default function Index({ project, tasks }) {
         >
             <Head title={`Tasks - ${project.title}`} />
 
-            {/* Background */}
             <Box
                 sx={{
                     minHeight: "100vh",
@@ -96,7 +98,7 @@ export default function Index({ project, tasks }) {
                 <Box sx={{ maxWidth: 1200, mx: "auto", px: 2 }}>
 
                     {/* Page Title Section */}
-                    <Box sx={{ mb: 4 }}>
+                    <Box sx={{ mb: 3 }}>
                         <Typography
                             variant="h4"
                             fontWeight="bold"
@@ -112,8 +114,31 @@ export default function Index({ project, tasks }) {
                             Manage your tasks and keep track of progress.
                         </Typography>
 
+                        {/* Back Button (Moved Here) */}
+                        <Box sx={{ mt: 3 }}>
+                            <Button
+                                variant="contained"
+                                startIcon={<ArrowBackIcon />}
+                                href="/dashboard"
+                                sx={{
+                                    borderRadius: 3,
+                                    fontWeight: "bold",
+                                    px: 3,
+                                    py: 1.2,
+                                    background: "linear-gradient(135deg, #111827, #374151)",
+                                    boxShadow: "0px 10px 25px rgba(0,0,0,0.15)",
+                                    textTransform: "none",
+                                    "&:hover": {
+                                        background: "linear-gradient(135deg, #0f172a, #1f2937)",
+                                    }
+                                }}
+                            >
+                                Back to Projects
+                            </Button>
+                        </Box>
+
                         {/* Stats */}
-                        <Stack direction="row" spacing={2} sx={{ mt: 3 }} flexWrap="wrap">
+                        <Stack direction="row" spacing={2} sx={{ mt: 4 }} flexWrap="wrap">
                             <Chip
                                 label={`Total: ${totalTasks}`}
                                 sx={{
@@ -216,6 +241,7 @@ export default function Index({ project, tasks }) {
                                                 borderRadius: 3,
                                                 fontWeight: "bold",
                                                 background: "linear-gradient(135deg, #3b82f6, #6366f1)",
+                                                textTransform: "none",
                                             }}
                                         >
                                             Add
@@ -234,6 +260,15 @@ export default function Index({ project, tasks }) {
                         <Typography variant="body2" sx={{ mt: 1, color: "#6b7280" }}>
                             View all tasks under this project.
                         </Typography>
+
+                        {/* FIXED Divider visibility */}
+                        <Divider
+                            sx={{
+                                mt: 2,
+                                borderColor: "rgba(17,24,39,0.15)",
+                                borderBottomWidth: "2px",
+                            }}
+                        />
                     </Box>
 
                     {tasks.length === 0 ? (
@@ -287,14 +322,16 @@ export default function Index({ project, tasks }) {
                                                     {task.title}
                                                 </Typography>
 
-                                                <Typography
-                                                    sx={{ mt: 1 }}
-                                                    color="text.secondary"
-                                                >
+                                                <Typography sx={{ mt: 1 }} color="text.secondary">
                                                     {task.description || "No description"}
                                                 </Typography>
 
-                                                <Divider sx={{ my: 2 }} />
+                                                <Divider
+                                                    sx={{
+                                                        my: 2,
+                                                        borderColor: "rgba(0,0,0,0.08)",
+                                                    }}
+                                                />
 
                                                 <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
                                                     <Chip
@@ -326,6 +363,7 @@ export default function Index({ project, tasks }) {
                                                             borderRadius: 3,
                                                             fontWeight: "bold",
                                                             px: 2,
+                                                            textTransform: "none",
                                                             background: task.status
                                                                 ? "linear-gradient(135deg, #f97316, #fb7185)"
                                                                 : "linear-gradient(135deg, #22c55e, #16a34a)",
@@ -353,24 +391,6 @@ export default function Index({ project, tasks }) {
                             })}
                         </Grid>
                     )}
-
-                    {/* Back Button */}
-                    <Box sx={{ mt: 6 }}>
-                        <Button
-                            variant="contained"
-                            startIcon={<ArrowBackIcon />}
-                            href="/dashboard"
-                            sx={{
-                                borderRadius: 3,
-                                fontWeight: "bold",
-                                px: 3,
-                                py: 1.2,
-                                background: "linear-gradient(135deg, #111827, #374151)",
-                            }}
-                        >
-                            Back to Projects
-                        </Button>
-                    </Box>
                 </Box>
             </Box>
         </AuthenticatedLayout>
