@@ -1,0 +1,117 @@
+.project-grid {
+  position: relative;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+  max-width: 1100px;
+  margin: 0 auto;
+
+  --x: 50%;
+  --y: 50%;
+  --r: 220px;
+}
+
+.project-card {
+  position: relative;
+  border-radius: 18px;
+  padding: 1.2rem;
+  background: var(--card-gradient, linear-gradient(145deg, #2563eb, #111827));
+  color: white;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  transition: transform 0.25s ease, border-color 0.3s ease;
+}
+
+.project-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--card-border, #3b82f6);
+}
+
+.project-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(255, 255, 255, 0.25),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+
+  pointer-events: none; 
+  z-index: 1;           
+}
+
+.project-card * {
+  position: relative;
+  z-index: 2;
+}
+
+.project-card:hover::before {
+  opacity: 1;
+}
+
+.project-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.project-desc {
+  font-size: 0.95rem;
+  opacity: 0.8;
+  margin-bottom: 1rem;
+}
+
+.project-meta {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.project-pill {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.project-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: auto;
+}
+
+.project-btn {
+  flex: 1;
+  border: none;
+  border-radius: 12px;
+  padding: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.project-btn.view {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+}
+
+.project-btn.view:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.project-btn.delete {
+  background: rgba(239, 68, 68, 0.18);
+  color: #fecaca;
+}
+
+.project-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.3);
+}

@@ -9,10 +9,10 @@ import {
     Grid,
     TextField,
     Typography,
-    Chip,
-    Stack,
     Divider,
 } from '@mui/material';
+
+import ProjectChromaGrid from "@/Components/ProjectChromaGrid";
 
 export default function Dashboard({ projects }) {
     const { data, setData, post, processing, reset, errors } = useForm({
@@ -47,27 +47,48 @@ export default function Dashboard({ projects }) {
         >
             <Head title="Projects" />
 
-            <Box sx={{ py: 5, backgroundColor: "#f5f6fa", minHeight: "100vh" }}>
-                <Box sx={{ maxWidth: 1100, mx: 'auto', px: 2 }}>
+            <Box
+                sx={{
+                    py: 6,
+                    minHeight: "100vh",
+                    background: "linear-gradient(180deg, #f8fafc, #eef2ff)",
+                }}
+            >
+                <Box sx={{ maxWidth: 1100, mx: "auto", px: 2 }}>
 
                     {/* Page Title */}
-                    <Typography variant="h4" fontWeight="bold" sx={{ mb: 1 }}>
+                    <Typography
+                        variant="h3"
+                        fontWeight="bold"
+                        sx={{
+                            mb: 1,
+                            letterSpacing: "-1px",
+                        }}
+                    >
                         🚀 Your Projects
                     </Typography>
 
-                    <Typography color="text.secondary" sx={{ mb: 4 }}>
-                        Manage your projects and track tasks easily.
+                    <Typography
+                        sx={{
+                            mb: 4,
+                            color: "text.secondary",
+                            fontSize: "1.05rem",
+                        }}
+                    >
+                        Manage your projects and track tasks in a clean modern dashboard.
                     </Typography>
 
                     {/* Add Project Form */}
                     <Card
                         sx={{
-                            mb: 4,
-                            borderRadius: 3,
-                            boxShadow: "0px 4px 12px rgba(0,0,0,0.08)",
+                            mb: 6,
+                            borderRadius: 4,
+                            boxShadow: "0px 8px 25px rgba(0,0,0,0.08)",
+                            background: "rgba(255,255,255,0.9)",
+                            backdropFilter: "blur(10px)",
                         }}
                     >
-                        <CardContent>
+                        <CardContent sx={{ p: 4 }}>
                             <Typography variant="h6" fontWeight="bold" gutterBottom>
                                 Add New Project
                             </Typography>
@@ -81,7 +102,7 @@ export default function Dashboard({ projects }) {
                                             fullWidth
                                             label="Project Title"
                                             value={data.title}
-                                            onChange={(e) => setData('title', e.target.value)}
+                                            onChange={(e) => setData("title", e.target.value)}
                                             error={!!errors.title}
                                             helperText={errors.title}
                                         />
@@ -92,7 +113,7 @@ export default function Dashboard({ projects }) {
                                             fullWidth
                                             label="Description"
                                             value={data.description}
-                                            onChange={(e) => setData('description', e.target.value)}
+                                            onChange={(e) => setData("description", e.target.value)}
                                             error={!!errors.description}
                                             helperText={errors.description}
                                         />
@@ -106,8 +127,10 @@ export default function Dashboard({ projects }) {
                                             disabled={processing}
                                             sx={{
                                                 height: "100%",
-                                                borderRadius: 2,
+                                                borderRadius: 3,
                                                 fontWeight: "bold",
+                                                textTransform: "none",
+                                                background: "linear-gradient(90deg, #2563eb, #4f46e5)",
                                             }}
                                         >
                                             Add
@@ -119,7 +142,14 @@ export default function Dashboard({ projects }) {
                     </Card>
 
                     {/* Projects List */}
-                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+                    <Typography
+                        variant="h5"
+                        fontWeight="bold"
+                        sx={{
+                            mb: 2,
+                            letterSpacing: "-0.5px",
+                        }}
+                    >
                         Projects List
                     </Typography>
 
@@ -128,90 +158,15 @@ export default function Dashboard({ projects }) {
                             No projects found. Add your first project above.
                         </Typography>
                     ) : (
-                        <Grid container spacing={3}> 
-                            {projects.map((project) => (
-                                <Grid item xs={12} sm={6} md={4} key={project.id}>
-                                    <Card
-                                        sx={{
-                                            height: "100%",
-                                            borderRadius: 4,
-                                            background: "linear-gradient(135deg, #ffffff, #f8f9ff)",
-                                            boxShadow: "0px 6px 20px rgba(0,0,0,0.08)",
-                                            border: "1px solid rgba(0,0,0,0.05)",
-                                            transition: "0.25s ease",
-                                            "&:hover": {
-                                                transform: "translateY(-6px)",
-                                                boxShadow: "0px 10px 30px rgba(0,0,0,0.12)",
-                                            },
-                                        }}
-                                    >
-                                        <CardContent sx={{ p: 3 }}>
-                                            <Typography
-                                                variant="h6"
-                                                fontWeight="bold"
-                                                sx={{ mb: 1 }}
-                                            >
-                                                {project.title}
-                                            </Typography>
-
-                                            <Typography
-                                                sx={{
-                                                    color: "text.secondary",
-                                                    fontSize: "0.95rem",
-                                                    mb: 2,
-                                                    minHeight: "45px",
-                                                }}
-                                            >
-                                                {project.description || "No description provided."}
-                                            </Typography>
-
-                                            <Chip
-                                                label="Active Project"
-                                                sx={{
-                                                    mb: 3,
-                                                    fontWeight: "bold",
-                                                    borderRadius: 2,
-                                                    background: "linear-gradient(90deg, #1976d2, #42a5f5)",
-                                                    color: "white",
-                                                }}
-                                            />
-
-                                            <Stack direction="row" spacing={1}>
-                                                <Button
-                                                    fullWidth
-                                                    variant="contained"
-                                                    sx={{
-                                                        borderRadius: 3,
-                                                        fontWeight: "bold",
-                                                        textTransform: "none",
-                                                        py: 1.2,
-                                                        background: "linear-gradient(90deg, #1976d2, #42a5f5)",
-                                                    }}
-                                                    href={`/projects/${project.id}/tasks`}
-                                                >
-                                                    View
-                                                </Button>
-
-                                                <Button
-                                                    fullWidth
-                                                    variant="outlined"
-                                                    color="error"
-                                                    sx={{
-                                                        borderRadius: 3,
-                                                        fontWeight: "bold",
-                                                        textTransform: "none",
-                                                        py: 1.2,
-                                                    }}
-                                                    onClick={() => deleteProject(project.id)}
-                                                >
-                                                    Delete
-                                                </Button>
-                                            </Stack>
-                                        </CardContent>
-                                    </Card>
-                                </Grid>
-                            ))}
-                        </Grid>
+                        <ProjectChromaGrid
+                            projects={projects}
+                            onView={(id) =>
+                                router.visit(route("projects.tasks.index", id), {
+                                    preserveScroll: true,
+                                })
+                            }
+                            onDelete={(id) => deleteProject(id)}
+                        />
                     )}
                 </Box>
             </Box>
