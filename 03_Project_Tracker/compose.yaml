@@ -1,7 +1,6 @@
 services:
   web:
     image: "evadonardem/wmad-306:latest"
-    user: "${UID}:${GID}"
     environment:
       - HOME=/home/developer
     ports:
@@ -61,6 +60,12 @@ services:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "netstat", "-tuln"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
 networks:
   db_network:
