@@ -3,11 +3,10 @@ services:
     image: "evadonardem/wmad-306:latest"
     user: "${UID}:${GID}"
     ports:
-      - "8000:80"
-      - "5173:5173"
+      - "8000:80"     # Access your site at http://localhost:8000
+      - "5173:5173"   # Vite/Frontend HMR
     networks:
-      - db_network
-      - mailtrap_network
+      - app_network
     volumes:
       - ./_setup/web_scripts:/scripts
       - ./src:/var/www/html
@@ -18,6 +17,7 @@ services:
         condition: service_healthy
     command: >
       bash -c "dos2unix /scripts/* && chmod +x /scripts/* && /scripts/init.sh && apache2-foreground"
+
   db:
     image: "mysql:9.6.0"
     environment:
@@ -25,23 +25,25 @@ services:
     ports:
       - "3306:3306"
     networks:
-      - db_network
+      - app_network
     volumes:
       - ./_setup/db_scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
       - db_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      # FIXED: Password now matches '123456'
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p123456"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 5 # FIXED: Removed 's'
       start_period: 30s
+      
   mailtrap:
     image: axllent/mailpit:latest
     ports:
-      - "1025:1025"
-      - "8025:8025"
+      - "1025:1025" # SMTP port
+      - "8025:8025" # FIXED: Map this to see the Mail UI at http://localhost:8025
     networks:
-      - mailtrap_network
+      - app_network
     volumes:
       - ./mailtrap_data:/data
     environment:
@@ -58,8 +60,7 @@ services:
       start_period: 30s
 
 networks:
-  db_network:
-  mailtrap_network:
+  app_network: # Simplified to one network so everyone can talk easily
 
 volumes:
   db_data:
