@@ -1,0 +1,71 @@
+services:
+  web-sueno:
+    image: "evadonardem/wmad-306:latest"
+    user: "${UID}:${GID}"
+    environment:
+      - HOME=/home/developer
+    ports:
+      - "8000:80"
+      - "5174:5173"
+    networks:
+      - db_network_sueno
+      - mailtrap_network_sueno
+    volumes:
+      - ./_setup/web_scripts:/scripts
+      - ./src:/var/www/html
+      - ./docker_home:/home/developer    # HOME for npm & node
+    depends_on:
+    
+      db-sueno:
+        condition: service_healthy
+      mailtrap-sueno:
+        condition: service_healthy
+    command: >
+      bash -c "
+      mkdir -p /home/developer/.npm &&
+      dos2unix /scripts/* &&
+      chmod +x /scripts/* &&
+      /scripts/init.sh &&
+      apache2-foreground"
+
+  db-sueno:
+    image: "mysql:9.6.0"
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+    ports:
+      - "3306:3306"
+    networks:
+      - db_network_sueno
+    volumes:
+      - ./_setup/db_scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - db_data_sueno:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p123456"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  mailtrap-sueno:
+    image: axllent/mailpit:latest
+    user: "${UID}:${GID}"   # Make sure files are created with host user
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - mailtrap_network_sueno
+    volumes:
+      - ./mailtrap_data:/data
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    restart: unless-stopped
+
+networks:
+  db_network_sueno:
+  mailtrap_network_sueno:
+
+volumes:
+  db_data_sueno:
