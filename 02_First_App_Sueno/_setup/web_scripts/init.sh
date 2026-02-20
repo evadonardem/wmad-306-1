@@ -11,7 +11,7 @@ if [ ! -f $WORKDIR/artisan ]; then
 else
     cd $WORKDIR
     echo "Laravel project already exists. Skipping creation."
-    composer install --prefer-dist --no-interaction
+    composer install --prefer-dist --no-interaction --optimize-autoloader
     php artisan --version
 fi
 
