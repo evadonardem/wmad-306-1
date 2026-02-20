@@ -1,0 +1,10 @@
+{
+  "$schema": "https://www.schemastore.org/package.json",
+  "private": true,
+  "name": "project-tracker-root",
+  "scripts": {
+    "dev": "npm --prefix src run dev",
+    "build": "npm --prefix src run build",
+    "install:frontend": "npm --prefix src install"
+  }
+}
