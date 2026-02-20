@@ -1,0 +1,64 @@
+services:
+  web:
+    image: "evadonardem/wmad-306:latest"
+    ports:
+      - "8000:80"
+      - "5173:5173"
+    networks:
+      - db_network
+      - mailtrap_network
+    volumes:
+      - ./_setup/web_scripts:/scripts
+      - ./src:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+      mailtrap:
+        condition: service_healthy
+    command: >
+      bash -c "dos2unix /scripts/* && chmod +x /scripts/* && /scripts/init.sh && apache2-foreground"
+  db:
+    image: "mysql:8.0"
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+    ports:
+      - "3306:3306"
+    networks:
+      - db_network
+    volumes:
+      - ./_setup/db_scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p123456"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+  mailtrap:
+    image: axllent/mailpit:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - mailtrap_network
+    volumes:
+      - ./mailtrap_data:/data
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 8025 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+networks:
+  db_network:
+  mailtrap_network:
+
+volumes:
+  db_data:
