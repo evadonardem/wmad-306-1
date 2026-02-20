@@ -25,7 +25,7 @@ export default function Login({ status, canResetPassword }) {
 
             <div className="min-h-screen flex">
 
-                {/* LEFT SIDE - Branding */}
+                {/* LEFT SIDE */}
                 <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-600 text-white p-16 flex-col justify-between">
                     
                     <div>
@@ -44,7 +44,7 @@ export default function Login({ status, canResetPassword }) {
                     </div>
                 </div>
 
-                {/* RIGHT SIDE - Login Form */}
+                {/* RIGHT SIDE */}
                 <div className="flex w-full lg:w-1/2 items-center justify-center bg-slate-100 dark:bg-slate-900 px-6">
 
                     <div className="w-full max-w-md">
@@ -53,7 +53,7 @@ export default function Login({ status, canResetPassword }) {
                             Welcome Back 👋
                         </h2>
 
-                        <p className="text-slate-500 dark:text-slate-400 mb-8">
+                        <p className="text-slate-600 dark:text-slate-400 mb-8">
                             Please login to your account
                         </p>
 
@@ -67,14 +67,18 @@ export default function Login({ status, canResetPassword }) {
 
                             {/* Email */}
                             <div>
-                                <InputLabel htmlFor="email" value="Email" />
+                                <InputLabel
+                                    htmlFor="email"
+                                    value="Email"
+                                    className="text-slate-700 dark:text-slate-200 font-semibold"
+                                />
 
                                 <TextInput
                                     id="email"
                                     type="email"
                                     name="email"
                                     value={data.email}
-                                    className="mt-1 block w-full rounded-lg"
+                                    className="mt-1 block w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                                     autoComplete="username"
                                     isFocused={true}
                                     onChange={(e) =>
@@ -87,14 +91,18 @@ export default function Login({ status, canResetPassword }) {
 
                             {/* Password */}
                             <div>
-                                <InputLabel htmlFor="password" value="Password" />
+                                <InputLabel
+                                    htmlFor="password"
+                                    value="Password"
+                                    className="text-slate-700 dark:text-slate-200 font-semibold"
+                                />
 
                                 <TextInput
                                     id="password"
                                     type="password"
                                     name="password"
                                     value={data.password}
-                                    className="mt-1 block w-full rounded-lg"
+                                    className="mt-1 block w-full rounded-lg border-slate-300 focus:border-indigo-500 focus:ring-indigo-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                                     autoComplete="current-password"
                                     onChange={(e) =>
                                         setData('password', e.target.value)
@@ -122,7 +130,7 @@ export default function Login({ status, canResetPassword }) {
                                 {canResetPassword && (
                                     <Link
                                         href={route('password.request')}
-                                        className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                                        className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 font-medium"
                                     >
                                         Forgot password?
                                     </Link>
@@ -131,7 +139,7 @@ export default function Login({ status, canResetPassword }) {
 
                             {/* Button */}
                             <PrimaryButton
-                                className="w-full justify-center rounded-lg py-3 text-base"
+                                className="w-full justify-center rounded-lg py-3 text-base bg-indigo-600 hover:bg-indigo-500 transition"
                                 disabled={processing}
                             >
                                 {processing ? 'Logging in...' : 'Log in'}
