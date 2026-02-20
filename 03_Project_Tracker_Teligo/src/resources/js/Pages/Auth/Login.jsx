@@ -50,7 +50,7 @@ export default function Login({ status, canResetPassword }) {
                     <div className="w-full max-w-md">
 
                         <h2 className="text-3xl font-bold mb-2 text-slate-800 dark:text-white">
-                            Welcome Back 👋
+                            Welcome Back 
                         </h2>
 
                         <p className="text-slate-600 dark:text-slate-400 mb-8">
