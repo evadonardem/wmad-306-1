@@ -1,176 +1,260 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
-import Dropdown from '@/Components/Dropdown';
-import NavLink from '@/Components/NavLink';
-import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { Link, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { Link, usePage, router } from '@inertiajs/react';
+import React, { useState, useEffect, useRef } from 'react';
+import Alert from '@mui/material/Alert';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Avatar from '@mui/material/Avatar';
+import Tooltip from '@mui/material/Tooltip';
+import Snackbar from '@mui/material/Snackbar';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import SearchIcon from '@mui/icons-material/Search';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Paper from '@mui/material/Paper';
+import Drawer from '@mui/material/Drawer';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Divider from '@mui/material/Divider';
+import MenuIcon from '@mui/icons-material/Menu';
+import HomeIcon from '@mui/icons-material/Home';
+import FolderIcon from '@mui/icons-material/Folder';
+import TaskIcon from '@mui/icons-material/Task';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 
 export default function AuthenticatedLayout({ header, children }) {
-    const user = usePage().props.auth.user;
+    const page = usePage();
+    const user = page.props.auth.user;
+    const flash = page.props.flash || {};
+    const csrfToken = page.props.csrf_token;
+    const currentUrl = page.props.url || (typeof window !== 'undefined' && window.location.pathname) || '/';
 
-    const [showingNavigationDropdown, setShowingNavigationDropdown] =
-        useState(false);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [snackOpen, setSnackOpen] = useState(false);
+    const [snackMessage, setSnackMessage] = useState('');
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const theme = useTheme();
+    const mdUp = useMediaQuery(theme.breakpoints.up('md'));
+    const drawerWidth = 220;
+    const open = Boolean(anchorEl);
+
+    useEffect(() => {
+        if (flash.message || flash.success || flash.error) {
+            setSnackOpen(true);
+        }
+    }, [flash]);
+
+    useEffect(() => {
+        function onNotify(e) {
+            const msg = (e && e.detail && e.detail.message) || '';
+            setSnackMessage(msg);
+            setSnackOpen(true);
+        }
+
+        window.addEventListener('app:notify', onNotify);
+        return () => window.removeEventListener('app:notify', onNotify);
+    }, []);
+
+    // Keyboard shortcuts: press `g` then `p` for Projects, `g` then `t` for Tasks, `g` then `d` for Dashboard
+    const shortcutState = useRef('');
+    useEffect(() => {
+        let timer;
+        function onKey(e) {
+            const key = e.key.toLowerCase();
+            if (shortcutState.current === '' && key === 'g') {
+                shortcutState.current = 'g';
+                timer = setTimeout(() => (shortcutState.current = ''), 1500);
+                return;
+            }
+            if (shortcutState.current === 'g') {
+                if (key === 'p') {
+                    window.location.href = route('projects.index');
+                } else if (key === 't') {
+                    window.location.href = route('tasks.index');
+                } else if (key === 'd') {
+                    window.location.href = route('dashboard');
+                }
+                shortcutState.current = '';
+                clearTimeout(timer);
+            }
+        }
+
+        window.addEventListener('keydown', onKey);
+        return () => {
+            window.removeEventListener('keydown', onKey);
+            clearTimeout(timer);
+        };
+    }, []);
+
+    const handleMenu = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
 
     return (
-        <div className="min-h-screen bg-gray-100">
-            <nav className="border-b border-gray-100 bg-white">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div className="flex h-16 justify-between">
-                        <div className="flex">
-                            <div className="flex shrink-0 items-center">
-                                <Link href="/">
-                                    <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
-                                </Link>
-                            </div>
+        <Box sx={{ display: 'flex', minHeight: '100vh', flexDirection: 'column' }}>
+            <AppBar
+                position="fixed"
+                color="primary"
+                elevation={2}
+                sx={mdUp ? { width: `calc(100% - ${drawerWidth}px)`, ml: `${drawerWidth}px` } : {}}
+            >
+                <Container maxWidth="xl">
+                    <Toolbar disableGutters>
+                        <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+                            <Link href="/">
+                                <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
+                            </Link>
+                            <Typography variant="h6" component="div" sx={{ ml: 2 }}>
+                                Project Tracker
+                            </Typography>
+                        </Box>
 
-                            <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <NavLink
-                                    href={route('dashboard')}
-                                    active={route().current('dashboard')}
-                                >
-                                    Dashboard
-                                </NavLink>
-                            </div>
-                        </div>
-
-                        <div className="hidden sm:ms-6 sm:flex sm:items-center">
-                            <div className="relative ms-3">
-                                <Dropdown>
-                                    <Dropdown.Trigger>
-                                        <span className="inline-flex rounded-md">
-                                            <button
-                                                type="button"
-                                                className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
-                                            >
-                                                {user.name}
-
-                                                <svg
-                                                    className="-me-0.5 ms-2 h-4 w-4"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 20 20"
-                                                    fill="currentColor"
-                                                >
-                                                    <path
-                                                        fillRule="evenodd"
-                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                        clipRule="evenodd"
-                                                    />
-                                                </svg>
-                                            </button>
-                                        </span>
-                                    </Dropdown.Trigger>
-
-                                    <Dropdown.Content>
-                                        <Dropdown.Link
-                                            href={route('profile.edit')}
-                                        >
-                                            Profile
-                                        </Dropdown.Link>
-                                        <Dropdown.Link
-                                            href={route('logout')}
-                                            method="post"
-                                            as="button"
-                                        >
-                                            Log Out
-                                        </Dropdown.Link>
-                                    </Dropdown.Content>
-                                </Dropdown>
-                            </div>
-                        </div>
-
-                        <div className="-me-2 flex items-center sm:hidden">
-                            <button
-                                onClick={() =>
-                                    setShowingNavigationDropdown(
-                                        (previousState) => !previousState,
-                                    )
-                                }
-                                className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
-                            >
-                                <svg
-                                    className="h-6 w-6"
-                                    stroke="currentColor"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        className={
-                                            !showingNavigationDropdown
-                                                ? 'inline-flex'
-                                                : 'hidden'
-                                        }
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M4 6h16M4 12h16M4 18h16"
+                        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+                            <Box sx={{ maxWidth: 560, width: '100%' }}>
+                                    <TextField
+                                        size="small"
+                                        fullWidth
+                                        placeholder="Search projects, tasks..."
+                                        InputProps={{
+                                            startAdornment: (
+                                                <InputAdornment position="start">
+                                                    <SearchIcon color="action" />
+                                                </InputAdornment>
+                                            ),
+                                            inputProps: { 'aria-label': 'global-search' }
+                                        }}
+                                        sx={{ bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1 }}
                                     />
-                                    <path
-                                        className={
-                                            showingNavigationDropdown
-                                                ? 'inline-flex'
-                                                : 'hidden'
-                                        }
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                                </Box>
+                        </Box>
 
-                <div
-                    className={
-                        (showingNavigationDropdown ? 'block' : 'hidden') +
-                        ' sm:hidden'
-                    }
-                >
-                    <div className="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink
-                            href={route('dashboard')}
-                            active={route().current('dashboard')}
-                        >
-                            Dashboard
-                        </ResponsiveNavLink>
-                    </div>
-
-                    <div className="border-t border-gray-200 pb-1 pt-4">
-                        <div className="px-4">
-                            <div className="text-base font-medium text-gray-800">
-                                {user.name}
-                            </div>
-                            <div className="text-sm font-medium text-gray-500">
-                                {user.email}
-                            </div>
-                        </div>
-
-                        <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route('profile.edit')}>
-                                Profile
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink
-                                method="post"
-                                href={route('logout')}
-                                as="button"
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            {!mdUp && (
+                                <IconButton edge="start" color="inherit" aria-label="menu" onClick={() => setDrawerOpen(true)} sx={{ mr: 1 }}>
+                                    <MenuIcon />
+                                </IconButton>
+                            )}
+                                <Tooltip title={user.name}>
+                                    <IconButton onClick={handleMenu} size="small" sx={{ ml: 1 }}>
+                                        <Avatar sx={{ width: 36, height: 36, bgcolor: 'primary.main' }}>{user.name?.charAt(0)}</Avatar>
+                                    </IconButton>
+                                </Tooltip>
+                            <Menu
+                                anchorEl={anchorEl}
+                                open={open}
+                                onClose={handleClose}
+                                transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                             >
-                                Log Out
-                            </ResponsiveNavLink>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+                                <MenuItem onClick={handleClose} component="div">
+                                    <Link href={route('profile.edit')}>Profile</Link>
+                                </MenuItem>
+                                <MenuItem
+                                    onClick={() => {
+                                        handleClose();
+                                        router.post(route('logout'));
+                                    }}
+                                >
+                                    Log Out
+                                </MenuItem>
+                            </Menu>
+                        </Box>
+                    </Toolbar>
+                </Container>
+            </AppBar>
 
-            {header && (
-                <header className="bg-white shadow">
-                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                        {header}
-                    </div>
-                </header>
-            )}
+            <Drawer
+                anchor="left"
+                variant={mdUp ? 'permanent' : 'temporary'}
+                open={mdUp ? true : drawerOpen}
+                onClose={() => setDrawerOpen(false)}
+                sx={mdUp ? { '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box' } } : {}}
+            >
+                <Box sx={{ width: drawerWidth }} role="presentation" onClick={() => !mdUp && setDrawerOpen(false)}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, background: 'linear-gradient(135deg, primary.main 0%, primary.light 100%)', color: 'primary.contrastText' }}>
+                        <ApplicationLogo className="block h-8 w-auto" />
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: 'inherit' }}>Project Tracker</Typography>
+                    </Box>
+                    <Divider />
+                    <List>
+                        {[{
+                            title: 'Dashboard',
+                            icon: <HomeIcon />,
+                            href: route('dashboard')
+                        }, {
+                            title: 'Projects',
+                            icon: <FolderIcon />,
+                            href: route('projects.index')
+                        }, {
+                            title: 'Tasks',
+                            icon: <TaskIcon />,
+                            href: route('tasks.index')
+                        }].map((item) => {
+                            const active = currentUrl && currentUrl.startsWith(item.href.replace(location.origin || '', ''));
+                            return (
+                                <ListItem disablePadding key={item.title}>
+                                    <ListItemButton
+                                        component={Link}
+                                        href={item.href}
+                                        selected={active}
+                                        sx={active ? { '& .MuiListItemIcon-root, & .MuiListItemText-primary': { color: 'primary.main' } } : {}}
+                                    >
+                                        <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
+                                        <ListItemText primary={item.title} />
+                                    </ListItemButton>
+                                </ListItem>
+                            )
+                        })}
+                    </List>
 
-            <main>{children}</main>
-        </div>
+                    <Box sx={{ flex: 1 }} />
+                    <Divider />
+                    <Box sx={{ p: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
+                        <Avatar sx={{ bgcolor: 'primary.main' }}>{user.name?.charAt(0)}</Avatar>
+                        <Box>
+                            <Typography variant="body2">Signed in as</Typography>
+                            <Typography variant="subtitle2">{user.email}</Typography>
+                        </Box>
+                    </Box>
+                </Box>
+            </Drawer>
+
+            <Box component="main" sx={{ flex: 1, py: 3, width: '100%', ml: mdUp ? `${drawerWidth}px` : 0, overflowX: 'hidden' }}>
+                <Toolbar />
+                <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
+                    {header && (
+                        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
+                            <Typography color="text.secondary">Home</Typography>
+                            <Typography color="text.primary">{typeof header === 'string' ? header : (header.props?.children || 'Dashboard')}</Typography>
+                        </Breadcrumbs>
+                    )}
+
+                    <Paper sx={{ p: { xs: 1.5, sm: 2, md: 3 }, minHeight: 420, boxShadow: 3, borderRadius: 2, borderTop: '4px solid', borderTopColor: 'secondary.main', overflowX: 'hidden' }}>
+                        {children}
+                    </Paper>
+                </Container>
+            </Box>
+
+            <Snackbar open={snackOpen} autoHideDuration={4000} onClose={() => setSnackOpen(false)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+                <Alert onClose={() => setSnackOpen(false)} severity={flash.error ? 'error' : (flash.success ? 'success' : 'info')} sx={{ width: '100%' }}>
+                    {flash.error || flash.success || snackMessage}
+                </Alert>
+            </Snackbar>
+        </Box>
     );
 }
