@@ -22,6 +22,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // Project & Task routes
+    Route::resource('projects', App\Http\Controllers\ProjectController::class)->only(['index','store','update','destroy']);
+    Route::resource('tasks', App\Http\Controllers\TaskController::class)->only(['index','store','update','destroy']);
+    Route::post('tasks/{task}/toggle-status', [App\Http\Controllers\TaskController::class, 'toggleStatus'])->name('tasks.toggle-status');
 });
 
 require __DIR__.'/auth.php';
