@@ -2,6 +2,9 @@ services:
   web:
     image: "evadonardem/wmad-306:latest"
     user: "${UID}:${GID}"
+    environment:
+      - UID
+      - GID
     ports:
       - "8000:80"
       - "5173:5173"

@@ -1,21 +1,21 @@
-#!/bin/sh
-set -e
+#!/bin/bash
 
-WORKDIR=/var/www/html
+# Set ownership of the app directory
+chown -R ${UID}:${GID} /var/www/html
 
-# Initialize Laravel project if not already present
-echo "Checking for existing Laravel project..."
-if [ ! -f $WORKDIR/artisan ]; then
-    echo "No existing Laravel project found. Creating new project..."
-    sh /scripts/install_laravel.sh
-else
-    cd $WORKDIR
-    echo "Laravel project already exists. Skipping creation."
-    composer install --prefer-dist --no-interaction --optimize-autoloader
-    php artisan --version
-fi
+# Install PHP dependencies
+composer install --no-interaction --optimize-autoloader
 
-chown -R www-data:www-data /var/www/html
-chmod -R 775 /var/www/html
+# Install Node dependencies
+npm install
 
-echo "Initialization complete."
+# Build assets
+npm run build
+
+# Run database migrations
+php artisan migrate --force
+
+# Seed the database if needed
+# php artisan db:seed
+
+# Start the application (but since command is && apache2-foreground, this is just setup)
