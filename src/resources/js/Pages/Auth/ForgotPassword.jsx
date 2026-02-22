@@ -1,40 +1,55 @@
-import GuestLayout from '@/Components/GuestLayout';
-import { Link, useForm, usePage } from '@inertiajs/react';
-import { Alert, Button, Stack, TextField } from '@mui/material';
+import InputError from '@/Components/InputError';
+import PrimaryButton from '@/Components/PrimaryButton';
+import TextInput from '@/Components/TextInput';
+import GuestLayout from '@/Layouts/GuestLayout';
+import { Head, useForm } from '@inertiajs/react';
 
-export default function ForgotPassword() {
-    const { flash } = usePage().props;
+export default function ForgotPassword({ status }) {
     const { data, setData, post, processing, errors } = useForm({
         email: '',
     });
 
-    const submit = (event) => {
-        event.preventDefault();
-        post('/forgot-password');
+    const submit = (e) => {
+        e.preventDefault();
+
+        post(route('password.email'));
     };
 
     return (
-        <GuestLayout title="Forgot Password" subtitle="Request a reset link and check the fake inbox.">
-            <Stack component="form" spacing={2} onSubmit={submit}>
-                {flash?.status ? <Alert severity="success">{flash.status}</Alert> : null}
-                <TextField
-                    label="Email"
+        <GuestLayout>
+            <Head title="Forgot Password" />
+
+            <div className="mb-4 text-sm text-gray-600">
+                Forgot your password? No problem. Just let us know your email
+                address and we will email you a password reset link that will
+                allow you to choose a new one.
+            </div>
+
+            {status && (
+                <div className="mb-4 text-sm font-medium text-green-600">
+                    {status}
+                </div>
+            )}
+
+            <form onSubmit={submit}>
+                <TextInput
+                    id="email"
                     type="email"
+                    name="email"
                     value={data.email}
+                    className="mt-1 block w-full"
+                    isFocused={true}
                     onChange={(e) => setData('email', e.target.value)}
-                    error={Boolean(errors.email)}
-                    helperText={errors.email}
                 />
-                <Button type="submit" variant="contained" disabled={processing}>
-                    Send Reset Link
-                </Button>
-                <Button href="http://localhost:8025" target="_blank" rel="noreferrer" variant="outlined">
-                    Open Fake Inbox
-                </Button>
-                <Button component={Link} href="/login" variant="text">
-                    Back to Login
-                </Button>
-            </Stack>
+
+                <InputError message={errors.email} className="mt-2" />
+
+                <div className="mt-4 flex items-center justify-end">
+                    <PrimaryButton className="ms-4" disabled={processing}>
+                        Email Password Reset Link
+                    </PrimaryButton>
+                </div>
+            </form>
         </GuestLayout>
     );
 }

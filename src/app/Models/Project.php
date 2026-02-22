@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Project extends Model
 {
+    /** @use HasFactory<\Database\Factories\ProjectFactory> */
     use HasFactory;
 
     protected $fillable = [

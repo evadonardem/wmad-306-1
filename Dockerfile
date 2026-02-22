@@ -1,53 +1,52 @@
-FROM php:8.3-fpm
+FROM php:8.3-apache
 
-ARG UID=1000
-ARG GID=1000
-
-ENV DEBIAN_FRONTEND=noninteractive \
-    COMPOSER_ALLOW_SUPERUSER=1 \
-    COMPOSER_HOME=/tmp/composer \
-    COMPOSER_CACHE_DIR=/tmp/composer/cache \
-    NPM_CONFIG_CACHE=/tmp/.npm
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    unzip \
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
     curl \
-    ca-certificates \
-    libpng-dev \
-    libjpeg62-turbo-dev \
+    dos2unix \
+    git \ 
     libfreetype6-dev \
-    libzip-dev \
+    libjpeg62-turbo-dev \
     libonig-dev \
+    libpng-dev \
+    libwebp-dev \
     libxml2-dev \
-    libicu-dev \
-    libpq-dev \
-    default-mysql-client \
-    nodejs \
+    mariadb-client \
     npm \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j"$(nproc)" \
-        pdo_mysql \
-        mbstring \
-        exif \
-        pcntl \
-        bcmath \
-        gd \
-        zip \
-        intl \
-    && apt-get clean \
+    unzip \
+    zip \
+    && apt-get autoclean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+# Configure and install PHP extensions required by Laravel
+RUN docker-php-ext-configure gd \
+    --with-freetype \
+    --with-jpeg \
+    --with-webp
 
-RUN groupmod -o -g "${GID}" www-data \
-    && usermod -o -u "${UID}" -g www-data www-data
+RUN docker-php-ext-install \
+    bcmath \
+    ctype \
+    exif \
+    gd \
+    mbstring \
+    pdo \
+    pdo_mysql \
+    pcntl \
+    sockets
 
+# Install Composer
+COPY --from=composer/composer:latest-bin /composer /usr/bin/composer
+
+# Enable Apache mod_rewrite
+RUN a2enmod rewrite
+COPY ./_setup/web_scripts/apache.conf /etc/apache2/sites-available/000-default.conf
+
+# Install NVM and Node.js LTS
+ENV NVM_VERSION=master
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh | bash
+RUN nvm install --lts | bash
+RUN nvm use --lts | bash
+
+# Set working directory
 WORKDIR /var/www/html
-
-COPY docker/start.sh /usr/local/bin/start.sh
-RUN chmod +x /usr/local/bin/start.sh
-
-USER www-data
-
-CMD ["start.sh"]

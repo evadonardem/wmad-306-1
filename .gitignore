@@ -1,0 +1,6 @@
+# Dependencies (never commit)
+node_modules/
+vendor/
+
+**/node_modules/
+**/vendor/

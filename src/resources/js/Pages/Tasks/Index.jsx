@@ -1,294 +1,340 @@
-import AuthHeader from '@/Components/AuthHeader';
-import { router, useForm, usePage } from '@inertiajs/react';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import DoneAllOutlinedIcon from '@mui/icons-material/DoneAllOutlined';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import SwapHorizOutlinedIcon from '@mui/icons-material/SwapHorizOutlined';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head, router, useForm } from '@inertiajs/react';
 import {
-    Alert,
-    Box,
     Button,
     Card,
     CardActions,
     CardContent,
-    Chip,
-    Container,
     FormControl,
     InputLabel,
     MenuItem,
     Select,
-    Stack,
     TextField,
     Typography,
 } from '@mui/material';
 import { useState } from 'react';
 
 export default function TasksIndex({ project, tasks }) {
-    const { flash } = usePage().props;
-    const createForm = useForm({
-        title: '',
-        description: '',
-        priority: 'medium',
-        status: 'pending',
-    });
-    const [editingId, setEditingId] = useState(null);
-    const editForm = useForm({
+    const { data, setData, post, processing, errors, reset } = useForm({
         title: '',
         description: '',
         priority: 'medium',
         status: 'pending',
     });
 
-    const createTask = (event) => {
-        event.preventDefault();
-        createForm.post(`/projects/${project.id}/tasks`, {
-            onSuccess: () =>
-                createForm.reset({
-                    title: '',
-                    description: '',
-                    priority: 'medium',
-                    status: 'pending',
-                }),
+    const [editingId, setEditingId] = useState(null);
+    const [editValues, setEditValues] = useState({
+        title: '',
+        description: '',
+        priority: 'medium',
+        status: 'pending',
+    });
+
+    const submitNew = (e) => {
+        e.preventDefault();
+
+        post(route('tasks.store', project.id), {
+            onSuccess: () => reset(),
         });
     };
 
     const startEdit = (task) => {
         setEditingId(task.id);
-        editForm.setData({
-            title: task.title,
+        setEditValues({
+            title: task.title ?? '',
             description: task.description ?? '',
-            priority: task.priority,
-            status: task.status,
+            priority: task.priority ?? 'medium',
+            status: task.status ?? 'pending',
         });
     };
 
-    const updateTask = (event) => {
-        event.preventDefault();
-        editForm.put(`/tasks/${editingId}`, {
-            onSuccess: () => {
-                setEditingId(null);
-                editForm.reset({
-                    title: '',
-                    description: '',
-                    priority: 'medium',
-                    status: 'pending',
-                });
-            },
+    const cancelEdit = () => {
+        setEditingId(null);
+        setEditValues({
+            title: '',
+            description: '',
+            priority: 'medium',
+            status: 'pending',
         });
+    };
+
+    const saveEdit = (e, task) => {
+        e.preventDefault();
+
+        router.put(route('tasks.update', task.id), editValues, {
+            onSuccess: () => cancelEdit(),
+        });
+    };
+
+    const destroy = (task) => {
+        router.delete(route('tasks.destroy', task.id));
+    };
+
+    const toggleStatus = (task) => {
+        router.post(route('tasks.toggleStatus', task.id));
     };
 
     return (
-        <Container
-            maxWidth="md"
-            sx={{
-                py: 5,
-                px: { xs: 1.5, sm: 2.5 },
-                minHeight: '100vh',
-                background:
-                    'linear-gradient(180deg, rgba(244,241,234,0.65) 0%, rgba(229,241,247,0.65) 100%)',
-                borderRadius: 6,
-            }}
+        <AuthenticatedLayout
+            header={
+                <h2 className="text-xl font-semibold leading-tight text-gray-800">
+                    Tasks: {project.title}
+                </h2>
+            }
         >
-            <AuthHeader title={`${project.title} Tasks`} />
-            {flash?.status ? <Alert sx={{ mb: 2 }}>{flash.status}</Alert> : null}
-            <Stack direction="row" justifyContent="flex-end" alignItems="center" sx={{ mb: 3 }}>
-                <Button variant="outlined" onClick={() => router.get('/projects')}>
-                    Back to Projects
-                </Button>
-            </Stack>
+            <Head title="Tasks" />
 
-            <Card sx={{ mb: 3, borderRadius: 5 }}>
-                <CardContent>
-                    <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <DoneAllOutlinedIcon fontSize="small" />
-                        Add Task
-                    </Typography>
-                    <Box component="form" onSubmit={createTask}>
-                        <Stack spacing={2}>
-                            <TextField
-                                label="Title"
-                                value={createForm.data.title}
-                                onChange={(e) => createForm.setData('title', e.target.value)}
-                                error={Boolean(createForm.errors.title)}
-                                helperText={createForm.errors.title}
-                                required
-                            />
-                            <TextField
-                                label="Description"
-                                multiline
-                                minRows={2}
-                                value={createForm.data.description}
-                                onChange={(e) => createForm.setData('description', e.target.value)}
-                                error={Boolean(createForm.errors.description)}
-                                helperText={createForm.errors.description}
-                            />
-                            <FormControl fullWidth>
-                                <InputLabel>Priority</InputLabel>
-                                <Select
-                                    label="Priority"
-                                    value={createForm.data.priority}
-                                    onChange={(e) => createForm.setData('priority', e.target.value)}
-                                >
-                                    <MenuItem value="low">Low</MenuItem>
-                                    <MenuItem value="medium">Medium</MenuItem>
-                                    <MenuItem value="high">High</MenuItem>
-                                </Select>
-                            </FormControl>
-                            <FormControl fullWidth>
-                                <InputLabel>Status</InputLabel>
-                                <Select
-                                    label="Status"
-                                    value={createForm.data.status}
-                                    onChange={(e) => createForm.setData('status', e.target.value)}
-                                >
-                                    <MenuItem value="pending">Pending</MenuItem>
-                                    <MenuItem value="completed">Completed</MenuItem>
-                                </Select>
-                            </FormControl>
-                            <Button
-                                type="submit"
-                                variant="contained"
-                                disabled={createForm.processing}
-                                startIcon={<AddCircleOutlineIcon />}
-                            >
-                                Save Task
-                            </Button>
-                        </Stack>
-                    </Box>
-                </CardContent>
-            </Card>
+            <div className="py-12">
+                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+                    <div className="space-y-6">
+                        <Card>
+                            <CardContent>
+                                <Typography variant="h6" component="div">
+                                    Add Task
+                                </Typography>
 
-            <Stack spacing={2}>
-                {tasks.map((task) => (
-                    <Card key={task.id} sx={{ borderRadius: 4 }}>
-                        <CardContent>
-                            {editingId === task.id ? (
-                                <Box component="form" onSubmit={updateTask}>
-                                    <Stack spacing={2}>
-                                        <TextField
-                                            label="Title"
-                                            value={editForm.data.title}
-                                            onChange={(e) => editForm.setData('title', e.target.value)}
-                                            error={Boolean(editForm.errors.title)}
-                                            helperText={editForm.errors.title}
-                                            required
-                                        />
-                                        <TextField
-                                            label="Description"
-                                            multiline
-                                            minRows={2}
-                                            value={editForm.data.description}
-                                            onChange={(e) => editForm.setData('description', e.target.value)}
-                                            error={Boolean(editForm.errors.description)}
-                                            helperText={editForm.errors.description}
-                                        />
+                                <form onSubmit={submitNew} className="mt-4 space-y-4">
+                                    <TextField
+                                        fullWidth
+                                        label="Title"
+                                        value={data.title}
+                                        onChange={(e) => setData('title', e.target.value)}
+                                        error={Boolean(errors.title)}
+                                        helperText={errors.title}
+                                    />
+
+                                    <TextField
+                                        fullWidth
+                                        label="Description"
+                                        multiline
+                                        minRows={3}
+                                        value={data.description}
+                                        onChange={(e) => setData('description', e.target.value)}
+                                        error={Boolean(errors.description)}
+                                        helperText={errors.description}
+                                    />
+
+                                    <div className="grid gap-4 md:grid-cols-2">
                                         <FormControl fullWidth>
-                                            <InputLabel>Priority</InputLabel>
+                                            <InputLabel id="priority-label">
+                                                Priority
+                                            </InputLabel>
                                             <Select
+                                                labelId="priority-label"
                                                 label="Priority"
-                                                value={editForm.data.priority}
-                                                onChange={(e) => editForm.setData('priority', e.target.value)}
+                                                value={data.priority}
+                                                onChange={(e) =>
+                                                    setData('priority', e.target.value)
+                                                }
                                             >
                                                 <MenuItem value="low">Low</MenuItem>
                                                 <MenuItem value="medium">Medium</MenuItem>
                                                 <MenuItem value="high">High</MenuItem>
                                             </Select>
                                         </FormControl>
+
                                         <FormControl fullWidth>
-                                            <InputLabel>Status</InputLabel>
+                                            <InputLabel id="status-label">
+                                                Status
+                                            </InputLabel>
                                             <Select
+                                                labelId="status-label"
                                                 label="Status"
-                                                value={editForm.data.status}
-                                                onChange={(e) => editForm.setData('status', e.target.value)}
+                                                value={data.status}
+                                                onChange={(e) =>
+                                                    setData('status', e.target.value)
+                                                }
                                             >
                                                 <MenuItem value="pending">Pending</MenuItem>
-                                                <MenuItem value="completed">Completed</MenuItem>
+                                                <MenuItem value="completed">
+                                                    Completed
+                                                </MenuItem>
                                             </Select>
                                         </FormControl>
-                                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-                                            <Button
-                                                type="submit"
-                                                variant="contained"
-                                                disabled={editForm.processing}
-                                                startIcon={<EditOutlinedIcon />}
-                                            >
-                                                Update
-                                            </Button>
-                                            <Button variant="outlined" onClick={() => setEditingId(null)}>
-                                                Cancel
-                                            </Button>
-                                        </Stack>
-                                    </Stack>
-                                </Box>
-                            ) : (
-                                <>
-                                    <Typography variant="h6">{task.title}</Typography>
-                                    <Typography sx={{ my: 1 }} color="text.secondary">
-                                        {task.description || 'No description'}
-                                    </Typography>
-                                    <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-                                        <Chip
-                                            label={`Priority: ${task.priority}`}
-                                            color={
-                                                task.priority === 'high'
-                                                    ? 'error'
-                                                    : task.priority === 'medium'
-                                                        ? 'secondary'
-                                                        : 'primary'
-                                            }
-                                        />
-                                        <Chip
-                                            label={`Status: ${task.status}`}
-                                            color={task.status === 'completed' ? 'success' : 'default'}
-                                        />
-                                    </Stack>
-                                </>
-                            )}
-                        </CardContent>
-                        {editingId !== task.id && (
-                            <CardActions sx={{ flexWrap: 'wrap', gap: 1, px: 2, pb: 2 }}>
-                                <Button
-                                    size="small"
-                                    variant="outlined"
-                                    startIcon={<EditOutlinedIcon />}
-                                    onClick={() => startEdit(task)}
-                                >
-                                    Edit
-                                </Button>
-                                <Button
-                                    size="small"
-                                    variant="outlined"
-                                    startIcon={<SwapHorizOutlinedIcon />}
-                                    onClick={() => router.post(`/tasks/${task.id}/toggle-status`)}
-                                >
-                                    Toggle Status
-                                </Button>
-                                <Button
-                                    size="small"
-                                    color="error"
-                                    variant="contained"
-                                    startIcon={<DeleteOutlineIcon />}
-                                    onClick={() => {
-                                        if (window.confirm('Delete this task?')) {
-                                            router.delete(`/tasks/${task.id}`);
-                                        }
-                                    }}
-                                >
-                                    Delete
-                                </Button>
-                            </CardActions>
-                        )}
-                    </Card>
-                ))}
-            </Stack>
-            {tasks.length === 0 ? (
-                <Card sx={{ mt: 2, borderRadius: 4 }}>
-                    <CardContent>
-                        <Typography color="text.secondary">No tasks yet. Add a task for this project.</Typography>
-                    </CardContent>
-                </Card>
-            ) : null}
-        </Container>
+                                    </div>
+
+                                    <div>
+                                        <Button
+                                            type="submit"
+                                            variant="contained"
+                                            disabled={processing}
+                                        >
+                                            Create
+                                        </Button>
+                                    </div>
+                                </form>
+                            </CardContent>
+                        </Card>
+
+                        <div className="grid gap-4 md:grid-cols-2">
+                            {tasks.map((task) => {
+                                const isEditing = task.id === editingId;
+
+                                return (
+                                    <Card key={task.id}>
+                                        <CardContent>
+                                            {isEditing ? (
+                                                <form
+                                                    onSubmit={(e) =>
+                                                        saveEdit(e, task)
+                                                    }
+                                                    className="space-y-4"
+                                                >
+                                                    <TextField
+                                                        fullWidth
+                                                        label="Title"
+                                                        value={editValues.title}
+                                                        onChange={(e) =>
+                                                            setEditValues((prev) => ({
+                                                                ...prev,
+                                                                title: e.target.value,
+                                                            }))
+                                                        }
+                                                    />
+
+                                                    <TextField
+                                                        fullWidth
+                                                        label="Description"
+                                                        multiline
+                                                        minRows={3}
+                                                        value={editValues.description}
+                                                        onChange={(e) =>
+                                                            setEditValues((prev) => ({
+                                                                ...prev,
+                                                                description:
+                                                                    e.target.value,
+                                                            }))
+                                                        }
+                                                    />
+
+                                                    <div className="grid gap-4 md:grid-cols-2">
+                                                        <FormControl fullWidth>
+                                                            <InputLabel id={`priority-${task.id}`}>
+                                                                Priority
+                                                            </InputLabel>
+                                                            <Select
+                                                                labelId={`priority-${task.id}`}
+                                                                label="Priority"
+                                                                value={editValues.priority}
+                                                                onChange={(e) =>
+                                                                    setEditValues((prev) => ({
+                                                                        ...prev,
+                                                                        priority:
+                                                                            e.target
+                                                                                .value,
+                                                                    }))
+                                                                }
+                                                            >
+                                                                <MenuItem value="low">
+                                                                    Low
+                                                                </MenuItem>
+                                                                <MenuItem value="medium">
+                                                                    Medium
+                                                                </MenuItem>
+                                                                <MenuItem value="high">
+                                                                    High
+                                                                </MenuItem>
+                                                            </Select>
+                                                        </FormControl>
+
+                                                        <FormControl fullWidth>
+                                                            <InputLabel id={`status-${task.id}`}>
+                                                                Status
+                                                            </InputLabel>
+                                                            <Select
+                                                                labelId={`status-${task.id}`}
+                                                                label="Status"
+                                                                value={editValues.status}
+                                                                onChange={(e) =>
+                                                                    setEditValues((prev) => ({
+                                                                        ...prev,
+                                                                        status:
+                                                                            e.target
+                                                                                .value,
+                                                                    }))
+                                                                }
+                                                            >
+                                                                <MenuItem value="pending">
+                                                                    Pending
+                                                                </MenuItem>
+                                                                <MenuItem value="completed">
+                                                                    Completed
+                                                                </MenuItem>
+                                                            </Select>
+                                                        </FormControl>
+                                                    </div>
+
+                                                    <div className="flex gap-2">
+                                                        <Button type="submit" variant="contained">
+                                                            Save
+                                                        </Button>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outlined"
+                                                            onClick={cancelEdit}
+                                                        >
+                                                            Cancel
+                                                        </Button>
+                                                    </div>
+                                                </form>
+                                            ) : (
+                                                <>
+                                                    <Typography variant="h6" component="div">
+                                                        {task.title}
+                                                    </Typography>
+
+                                                    {task.description && (
+                                                        <Typography
+                                                            variant="body2"
+                                                            color="text.secondary"
+                                                            className="mt-2"
+                                                        >
+                                                            {task.description}
+                                                        </Typography>
+                                                    )}
+
+                                                    <Typography
+                                                        variant="body2"
+                                                        color="text.secondary"
+                                                        className="mt-2"
+                                                    >
+                                                        Priority: {task.priority} | Status:{' '}
+                                                        {task.status}
+                                                    </Typography>
+                                                </>
+                                            )}
+                                        </CardContent>
+
+                                        {!isEditing && (
+                                            <CardActions>
+                                                <Button
+                                                    variant="contained"
+                                                    onClick={() => toggleStatus(task)}
+                                                >
+                                                    Toggle Status
+                                                </Button>
+                                                <Button
+                                                    variant="outlined"
+                                                    onClick={() => startEdit(task)}
+                                                >
+                                                    Edit
+                                                </Button>
+                                                <Button
+                                                    variant="outlined"
+                                                    color="error"
+                                                    onClick={() => destroy(task)}
+                                                >
+                                                    Delete
+                                                </Button>
+                                            </CardActions>
+                                        )}
+                                    </Card>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </AuthenticatedLayout>
     );
 }

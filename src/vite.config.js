@@ -1,36 +1,28 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
-import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-    resolve: {
-        alias: {
-            '@': path.resolve(__dirname, 'resources/js'),
-        },
-    },
     plugins: [
-        react(),
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.jsx'],
+            input: 'resources/js/app.jsx',
             refresh: true,
         }),
-        tailwindcss(),
+        react(),
     ],
+
     server: {
-        host: '0.0.0.0',
+        host: true,
         port: 5173,
         strictPort: true,
+        origin: 'http://localhost:5173',
+        cors: {
+            origin: ['http://localhost:8000', 'http://127.0.0.1:8000'],
+            credentials: true,
+        },
         hmr: {
             host: 'localhost',
             port: 5173,
-        },
-        watch: {
-            ignored: ['**/storage/framework/views/**'],
         },
     },
 });
