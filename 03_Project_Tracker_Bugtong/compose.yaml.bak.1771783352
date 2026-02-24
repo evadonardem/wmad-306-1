@@ -1,0 +1,31 @@
+services:
+  web:
+    image: "evadonardem/wmad-306:latest"
+    user: "${UID:-1000}:${GID:-1000}"
+    environment:
+      HOME: /home/developer
+    ports:
+      - "8080:8080"                # host 8080 -> container 8080
+    networks:
+      - db_network
+      - mailtrap_network
+    volumes:
+      - ./:/var/www/html
+      - ./_setup/web_scripts:/scripts
+      - ./docker_home:/home/developer
+    depends_on:
+      db:
+        condition: service_healthy
+      mailtrap:
+        condition: service_healthy
+    command: >
+      bash -lc "
+      cd /var/www/html &&
+      if [ ! -f artisan ]; then
+        echo '❌ Laravel project not found at /var/www/html (artisan missing)';
+        ls -la;
+        exit 1;
+      fi &&
+      if [ -d /scripts ]; then dos2unix /scripts/* 2>/dev/null || true; chmod +x /scripts/* 2>/dev/null || true; /scripts/init.sh 2>/dev/null || true; fi &&
+      php -S 0.0.0.0:8080 -t public
+      "

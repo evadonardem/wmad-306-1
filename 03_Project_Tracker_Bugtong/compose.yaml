@@ -1,0 +1,70 @@
+
+services:
+  web:
+    image: "evadonardem/wmad-306:latest"
+    user: "${UID}:${GID}"
+    environment:
+      HOME: /home/developer
+    ports:
+      - "8081:8080"             # visit http://localhost:8081
+      - "5174:5173"             # Vite dev server on http://localhost:5174
+    networks:
+      - app_net
+    volumes:
+      - ./src:/var/www/html         # mount Laravel app directory
+      - ./public:/var/www/html/public   # ensure build output is visible and writable
+      - ./docker_home:/home/developer
+    depends_on:
+      db:
+        condition: service_healthy
+      mailtrap:
+        condition: service_healthy
+    command: >
+      bash -lc "
+      cd /var/www/html &&
+      if [ ! -f artisan ]; then
+        echo '❌ Laravel project not found at /var/www/html (artisan missing)';
+        ls -la;
+        exit 1;
+      fi &&
+      php -S 0.0.0.0:8080 -t public
+      "
+
+  db:
+    image: "mysql:8.4"
+    environment:
+      MYSQL_ROOT_PASSWORD: "123456"
+    networks:
+      - app_net
+    volumes:
+      - ./_setup/db_scripts/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p123456"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  mailtrap:
+    image: axllent/mailpit:latest
+    user: "${UID:-1000}:${GID:-1000}"
+    ports:
+      - "2026:1025"              # SMTP (now http://localhost:2026)
+      - "8027:8025"              # Web UI -> http://localhost:8027
+    networks:
+      - app_net
+    volumes:
+      - ./mailtrap_data:/data
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: "1"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "1"
+    restart: unless-stopped
+
+networks:
+  app_net: {}
+
+volumes:
+  db_data: {}
