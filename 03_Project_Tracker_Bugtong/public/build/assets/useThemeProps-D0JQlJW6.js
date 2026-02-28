@@ -1,1 +1,0 @@
-import{ac as a,u as m}from"./List-DwQNh8Dc.js";import{g as u}from"./getThemeProps-BsgfaVaZ.js";const f=a();function i({props:t,name:r,defaultTheme:o,themeId:s}){let e=m(o);return s&&(e=e[s]||e),u({theme:e,name:r,props:t})}export{f as s,i as u};
