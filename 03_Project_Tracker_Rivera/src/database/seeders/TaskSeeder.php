@@ -18,6 +18,7 @@ class TaskSeeder extends Seeder
             Task::factory()
                 ->count(rand(5, 10))
                 ->create([
+                    'user_id' => $project->user_id,
                     'project_id' => $project->id,
                 ]);
         });
