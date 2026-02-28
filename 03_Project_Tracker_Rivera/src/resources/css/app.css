@@ -1,0 +1,400 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+	overflow-y: auto;
+}
+
+.taskmo-hide-scrollbar {
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+}
+
+.taskmo-hide-scrollbar::-webkit-scrollbar {
+	width: 0;
+	height: 0;
+}
+
+@keyframes taskmo-float {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-10px);
+	}
+}
+
+.animate-taskmo-float {
+	animation: taskmo-float 4s ease-in-out infinite;
+}
+
+@keyframes taskmo-gradient-flow {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
+
+.animate-taskmo-gradient {
+	background-size: 200% 200%;
+	animation: taskmo-gradient-flow 4s ease-in-out infinite;
+}
+
+@keyframes taskmo-letter-hop {
+	0% {
+		transform: translateY(0) scale(1);
+	}
+	2% {
+		transform: translateY(-10px) scale(1.03);
+	}
+	4% {
+		transform: translateY(0) scale(1);
+	}
+	100% {
+		transform: translateY(0) scale(1);
+	}
+}
+
+.taskmo-letter-hop {
+	display: inline-block;
+	will-change: transform;
+	animation: taskmo-letter-hop 10s ease-in-out infinite;
+	animation-delay: calc(var(--taskmo-hop-index, 0) * 60ms);
+}
+
+@keyframes taskmo-emoji-twitch {
+	0%,
+	92%,
+	100% {
+		transform: translateY(0) rotate(0deg) scale(1);
+	}
+	94% {
+		transform: translateY(-2px) rotate(-10deg) scale(1.05);
+	}
+	96% {
+		transform: translateY(1px) rotate(10deg) scale(1.07);
+	}
+	98% {
+		transform: translateY(0) rotate(0deg) scale(1);
+	}
+}
+
+.animate-taskmo-twitch {
+	display: inline-block;
+	will-change: transform;
+	animation: taskmo-emoji-twitch 5s ease-in-out infinite;
+}
+
+.taskmo-logo-3d {
+	text-shadow:
+		0 1px 0 rgba(0, 0, 0, 0.25),
+		0 2px 0 rgba(0, 0, 0, 0.18),
+		0 10px 25px rgba(0, 0, 0, 0.22);
+}
+
+@keyframes taskmo-glow-pulse {
+	0%,
+	100% {
+		opacity: 0.55;
+		filter: blur(10px);
+		transform: scale(1);
+	}
+	50% {
+		opacity: 0.9;
+		filter: blur(14px);
+		transform: scale(1.04);
+	}
+}
+
+.taskmo-logo-glow {
+	text-shadow:
+		0 0 16px rgba(99, 102, 241, 0.45),
+		0 0 28px rgba(236, 72, 153, 0.35),
+		0 0 44px rgba(99, 102, 241, 0.25);
+}
+
+.taskmo-logo-glow-layer {
+	animation: taskmo-glow-pulse 2.8s ease-in-out infinite;
+}
+
+@keyframes taskmo-grid-flow {
+	0% {
+		background-position: 0 0, 0 0;
+	}
+	100% {
+		background-position: 48px 48px, 48px 48px;
+	}
+}
+
+.taskmo-grid-flow {
+	background-image:
+		linear-gradient(to right, currentColor 1px, transparent 1px),
+		linear-gradient(to bottom, currentColor 1px, transparent 1px);
+	background-size: 48px 48px;
+	animation: taskmo-grid-flow 14s linear infinite;
+	opacity: 0.35;
+}
+
+/* TaskMo "inflated" surfaces (semi-glass + glow) */
+.taskmo-card {
+	position: relative;
+	overflow: hidden;
+	border-radius: 20px;
+	border: 1px solid rgba(229, 231, 235, 0.65);
+	background: rgba(255, 255, 255, 0.62);
+	-webkit-backdrop-filter: blur(14px);
+	backdrop-filter: blur(14px);
+	box-shadow:
+		0 2px 10px rgba(15, 23, 42, 0.06),
+		0 18px 48px rgba(15, 23, 42, 0.12),
+		inset 0 1px 0 rgba(255, 255, 255, 0.78),
+		inset 0 -14px 28px rgba(0, 0, 0, 0.06);
+	transition: box-shadow 160ms ease, filter 160ms ease, transform 120ms ease;
+}
+
+.taskmo-card:hover {
+	filter: brightness(1.02);
+	box-shadow:
+		0 3px 12px rgba(15, 23, 42, 0.08),
+		0 24px 60px rgba(15, 23, 42, 0.16),
+		inset 0 1px 0 rgba(255, 255, 255, 0.78),
+		inset 0 -14px 28px rgba(0, 0, 0, 0.06);
+}
+
+.taskmo-card:active {
+	transform: scale(0.995);
+	filter: brightness(0.995);
+	box-shadow:
+		0 2px 10px rgba(15, 23, 42, 0.07),
+		0 16px 42px rgba(15, 23, 42, 0.12),
+		inset 0 2px 10px rgba(0, 0, 0, 0.06),
+		inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.dark .taskmo-card {
+	border-color: rgba(55, 65, 81, 0.55);
+	background: rgba(3, 7, 18, 0.55);
+	box-shadow:
+		0 22px 55px rgba(0, 0, 0, 0.55),
+		inset 0 1px 0 rgba(255, 255, 255, 0.14),
+		inset 0 -16px 30px rgba(0, 0, 0, 0.55);
+}
+
+.taskmo-card::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(135deg, rgba(255, 255, 255, 0.65), transparent 55%);
+	opacity: 0.9;
+	pointer-events: none;
+	z-index: 0;
+}
+
+.dark .taskmo-card::before {
+	background: linear-gradient(135deg, rgba(255, 255, 255, 0.16), transparent 55%);
+}
+
+.taskmo-card::after {
+	content: '';
+	position: absolute;
+	inset: -2px;
+	background: radial-gradient(circle at 20% 15%, rgba(99, 102, 241, 0.18), transparent 55%),
+		radial-gradient(circle at 80% 30%, rgba(236, 72, 153, 0.14), transparent 60%);
+	filter: blur(26px);
+	opacity: 0.65;
+	pointer-events: none;
+	z-index: 0;
+}
+
+.taskmo-card > * {
+	position: relative;
+	z-index: 1;
+}
+
+/* Opt-in scrollable variant for TaskMo cards (taskmo-card defaults to overflow:hidden) */
+.taskmo-card-scroll {
+	overflow: auto;
+	overflow-x: hidden;
+}
+
+.dark .taskmo-card::after {
+	background: radial-gradient(circle at 20% 15%, rgba(99, 102, 241, 0.22), transparent 55%),
+		radial-gradient(circle at 80% 30%, rgba(236, 72, 153, 0.18), transparent 60%);
+	opacity: 0.55;
+}
+
+.taskmo-card-solid {
+	position: relative;
+	overflow: hidden;
+	border-radius: 20px;
+	border: 1px solid rgba(229, 231, 235, 1);
+	background: rgba(255, 255, 255, 1);
+	box-shadow:
+		0 2px 10px rgba(15, 23, 42, 0.07),
+		0 18px 52px rgba(15, 23, 42, 0.14),
+		inset 0 1px 0 rgba(255, 255, 255, 0.8),
+		inset 0 -18px 36px rgba(0, 0, 0, 0.05);
+	transition: box-shadow 160ms ease, filter 160ms ease, transform 120ms ease;
+}
+
+.taskmo-card-solid:hover {
+	filter: brightness(1.01);
+	box-shadow:
+		0 3px 12px rgba(15, 23, 42, 0.09),
+		0 24px 62px rgba(15, 23, 42, 0.18),
+		inset 0 1px 0 rgba(255, 255, 255, 0.82),
+		inset 0 -18px 36px rgba(0, 0, 0, 0.05);
+}
+
+.taskmo-card-solid:active {
+	transform: scale(0.995);
+	filter: brightness(0.997);
+}
+
+.taskmo-card-solid > * {
+	position: relative;
+	z-index: 1;
+}
+
+.dark .taskmo-card-solid {
+	border-color: rgba(31, 41, 55, 1);
+	background: rgba(3, 7, 18, 1);
+	box-shadow:
+		0 22px 55px rgba(0, 0, 0, 0.55),
+		inset 0 1px 0 rgba(255, 255, 255, 0.12),
+		inset 0 -20px 40px rgba(0, 0, 0, 0.65);
+}
+
+.taskmo-btn {
+	position: relative;
+	overflow: hidden;
+	border-radius: 16px;
+	border: 1px solid rgba(229, 231, 235, 0.8);
+	background: rgba(255, 255, 255, 0.72);
+	-webkit-backdrop-filter: blur(12px);
+	backdrop-filter: blur(12px);
+	box-shadow:
+		0 14px 28px rgba(0, 0, 0, 0.14),
+		inset 0 1px 0 rgba(255, 255, 255, 0.75),
+		inset 0 -10px 20px rgba(0, 0, 0, 0.06);
+	transition: box-shadow 150ms ease, filter 150ms ease, transform 120ms ease;
+}
+
+.dark .taskmo-btn {
+	border-color: rgba(55, 65, 81, 0.65);
+	background: rgba(17, 24, 39, 0.7);
+	box-shadow:
+		0 14px 28px rgba(0, 0, 0, 0.55),
+		inset 0 1px 0 rgba(255, 255, 255, 0.12),
+		inset 0 -12px 22px rgba(0, 0, 0, 0.65);
+}
+
+.taskmo-btn::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(135deg, rgba(255, 255, 255, 0.55), transparent 55%);
+	opacity: 0.9;
+	pointer-events: none;
+	z-index: 0;
+}
+
+.taskmo-btn > * {
+	position: relative;
+	z-index: 1;
+}
+
+.dark .taskmo-btn::before {
+	background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), transparent 55%);
+}
+
+.taskmo-btn:active {
+	transform: scale(0.99);
+	box-shadow:
+		0 10px 20px rgba(0, 0, 0, 0.12),
+		inset 0 2px 10px rgba(0, 0, 0, 0.08),
+		inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.taskmo-btn:hover {
+	filter: brightness(1.05);
+}
+
+/* Ensure MUI outlined buttons don't render black borders when using TaskMo button styling */
+.taskmo-btn.MuiButton-outlined {
+	border-color: rgba(229, 231, 235, 0.8) !important;
+}
+
+.dark .taskmo-btn.MuiButton-outlined {
+	border-color: rgba(55, 65, 81, 0.65) !important;
+}
+
+.taskmo-btn.taskmo-btn-primary.MuiButton-outlined {
+	border-color: rgba(99, 102, 241, 0.35) !important;
+}
+
+.taskmo-btn.taskmo-btn-danger.MuiButton-outlined {
+	border-color: rgba(239, 68, 68, 0.35) !important;
+}
+
+.taskmo-btn-primary {
+	border-color: rgba(99, 102, 241, 0.35);
+	color: white;
+	background: linear-gradient(135deg, rgba(99, 102, 241, 0.98), rgba(236, 72, 153, 0.9));
+	box-shadow:
+		0 18px 36px rgba(99, 102, 241, 0.28),
+		0 22px 55px rgba(0, 0, 0, 0.16),
+		inset 0 1px 0 rgba(255, 255, 255, 0.35),
+		inset 0 -14px 28px rgba(0, 0, 0, 0.14);
+}
+
+.taskmo-btn-danger {
+	border-color: rgba(239, 68, 68, 0.35);
+	color: white;
+	background: linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(190, 18, 60, 0.9));
+}
+
+@keyframes taskmo-nav-sheen {
+	0% {
+		background-position: 0% 50%;
+	}
+	100% {
+		background-position: 200% 50%;
+	}
+}
+
+.taskmo-nav-indicator {
+	background-image: linear-gradient(90deg, rgba(99, 102, 241, 0.9), rgba(236, 72, 153, 0.85), rgba(99, 102, 241, 0.9));
+	background-size: 200% 100%;
+	animation: taskmo-nav-sheen 2.6s linear infinite;
+	box-shadow:
+		0 0 16px rgba(99, 102, 241, 0.28),
+		0 0 22px rgba(236, 72, 153, 0.18);
+}
+
+/* 3D-inflated headings */
+.taskmo-heading-3d {
+	text-shadow:
+		0 1px 0 rgba(255, 255, 255, 0.6),
+		0 2px 0 rgba(0, 0, 0, 0.08),
+		0 12px 28px rgba(0, 0, 0, 0.18);
+}
+
+.dark .taskmo-heading-3d {
+	text-shadow:
+		0 1px 0 rgba(255, 255, 255, 0.06),
+		0 2px 0 rgba(0, 0, 0, 0.45),
+		0 12px 28px rgba(0, 0, 0, 0.65);
+}
+
+.taskmo-heading-glow {
+	filter: drop-shadow(0 0 14px rgba(99, 102, 241, 0.25))
+		drop-shadow(0 0 18px rgba(236, 72, 153, 0.12));
+}
