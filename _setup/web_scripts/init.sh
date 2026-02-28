@@ -19,4 +19,6 @@ else
     php artisan --version
 fi
 
+rm -f $WORKDIR/public/hot
+
 echo "Initialization complete."
