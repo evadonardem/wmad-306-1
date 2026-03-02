@@ -1,11 +1,21 @@
-export default function JoditEditor({ value, onChange }) {
+import { useMemo, useRef } from 'react';
+import JoditReact from 'jodit-react';
+
+export default function JoditEditor({ value = '', onChange, placeholder = 'Start writing...' }) {
+    const editor = useRef(null);
+
+    const config = useMemo(() => ({
+        readonly: false,
+        placeholder,
+    }), [placeholder]);
+
     return (
-        <textarea
-            value={value}
-            onChange={(event) => onChange?.(event.target.value)}
-            placeholder="Jodit editor wrapper placeholder"
-            rows={10}
-            style={{ width: '100%' }}
+        <JoditReact
+            ref={editor}
+            value={value ?? ''}
+            config={config}
+            onBlur={(newContent) => onChange?.(newContent)}
+            onChange={() => {}}
         />
     );
 }

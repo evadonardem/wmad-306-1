@@ -35,11 +35,9 @@ class RoleSeeder extends Seeder
         $adminRole = Role::query()->firstOrCreate(['name' => 'admin']);
         $writerRole = Role::query()->firstOrCreate(['name' => 'writer']);
         $editorRole = Role::query()->firstOrCreate(['name' => 'editor']);
-        $studentRole = Role::query()->firstOrCreate(['name' => 'student']);
 
         $adminRole->syncPermissions(Permission::query()->pluck('name')->all());
         $writerRole->syncPermissions(['article.create', 'article.submit', 'article.revise']);
         $editorRole->syncPermissions(['article.review', 'article.request-revision', 'article.publish', 'comment.moderate']);
-        $studentRole->syncPermissions(['comment.create']);
     }
 }
