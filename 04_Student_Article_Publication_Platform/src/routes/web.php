@@ -15,6 +15,24 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
+    $user = request()->user();
+
+    if ($user?->hasRole('admin')) {
+        return redirect()->route('admin.dashboard');
+    }
+
+    if ($user?->hasRole('writer')) {
+        return redirect()->route('writer.dashboard');
+    }
+
+    if ($user?->hasRole('editor')) {
+        return redirect()->route('editor.dashboard');
+    }
+
+    if ($user?->hasRole('student')) {
+        return redirect()->route('student.dashboard');
+    }
+
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
