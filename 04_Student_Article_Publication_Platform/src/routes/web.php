@@ -26,3 +26,7 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 require __DIR__.'/sample.php';
+require __DIR__.'/writer.php';
+require __DIR__.'/editor.php';
+require __DIR__.'/student.php';
+require __DIR__.'/admin.php';
