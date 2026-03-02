@@ -199,9 +199,9 @@ export default function Welcome({ auth }) {
                         </motion.div>
 
                         <h1 className="text-6xl md:text-7xl font-bold text-white mb-6">
-                            Share Your
+                            For Your Information, <br />
                             <span className="block" style={{ color: colors.softPink }}>
-                                Story with FYI
+                                Your Voice Matters
                             </span>
                         </h1>
 
