@@ -15,12 +15,23 @@ use Spatie\Permission\Models\Role;
 
 class AdminDashboardController extends Controller
 {
-    private const MANAGED_ROLES = ['writer', 'editor'];
+    private const MANAGED_ROLES = ['admin', 'writer', 'editor'];
+    private const ACCOUNT_STATUSES = ['active', 'suspended', 'pending', 'deleted'];
 
     public function index(): Response
     {
+        return Inertia::render('Admin/Dashboard', $this->buildAdminUserPayload());
+    }
+
+    public function users(): Response
+    {
+        return Inertia::render('Admin/users', $this->buildAdminUserPayload());
+    }
+
+    private function buildAdminUserPayload(): array
+    {
         $users = User::query()
-            ->select(['id', 'name', 'email', 'account_status', 'suspended_at'])
+            ->select(['id', 'name', 'email', 'account_status', 'suspended_at', 'created_at'])
             ->with('roles:name')
             ->whereHas('roles', function ($query): void {
                 $query->whereIn('name', self::MANAGED_ROLES);
@@ -35,13 +46,14 @@ class AdminDashboardController extends Controller
                     'roles' => $user->roles->pluck('name')->values(),
                     'account_status' => $user->account_status,
                     'suspended_at' => $user->suspended_at,
+                    'created_at' => $user->created_at,
                 ];
             });
 
-        return Inertia::render('Admin/Dashboard', [
+        return [
             'users' => $users,
             'roles' => Role::query()->whereIn('name', self::MANAGED_ROLES)->pluck('name')->values(),
-        ]);
+        ];
     }
 
     public function store(Request $request): RedirectResponse
@@ -49,8 +61,9 @@ class AdminDashboardController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'role' => ['required', 'string', Rule::in(self::MANAGED_ROLES)],
-            'account_status' => ['nullable', 'in:active,suspended'],
+            'roles' => ['required', 'array', 'min:1'],
+            'roles.*' => ['string', Rule::in(self::MANAGED_ROLES)],
+            'account_status' => ['nullable', Rule::in(self::ACCOUNT_STATUSES)],
             'temporary_password' => ['nullable', 'string', 'min:8'],
         ]);
 
@@ -65,22 +78,19 @@ class AdminDashboardController extends Controller
             'suspended_at' => ($validated['account_status'] ?? 'active') === 'suspended' ? now() : null,
         ]);
 
-        $user->syncRoles([$validated['role']]);
+        $user->syncRoles($validated['roles']);
 
         return back()->with('success', 'User account created successfully with temporary password: '.$temporaryPassword);
     }
 
     public function update(Request $request, User $user): RedirectResponse
     {
-        if (!$this->isManageableUser($user)) {
-            return back()->with('error', 'Only writer and editor accounts can be managed here.');
-        }
-
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
-            'role' => ['required', 'string', Rule::in(self::MANAGED_ROLES)],
-            'account_status' => ['required', 'in:active,suspended'],
+            'roles' => ['required', 'array', 'min:1'],
+            'roles.*' => ['string', Rule::in(self::MANAGED_ROLES)],
+            'account_status' => ['required', Rule::in(self::ACCOUNT_STATUSES)],
         ]);
 
         $user->update([
@@ -90,19 +100,15 @@ class AdminDashboardController extends Controller
             'suspended_at' => $validated['account_status'] === 'suspended' ? now() : null,
         ]);
 
-        $user->syncRoles([$validated['role']]);
+        $user->syncRoles($validated['roles']);
 
         return back()->with('success', 'User account updated successfully.');
     }
 
     public function updateStatus(Request $request, User $user): RedirectResponse
     {
-        if (!$this->isManageableUser($user)) {
-            return back()->with('error', 'Only writer and editor accounts can be managed here.');
-        }
-
         $validated = $request->validate([
-            'account_status' => ['required', 'in:active,suspended'],
+            'account_status' => ['required', Rule::in(self::ACCOUNT_STATUSES)],
         ]);
 
         if ($request->user()->id === $user->id && $validated['account_status'] === 'suspended') {
@@ -119,10 +125,6 @@ class AdminDashboardController extends Controller
 
     public function syncRoles(Request $request, User $user): RedirectResponse
     {
-        if (!$this->isManageableUser($user)) {
-            return back()->with('error', 'Only writer and editor accounts can be managed here.');
-        }
-
         $validated = $request->validate([
             'roles' => ['required', 'array', 'min:1'],
             'roles.*' => ['string', Rule::in(self::MANAGED_ROLES)],
@@ -133,8 +135,25 @@ class AdminDashboardController extends Controller
         return back()->with('success', 'User roles updated successfully.');
     }
 
-    private function isManageableUser(User $user): bool
+    public function destroy(Request $request, User $user): RedirectResponse
     {
-        return $user->roles()->whereIn('name', self::MANAGED_ROLES)->exists();
+        if ($request->user()->id === $user->id) {
+            return back()->with('error', 'You cannot delete your own account while logged in.');
+        }
+
+        $isManagedUser = $user->roles()->whereIn('name', self::MANAGED_ROLES)->exists();
+
+        if (!$isManagedUser) {
+            return back()->with('error', 'This account is outside the admin user-management scope.');
+        }
+
+        $user->syncRoles([]);
+
+        $user->update([
+            'account_status' => 'deleted',
+            'suspended_at' => now(),
+        ]);
+
+        return back()->with('success', 'User account deleted successfully.');
     }
 }

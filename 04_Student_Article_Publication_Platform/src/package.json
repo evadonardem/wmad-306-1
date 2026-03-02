@@ -27,6 +27,8 @@
         "@emotion/styled": "^11.14.1",
         "@mui/icons-material": "^7.3.8",
         "@mui/material": "^7.3.8",
-        "jodit-react": "^5.3.21"
+        "framer-motion": "^12.34.3",
+        "jodit-react": "^5.3.21",
+        "recharts": "^3.7.0"
     }
 }
