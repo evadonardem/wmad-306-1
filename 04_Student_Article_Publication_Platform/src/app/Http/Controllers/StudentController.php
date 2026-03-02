@@ -8,6 +8,7 @@ use App\Models\Comment;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Notifications\CommentPostedNotification;
 
 class StudentController extends Controller
 {
@@ -32,11 +33,17 @@ class StudentController extends Controller
 
         $validated = $request->validate(['content' => 'required|string']);
 
-        Comment::create([
+        $comment = Comment::create([
             'article_id' => $article->id,
             'student_id' => $request->user()->id,
             'content' => $validated['content'],
         ]);
+
+        // Eager load the relationships needed for the notification
+        $comment->load('article.writer', 'student');
+
+        // Phase 9: Notify the writer that a student commented
+        $comment->article->writer->notify(new CommentPostedNotification($comment));
 
         return back()->with('success', 'Comment posted!');
     }

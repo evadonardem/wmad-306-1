@@ -8,6 +8,8 @@ use App\Models\Revision;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Notifications\RevisionRequestedNotification;
+use App\Notifications\ArticlePublishedNotification;
 
 class EditorController extends Controller
 {
@@ -46,6 +48,9 @@ class EditorController extends Controller
             'editor_id' => $request->user()->id,
         ]);
 
+        // Phase 9: Send notification to the writer
+        $article->writer->notify(new RevisionRequestedNotification($article, $validated['comments']));
+
         return back()->with('success', 'Revision requested.');
     }
 
@@ -59,6 +64,9 @@ class EditorController extends Controller
             'status_id' => $publishedStatus->id,
             'editor_id' => $request->user()->id,
         ]);
+
+        // Phase 9: Send success notification to the writer
+        $article->writer->notify(new ArticlePublishedNotification($article));
 
         return back()->with('success', 'Article published successfully!');
     }

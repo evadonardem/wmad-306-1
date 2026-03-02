@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use App\Models\ArticleStatus;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\ArticleSubmittedNotification;
 
 class WriterController extends Controller
 {
@@ -57,6 +60,10 @@ class WriterController extends Controller
 
         $submittedStatus = ArticleStatus::where('name', 'pending_review')->first();
         $article->update(['status_id' => $submittedStatus->id]);
+
+        // Phase 9: Notify all editors that a new article needs review
+        $editors = User::role('editor')->get();
+        Notification::send($editors, new ArticleSubmittedNotification($article));
 
         return back()->with('success', 'Article submitted for review.');
     }
