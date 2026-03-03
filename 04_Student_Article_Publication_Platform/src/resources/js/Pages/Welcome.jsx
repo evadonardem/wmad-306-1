@@ -3,7 +3,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { useState, useRef } from 'react';
 import AuthModal from '@/Components/AuthModal'; // Import the AuthModal component
 
-export default function Welcome({ auth }) {
+export default function Welcome({ auth, recentArticles = [] }) {
     const [isFlipped, setIsFlipped] = useState(false);
     const [showAuth, setShowAuth] = useState(false);
     const [authMode, setAuthMode] = useState('login'); // Add this state
@@ -79,30 +79,6 @@ export default function Welcome({ auth }) {
             stat: '24/7',
             label: 'Always Open',
             description: 'Submit and review articles anytime, from anywhere.'
-        }
-    ];
-
-    const recentArticles = [
-        {
-            title: 'The Future of AI in Education',
-            author: 'Maria Santos',
-            category: 'Technology',
-            reads: '1.2k',
-            date: '2 days ago'
-        },
-        {
-            title: 'Mental Health Awareness on Campus',
-            author: 'James Wilson',
-            category: 'Wellness',
-            reads: '856',
-            date: '5 days ago'
-        },
-        {
-            title: 'Sustainable Practices in Urban Areas',
-            author: 'Alex Chen',
-            category: 'Environment',
-            reads: '623',
-            date: '1 week ago'
         }
     ];
 
@@ -344,17 +320,14 @@ export default function Welcome({ auth }) {
 
                     <div className="grid md:grid-cols-3 gap-6">
                         {recentArticles.map((article, index) => (
-                            <motion.div
-                                key={index}
+                            <motion.a
+                                key={article.id ?? index}
+                                href={article.id ? `/articles/${article.id}` : '/articles'}
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
                                 whileHover={{ y: -5 }}
-                                className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10 hover:border-white/20 transition cursor-pointer"
-                                onClick={() => {
-                                    setAuthMode('login');
-                                    setShowAuth(true);
-                                }}
+                                className="block bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10 hover:border-white/20 transition cursor-pointer"
                             >
                                 <div className="mb-4">
                                     <span className="px-3 py-1 rounded-full text-xs font-medium"
@@ -362,40 +335,45 @@ export default function Welcome({ auth }) {
                                               background: `${colors.softPink}30`,
                                               color: colors.softPink
                                           }}>
-                                        {article.category}
+                                        {article.category?.name ?? 'General'}
                                     </span>
                                 </div>
                                 <h3 className="text-xl font-semibold text-white mb-2">
                                     {article.title}
                                 </h3>
                                 <p className="text-gray-400 text-sm mb-4">
-                                    by {article.author}
+                                    by {article.author?.name ?? 'Unknown'}
                                 </p>
                                 <div className="flex justify-between items-center text-sm text-gray-500">
-                                    <span>{article.date}</span>
-                                    <span>{article.reads} reads</span>
+                                    <span>
+                                        {article.published_at ? new Date(article.published_at).toLocaleDateString() : 'Recently approved'}
+                                    </span>
+                                    <span>{article.comments_count ?? 0} comments</span>
                                 </div>
-                            </motion.div>
+                            </motion.a>
                         ))}
                     </div>
+
+                    {recentArticles.length === 0 && (
+                        <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-6 text-center text-gray-300">
+                            No public articles are available yet.
+                        </div>
+                    )}
 
                     <motion.div
                         initial={{ opacity: 0 }}
                         whileInView={{ opacity: 1 }}
                         className="text-center mt-10"
                     >
-                        <button
-                            onClick={() => {
-                                setAuthMode('login');
-                                setShowAuth(true);
-                            }}
-                            className="px-8 py-3 rounded-lg text-white font-medium transition"
+                        <a
+                            href="/articles"
+                            className="inline-block px-8 py-3 rounded-lg text-white font-medium transition"
                             style={{
                                 background: `linear-gradient(135deg, ${colors.softPink} 0%, ${colors.mediumPurple} 100%)`,
                             }}
                         >
                             View All Articles
-                        </button>
+                        </a>
                     </motion.div>
                 </div>
             </div>

@@ -20,6 +20,9 @@ class Article extends Model
         'content',
         'submitted_at',
         'published_at',
+        'is_public',
+        'public_approved_by',
+        'public_approved_at',
     ];
 
     protected function casts(): array
@@ -27,6 +30,8 @@ class Article extends Model
         return [
             'submitted_at' => 'datetime',
             'published_at' => 'datetime',
+            'is_public' => 'boolean',
+            'public_approved_at' => 'datetime',
         ];
     }
 
@@ -53,5 +58,10 @@ class Article extends Model
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class);
+    }
+
+    public function publicApprover(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'public_approved_by');
     }
 }

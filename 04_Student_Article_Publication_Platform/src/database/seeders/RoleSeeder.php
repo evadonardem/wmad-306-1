@@ -15,6 +15,7 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+        $guard = config('auth.defaults.guard', 'web');
 
         $permissions = [
             'manage accounts',
@@ -24,20 +25,22 @@ class RoleSeeder extends Seeder
             'article.review',
             'article.request-revision',
             'article.publish',
+            'article.approve-public',
             'comment.create',
             'comment.moderate',
         ];
 
         foreach ($permissions as $permissionName) {
-            Permission::query()->firstOrCreate(['name' => $permissionName]);
+            Permission::findOrCreate($permissionName, $guard);
         }
 
-        $adminRole = Role::query()->firstOrCreate(['name' => 'admin']);
-        $writerRole = Role::query()->firstOrCreate(['name' => 'writer']);
-        $editorRole = Role::query()->firstOrCreate(['name' => 'editor']);
+        $adminRole = Role::findOrCreate('admin', $guard);
+        $writerRole = Role::findOrCreate('writer', $guard);
+        $editorRole = Role::findOrCreate('editor', $guard);
+        Role::findOrCreate('student', $guard);
 
         $adminRole->syncPermissions(Permission::query()->pluck('name')->all());
         $writerRole->syncPermissions(['article.create', 'article.submit', 'article.revise']);
-        $editorRole->syncPermissions(['article.review', 'article.request-revision', 'article.publish', 'comment.moderate']);
+        $editorRole->syncPermissions(['article.review', 'article.request-revision', 'article.publish', 'article.approve-public', 'comment.moderate']);
     }
 }

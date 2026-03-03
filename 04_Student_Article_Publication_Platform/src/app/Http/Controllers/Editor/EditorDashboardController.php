@@ -13,6 +13,7 @@ class EditorDashboardController extends Controller
     {
         return Inertia::render('Editor/Dashboard', [
             'pendingArticles' => Article::query()->whereNotNull('submitted_at')->whereNull('published_at')->latest()->get(),
+            'publishedArticles' => Article::query()->whereNotNull('published_at')->where('is_public', false)->latest('published_at')->get(),
         ]);
     }
 }

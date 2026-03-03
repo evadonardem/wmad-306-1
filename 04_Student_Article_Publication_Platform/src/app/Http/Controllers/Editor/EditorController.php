@@ -39,4 +39,17 @@ class EditorController extends Controller
 
         return back()->with('success', 'Article published successfully.');
     }
+
+    public function approvePublic(Request $request, Article $article): RedirectResponse
+    {
+        $this->authorize('approvePublic', $article);
+
+        $article->update([
+            'is_public' => true,
+            'public_approved_by' => $request->user()->id,
+            'public_approved_at' => now(),
+        ]);
+
+        return back()->with('success', 'Article approved for public landing visibility.');
+    }
 }
