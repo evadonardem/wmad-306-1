@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Mail;
 
 class SampleController extends Controller
 {
+    /** Send a sample email for mail configuration checks. */
     public function testEmail()
     {
         $text = fake()->paragraphs(3, true);
@@ -22,6 +23,7 @@ class SampleController extends Controller
         ]);
     }
 
+    /** Render the sample Jodit editor page. */
     public function testJoditEditor()
     {
         return inertia('Sample/JoditEditorSample', []);

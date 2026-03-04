@@ -28,11 +28,14 @@ class DatabaseSeeder extends Seeder
         $student = User::query()->where('email', 'student@example.com')->first();
         $publishedStatusId = ArticleStatus::query()->where('slug', 'published')->value('id');
 
+        // Stop early when core seed prerequisites are missing.
         if (! $writer || ! $editor || ! $student || ! $publishedStatusId) {
             return;
         }
 
+        // Only generate demo articles on a fresh database.
         if (Article::query()->count() === 0) {
+            // Sample articles visible on public pages.
             $publicArticles = Article::factory()->count(3)->create([
                 'user_id' => $writer->id,
                 'article_status_id' => $publishedStatusId,
@@ -42,6 +45,7 @@ class DatabaseSeeder extends Seeder
                 'public_approved_at' => now()->subDay(),
             ]);
 
+            // Sample published articles that remain internal-only.
             Article::factory()->count(2)->create([
                 'user_id' => $writer->id,
                 'article_status_id' => $publishedStatusId,
@@ -51,6 +55,7 @@ class DatabaseSeeder extends Seeder
                 'public_approved_at' => null,
             ]);
 
+            // Add related revision/comment data so demo pages look realistic.
             foreach ($publicArticles as $article) {
                 Revision::factory()->create([
                     'article_id' => $article->id,

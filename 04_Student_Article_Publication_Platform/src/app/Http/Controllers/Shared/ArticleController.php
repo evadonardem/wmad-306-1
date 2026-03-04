@@ -9,6 +9,7 @@ use Inertia\Response;
 
 class ArticleController extends Controller
 {
+    /** Render a single article with related author and discussion data. */
     public function show(Article $article): Response
     {
         return Inertia::render('Student/ArticleView', [

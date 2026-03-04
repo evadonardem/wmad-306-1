@@ -20,6 +20,7 @@ class Article extends Model
         'content',
         'submitted_at',
         'published_at',
+        // Public homepage visibility metadata.
         'is_public',
         'public_approved_by',
         'public_approved_at',
@@ -30,6 +31,7 @@ class Article extends Model
         return [
             'submitted_at' => 'datetime',
             'published_at' => 'datetime',
+            // Keep public visibility logic type-safe.
             'is_public' => 'boolean',
             'public_approved_at' => 'datetime',
         ];
@@ -62,6 +64,7 @@ class Article extends Model
 
     public function publicApprover(): BelongsTo
     {
+        // Editor user that approved this article for public browsing.
         return $this->belongsTo(User::class, 'public_approved_by');
     }
 }

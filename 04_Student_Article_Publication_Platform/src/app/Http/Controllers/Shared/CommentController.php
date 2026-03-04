@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 
 class CommentController extends Controller
 {
+    /** Delete a comment when the current user is authorized. */
     public function destroy(Request $request, Comment $comment): RedirectResponse
     {
         $this->authorize('comment', $comment->article);

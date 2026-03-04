@@ -18,11 +18,13 @@ class AdminDashboardController extends Controller
     private const MANAGED_ROLES = ['admin', 'writer', 'editor'];
     private const ACCOUNT_STATUSES = ['active', 'suspended', 'pending', 'deleted'];
 
+    /** Render the admin dashboard view. */
     public function index(): Response
     {
         return Inertia::render('Admin/Dashboard', $this->buildAdminUserPayload());
     }
 
+    /** Render the admin user-management view. */
     public function users(): Response
     {
         return Inertia::render('Admin/users', $this->buildAdminUserPayload());
@@ -56,6 +58,7 @@ class AdminDashboardController extends Controller
         ];
     }
 
+    /** Create a managed user account from admin input. */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -83,6 +86,7 @@ class AdminDashboardController extends Controller
         return back()->with('success', 'User account created successfully with temporary password: '.$temporaryPassword);
     }
 
+    /** Update profile fields, roles, and status for a managed user. */
     public function update(Request $request, User $user): RedirectResponse
     {
         $validated = $request->validate([
@@ -105,6 +109,7 @@ class AdminDashboardController extends Controller
         return back()->with('success', 'User account updated successfully.');
     }
 
+    /** Change the account status of a managed user. */
     public function updateStatus(Request $request, User $user): RedirectResponse
     {
         $validated = $request->validate([
@@ -123,6 +128,7 @@ class AdminDashboardController extends Controller
         return back()->with('success', 'User status updated successfully.');
     }
 
+    /** Replace the assigned roles for a managed user. */
     public function syncRoles(Request $request, User $user): RedirectResponse
     {
         $validated = $request->validate([
@@ -135,6 +141,7 @@ class AdminDashboardController extends Controller
         return back()->with('success', 'User roles updated successfully.');
     }
 
+    /** Soft-delete a managed user account and revoke roles. */
     public function destroy(Request $request, User $user): RedirectResponse
     {
         if ($request->user()->id === $user->id) {

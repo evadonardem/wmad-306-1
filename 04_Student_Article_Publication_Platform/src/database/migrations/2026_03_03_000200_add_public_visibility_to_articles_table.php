@@ -12,8 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('articles', function (Blueprint $table): void {
+            // Flag used by public listing routes; defaults to hidden.
             $table->boolean('is_public')->default(false)->after('published_at')->index();
+            // Audit trail of the editor who approved public visibility.
             $table->foreignId('public_approved_by')->nullable()->after('is_public')->constrained('users')->nullOnDelete();
+            // Timestamp of when the article became publicly visible.
             $table->timestamp('public_approved_at')->nullable()->after('public_approved_by');
         });
     }

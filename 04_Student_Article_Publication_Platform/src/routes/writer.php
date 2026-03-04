@@ -4,6 +4,7 @@ use App\Http\Controllers\Writer\WriterController;
 use App\Http\Controllers\Writer\WriterDashboardController;
 use Illuminate\Support\Facades\Route;
 
+// Register writer-only drafting and submission routes.
 Route::middleware(['auth', 'verified', 'role:writer'])
     ->prefix('writer')
     ->as('writer.')

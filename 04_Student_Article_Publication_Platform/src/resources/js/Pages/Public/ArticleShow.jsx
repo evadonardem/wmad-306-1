@@ -7,6 +7,7 @@ export default function ArticleShow({ article }) {
 
             <main className="min-h-screen bg-slate-950 text-white">
                 <div className="mx-auto max-w-4xl px-6 py-12">
+                    {/* Quick return path to the public article index. */}
                     <Link href={route('public.articles.index')} className="text-sm text-pink-300 hover:text-pink-200">
                         View All Articles
                     </Link>
@@ -16,6 +17,7 @@ export default function ArticleShow({ article }) {
                         <h1 className="mt-2 text-3xl font-bold">{article?.title}</h1>
                         <p className="mt-2 text-sm text-slate-300">By {article?.author?.name ?? 'Unknown'}</p>
 
+                        {/* Preserve article formatting while rendering body text. */}
                         <div className="mt-6 whitespace-pre-wrap text-slate-200">
                             {article?.content}
                         </div>

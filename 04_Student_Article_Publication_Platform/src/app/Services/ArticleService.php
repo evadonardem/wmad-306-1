@@ -8,6 +8,7 @@ use App\Models\User;
 
 class ArticleService
 {
+    /** Create a draft article for the given writer. */
     public function createDraft(User $writer, array $attributes): Article
     {
         $draftStatusId = ArticleStatus::query()->where('slug', 'draft')->value('id');
@@ -18,6 +19,7 @@ class ArticleService
         ]);
     }
 
+    /** Transition an article to submitted status with timestamp. */
     public function submit(Article $article): Article
     {
         $submittedStatusId = ArticleStatus::query()->where('slug', 'submitted')->value('id');

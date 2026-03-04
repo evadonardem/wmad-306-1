@@ -7,7 +7,9 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// Render the public landing page with recent approved articles.
 Route::get('/', function () {
+    // Feed landing page cards with latest public-approved published content.
     $recentArticles = Article::query()
         ->with(['author:id,name', 'category:id,name'])
         ->withCount('comments')
@@ -27,9 +29,11 @@ Route::get('/', function () {
     ]);
 });
 
+// Public browsing routes (no auth required).
 Route::get('/articles', [PublicArticleController::class, 'index'])->name('public.articles.index');
 Route::get('/articles/{article}', [PublicArticleController::class, 'show'])->name('public.articles.show');
 
+// Redirect authenticated users to their role-specific dashboard.
 Route::get('/dashboard', function () {
     $user = request()->user();
 
@@ -52,6 +56,7 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+// Register authenticated profile management routes.
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

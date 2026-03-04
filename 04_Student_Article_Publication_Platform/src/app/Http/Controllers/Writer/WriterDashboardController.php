@@ -9,6 +9,7 @@ use Inertia\Response;
 
 class WriterDashboardController extends Controller
 {
+    /** Render the writer dashboard with the user's recent articles. */
     public function index(Request $request): Response
     {
         return Inertia::render('Writer/Dashboard', [

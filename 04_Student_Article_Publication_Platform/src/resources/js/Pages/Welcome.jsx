@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import AuthModal from '@/Components/AuthModal'; // Import the AuthModal component
 
 export default function Welcome({ auth, recentArticles = [] }) {
+    // `recentArticles` now comes from backend public-approved content.
     const [isFlipped, setIsFlipped] = useState(false);
     const [showAuth, setShowAuth] = useState(false);
     const [authMode, setAuthMode] = useState('login'); // Add this state
@@ -319,6 +320,7 @@ export default function Welcome({ auth, recentArticles = [] }) {
                     </motion.div>
 
                     <div className="grid md:grid-cols-3 gap-6">
+                        {/* Showcase latest publicly approved articles on the landing page. */}
                         {recentArticles.map((article, index) => (
                             <motion.a
                                 key={article.id ?? index}
@@ -355,6 +357,7 @@ export default function Welcome({ auth, recentArticles = [] }) {
                     </div>
 
                     {recentArticles.length === 0 && (
+                        // Fallback when no articles have been approved for public visibility yet.
                         <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-6 text-center text-gray-300">
                             No public articles are available yet.
                         </div>
@@ -365,6 +368,7 @@ export default function Welcome({ auth, recentArticles = [] }) {
                         whileInView={{ opacity: 1 }}
                         className="text-center mt-10"
                     >
+                        {/* Direct link to full public listing page. */}
                         <a
                             href="/articles"
                             className="inline-block px-8 py-3 rounded-lg text-white font-medium transition"

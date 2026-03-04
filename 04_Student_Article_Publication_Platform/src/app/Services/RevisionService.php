@@ -8,6 +8,7 @@ use App\Models\User;
 
 class RevisionService
 {
+    /** Create a revision request for an article. */
     public function request(Article $article, User $editor, string $notes): Revision
     {
         return $article->revisions()->create([
@@ -16,6 +17,7 @@ class RevisionService
         ]);
     }
 
+    /** Mark a revision request as resolved. */
     public function resolve(Revision $revision): Revision
     {
         $revision->update(['resolved_at' => now()]);

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminDashboardController;
 use Illuminate\Support\Facades\Route;
 
+// Register admin-only account management routes.
 Route::middleware(['auth', 'verified', 'role:admin', 'permission:manage accounts'])
     ->prefix('admin')
     ->as('admin.')

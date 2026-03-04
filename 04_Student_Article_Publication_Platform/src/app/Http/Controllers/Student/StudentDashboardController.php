@@ -9,6 +9,7 @@ use Inertia\Response;
 
 class StudentDashboardController extends Controller
 {
+    /** Render student dashboard metrics. */
     public function index(): Response
     {
         return Inertia::render('Student/Dashboard', [

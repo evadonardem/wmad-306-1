@@ -4,6 +4,7 @@ use App\Http\Controllers\Student\StudentController;
 use App\Http\Controllers\Student\StudentDashboardController;
 use Illuminate\Support\Facades\Route;
 
+// Register student-only dashboard and commenting routes.
 Route::middleware(['auth', 'verified', 'role:student'])
     ->prefix('student')
     ->as('student.')

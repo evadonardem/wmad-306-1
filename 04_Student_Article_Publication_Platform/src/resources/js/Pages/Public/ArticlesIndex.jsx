@@ -15,12 +15,14 @@ export default function ArticlesIndex({ articles = [] }) {
                     </div>
 
                     {articles.length === 0 && (
+                        // Empty-state helps confirm there are currently no approved public items.
                         <p className="rounded-lg border border-white/10 bg-white/5 p-4 text-slate-300">
                             No public articles are available yet.
                         </p>
                     )}
 
                     <div className="grid gap-4 md:grid-cols-2">
+                        {/* Cards link to each publicly approved article detail page. */}
                         {articles.map((article) => (
                             <Link
                                 key={article.id}

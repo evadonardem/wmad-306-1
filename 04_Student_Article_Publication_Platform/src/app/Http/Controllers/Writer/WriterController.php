@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 
 class WriterController extends Controller
 {
+    /** Store a new draft article from writer input. */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -22,6 +23,7 @@ class WriterController extends Controller
         return back()->with('success', 'Draft saved successfully.');
     }
 
+    /** Submit an existing article for editorial review. */
     public function submit(Article $article): RedirectResponse
     {
         $this->authorize('submit', $article);
@@ -30,6 +32,7 @@ class WriterController extends Controller
         return back()->with('success', 'Article submitted for review.');
     }
 
+    /** Save a requested revision to the article content. */
     public function revise(Request $request, Article $article): RedirectResponse
     {
         $this->authorize('requestRevision', $article);

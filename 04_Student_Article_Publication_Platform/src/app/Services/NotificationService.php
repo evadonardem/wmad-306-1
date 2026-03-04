@@ -12,6 +12,7 @@ use App\Notifications\RevisionRequestedNotification;
 
 class NotificationService
 {
+    /** Notify editors that a writer has submitted an article. */
     public function notifyEditorsArticleSubmitted(iterable $editors, Article $article): void
     {
         foreach ($editors as $editor) {
@@ -19,11 +20,13 @@ class NotificationService
         }
     }
 
+    /** Notify a writer that revisions were requested. */
     public function notifyWriterRevisionRequested(User $writer, Article $article): void
     {
         $writer->notify(new RevisionRequestedNotification($article));
     }
 
+    /** Notify students that a new article is published. */
     public function notifyStudentsArticlePublished(iterable $students, Article $article): void
     {
         foreach ($students as $student) {
@@ -31,6 +34,7 @@ class NotificationService
         }
     }
 
+    /** Notify the article author about a newly posted comment. */
     public function notifyAuthorCommentPosted(User $author, Comment $comment): void
     {
         $author->notify(new CommentPostedNotification($comment));

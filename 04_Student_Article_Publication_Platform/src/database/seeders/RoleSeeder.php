@@ -15,6 +15,7 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+        // Ensure roles/permissions are created under the active auth guard.
         $guard = config('auth.defaults.guard', 'web');
 
         $permissions = [
@@ -25,6 +26,7 @@ class RoleSeeder extends Seeder
             'article.review',
             'article.request-revision',
             'article.publish',
+            // Permission for approving homepage/public visibility.
             'article.approve-public',
             'comment.create',
             'comment.moderate',
@@ -37,6 +39,7 @@ class RoleSeeder extends Seeder
         $adminRole = Role::findOrCreate('admin', $guard);
         $writerRole = Role::findOrCreate('writer', $guard);
         $editorRole = Role::findOrCreate('editor', $guard);
+        // Keep student role present for role-based routing and access checks.
         Role::findOrCreate('student', $guard);
 
         $adminRole->syncPermissions(Permission::query()->pluck('name')->all());

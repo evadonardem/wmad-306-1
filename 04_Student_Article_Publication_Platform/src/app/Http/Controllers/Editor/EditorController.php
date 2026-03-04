@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 
 class EditorController extends Controller
 {
+    /** Record a completed editorial review action. */
     public function review(Article $article): RedirectResponse
     {
         $this->authorize('requestRevision', $article);
@@ -16,6 +17,7 @@ class EditorController extends Controller
         return back()->with('success', 'Article review recorded.');
     }
 
+    /** Request content updates from the writer for an article. */
     public function requestRevision(Request $request, Article $article): RedirectResponse
     {
         $this->authorize('requestRevision', $article);
@@ -32,6 +34,7 @@ class EditorController extends Controller
         return back()->with('success', 'Revision request sent to writer.');
     }
 
+    /** Publish a submitted article for authenticated readers. */
     public function publish(Article $article): RedirectResponse
     {
         $this->authorize('publish', $article);
@@ -40,10 +43,13 @@ class EditorController extends Controller
         return back()->with('success', 'Article published successfully.');
     }
 
+    /** Approve a published article for public homepage visibility. */
     public function approvePublic(Request $request, Article $article): RedirectResponse
     {
+        // Separate gate: publishing and public homepage visibility are approved independently.
         $this->authorize('approvePublic', $article);
 
+        // Store audit fields so we know who exposed the article publicly and when.
         $article->update([
             'is_public' => true,
             'public_approved_by' => $request->user()->id,

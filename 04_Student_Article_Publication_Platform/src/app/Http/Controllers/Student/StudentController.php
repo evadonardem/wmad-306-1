@@ -11,6 +11,7 @@ use Inertia\Response;
 
 class StudentController extends Controller
 {
+    /** Render the student article browsing page. */
     public function studentDashboard(): Response
     {
         return Inertia::render('Student/BrowseArticles', [
@@ -18,6 +19,7 @@ class StudentController extends Controller
         ]);
     }
 
+    /** Persist a new student comment on a published article. */
     public function comment(Request $request, Article $article): RedirectResponse
     {
         $this->authorize('comment', $article);
