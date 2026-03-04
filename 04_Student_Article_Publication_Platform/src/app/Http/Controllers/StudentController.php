@@ -29,7 +29,8 @@ class StudentController extends Controller
 
     public function comment(Request $request, Article $article)
     {
-        $this->authorize('comment', $article);
+        // THE FIX: We explicitly tell Laravel to use the Comment model's policy!
+        $this->authorize('comment', [Comment::class, $article]);
 
         $validated = $request->validate(['content' => 'required|string']);
 

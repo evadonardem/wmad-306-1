@@ -10,6 +10,7 @@ class CommentPolicy
     // Only Students can comment, and ONLY on published articles
     public function comment(User $user, Article $article): bool
     {
-        return $user->hasRole('student') && $article->isPublished();
+        // Updated to safely match the style you used in ArticlePolicy
+        return $user->hasRole('student') && $article->status->name === 'published';
     }
 }

@@ -15,6 +15,9 @@ class WriterController extends Controller
 {
     use AuthorizesRequests;
 
+    /**
+     * Display the writer's dashboard with filtered article groups.
+     */
     public function dashboard(Request $request)
     {
         $articles = Article::with(['status', 'category'])
@@ -22,7 +25,6 @@ class WriterController extends Controller
             ->latest()
             ->get();
 
-        // Also fetch categories so the writer can select one in the form
         $categories = \App\Models\Category::all();
 
         return Inertia::render('Writer/Dashboard', [
@@ -31,6 +33,9 @@ class WriterController extends Controller
         ]);
     }
 
+    /**
+     * Store a new draft in the database.
+     */
     public function store(Request $request)
     {
         $this->authorize('create', Article::class);
@@ -54,23 +59,12 @@ class WriterController extends Controller
         return back()->with('success', 'Draft saved successfully.');
     }
 
-    public function submit(Article $article)
-    {
-        $this->authorize('submit', $article);
-
-        $submittedStatus = ArticleStatus::where('name', 'pending_review')->first();
-        $article->update(['status_id' => $submittedStatus->id]);
-
-        // Phase 9: Notify all editors that a new article needs review
-        $editors = User::role('editor')->get();
-        Notification::send($editors, new ArticleSubmittedNotification($article));
-
-        return back()->with('success', 'Article submitted for review.');
-    }
-
+    /**
+     * Update an existing draft or an article needing revision.
+     */
     public function revise(Request $request, Article $article)
     {
-        $this->authorize('submit', $article); // Use submit policy as it covers drafts & revisions
+        $this->authorize('submit', $article);
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -80,6 +74,54 @@ class WriterController extends Controller
 
         $article->update($validated);
 
-        return back()->with('success', 'Article revised successfully.');
+        return back()->with('success', 'Article updated successfully.');
+    }
+
+    /**
+     * Push a draft to the Editor's queue.
+     */
+    public function submit(Article $article)
+    {
+        $this->authorize('submit', $article);
+
+        $submittedStatus = ArticleStatus::where('name', 'pending_review')->first();
+        $article->update(['status_id' => $submittedStatus->id]);
+
+        // Notify editors
+        $editors = User::role('editor')->get();
+        Notification::send($editors, new ArticleSubmittedNotification($article));
+
+        return back()->with('success', 'Article submitted for review.');
+    }
+
+    /**
+     * Pull a pending article back to draft status (Unsubmit).
+     */
+    public function unsubmit(Article $article)
+    {
+        $this->authorize('submit', $article);
+
+        if ($article->status->name === 'pending_review') {
+            $draftStatus = ArticleStatus::where('name', 'draft')->first();
+            $article->update(['status_id' => $draftStatus->id]);
+            return back()->with('success', 'Article pulled back to drafts.');
+        }
+
+        return abort(403, 'Only pending articles can be unsubmitted.');
+    }
+
+    /**
+     * Permanently delete a draft.
+     */
+    public function destroy(Article $article)
+    {
+        $this->authorize('delete', $article);
+
+        if ($article->status->name === 'draft') {
+            $article->delete();
+            return back()->with('success', 'Draft deleted successfully.');
+        }
+
+        return abort(403, 'Only drafts can be deleted.');
     }
 }

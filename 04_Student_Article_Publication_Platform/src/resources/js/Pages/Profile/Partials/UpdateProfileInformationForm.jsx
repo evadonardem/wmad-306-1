@@ -20,20 +20,20 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
     return (
         <section className={className}>
             <header>
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white eclipse:text-rose-50 transition-colors">
                     Profile Information
                 </h2>
-                <p className="mt-1 text-sm text-gray-600 dark:text-slate-400 font-light">
+                <p className="mt-1 text-sm text-gray-600 dark:text-slate-400 eclipse:text-rose-300 font-light transition-colors">
                     Update your account's profile information and email address.
                 </p>
             </header>
 
             <form onSubmit={submit} className="mt-6 space-y-6">
                 <div>
-                    <InputLabel htmlFor="name" value="Name" className="dark:text-cyan-500/60 font-mono text-[10px] uppercase tracking-widest" />
+                    <InputLabel htmlFor="name" value="Name" className="dark:text-cyan-500/60 eclipse:!text-red-400 font-mono text-[10px] uppercase tracking-widest transition-colors" />
                     <TextInput
                         id="name"
-                        className="mt-1 block w-full"
+                        className="mt-1 block w-full dark:bg-slate-900 eclipse:!bg-rose-950/50 eclipse:!border-red-800/50 eclipse:!text-rose-100 eclipse:focus:!border-red-500 eclipse:focus:!ring-red-500 transition-colors"
                         value={data.name}
                         onChange={(e) => setData('name', e.target.value)}
                         required
@@ -44,11 +44,11 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="email" value="Email" className="dark:text-cyan-500/60 font-mono text-[10px] uppercase tracking-widest" />
+                    <InputLabel htmlFor="email" value="Email" className="dark:text-cyan-500/60 eclipse:!text-red-400 font-mono text-[10px] uppercase tracking-widest transition-colors" />
                     <TextInput
                         id="email"
                         type="email"
-                        className="mt-1 block w-full"
+                        className="mt-1 block w-full dark:bg-slate-900 eclipse:!bg-rose-950/50 eclipse:!border-red-800/50 eclipse:!text-rose-100 eclipse:focus:!border-red-500 eclipse:focus:!ring-red-500 transition-colors"
                         value={data.email}
                         onChange={(e) => setData('email', e.target.value)}
                         required
@@ -58,11 +58,11 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <PrimaryButton disabled={processing} className="dark:bg-cyan-600 dark:hover:bg-cyan-500 transition-all">
+                    <PrimaryButton disabled={processing} className="dark:bg-cyan-600 dark:hover:bg-cyan-500 eclipse:!bg-red-700 hover:eclipse:!bg-red-600 eclipse:shadow-[0_0_15px_rgba(220,38,38,0.5)] transition-all">
                         Save Changes
                     </PrimaryButton>
                     <Transition show={recentlySuccessful} enter="transition ease-in-out" enterFrom="opacity-0" leave="transition ease-in-out" leaveTo="opacity-0">
-                        <p className="text-sm text-emerald-600 dark:text-cyan-400 font-mono text-[10px] uppercase">Verified & Saved.</p>
+                        <p className="text-sm text-emerald-600 dark:text-cyan-400 eclipse:text-red-400 font-mono text-[10px] uppercase transition-colors">Verified & Saved.</p>
                     </Transition>
                 </div>
             </form>

@@ -48,11 +48,11 @@ export default function DeleteUserForm({ className = '' }) {
     return (
         <section className={`space-y-6 ${className}`}>
             <header>
-                <h2 className="text-lg font-medium text-gray-900">
+                <h2 className="text-lg font-medium text-gray-900 dark:text-white eclipse:text-rose-50 transition-colors">
                     Delete Account
                 </h2>
 
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-1 text-sm text-gray-600 dark:text-slate-400 eclipse:text-rose-300 transition-colors">
                     Once your account is deleted, all of its resources and data
                     will be permanently deleted. Before deleting your account,
                     please download any data or information that you wish to
@@ -60,17 +60,18 @@ export default function DeleteUserForm({ className = '' }) {
                 </p>
             </header>
 
-            <DangerButton onClick={confirmUserDeletion}>
+            <DangerButton onClick={confirmUserDeletion} className="eclipse:!bg-red-900 hover:eclipse:!bg-red-800 eclipse:shadow-[0_0_15px_rgba(220,38,38,0.5)] transition-all">
                 Delete Account
             </DangerButton>
 
             <Modal show={confirmingUserDeletion} onClose={closeModal}>
-                <form onSubmit={deleteUser} className="p-6">
-                    <h2 className="text-lg font-medium text-gray-900">
+                {/* Apply dark/eclipse styles directly to the form inside the modal */}
+                <form onSubmit={deleteUser} className="p-6 dark:bg-slate-900 eclipse:bg-rose-950 transition-colors duration-500">
+                    <h2 className="text-lg font-medium text-gray-900 dark:text-white eclipse:text-rose-50 transition-colors">
                         Are you sure you want to delete your account?
                     </h2>
 
-                    <p className="mt-1 text-sm text-gray-600">
+                    <p className="mt-1 text-sm text-gray-600 dark:text-slate-400 eclipse:text-rose-300 transition-colors">
                         Once your account is deleted, all of its resources and
                         data will be permanently deleted. Please enter your
                         password to confirm you would like to permanently delete
@@ -93,7 +94,7 @@ export default function DeleteUserForm({ className = '' }) {
                             onChange={(e) =>
                                 setData('password', e.target.value)
                             }
-                            className="mt-1 block w-3/4"
+                            className="mt-1 block w-3/4 dark:bg-slate-800 eclipse:!bg-rose-900/50 eclipse:!border-red-800/50 eclipse:!text-rose-100 eclipse:focus:!border-red-500 eclipse:focus:!ring-red-500 transition-colors"
                             isFocused
                             placeholder="Password"
                         />
@@ -105,11 +106,11 @@ export default function DeleteUserForm({ className = '' }) {
                     </div>
 
                     <div className="mt-6 flex justify-end">
-                        <SecondaryButton onClick={closeModal}>
+                        <SecondaryButton onClick={closeModal} className="dark:!bg-slate-800 dark:!text-slate-300 eclipse:!bg-rose-900 eclipse:!text-rose-200 eclipse:!border-red-900/50 hover:eclipse:!bg-rose-800 transition-all">
                             Cancel
                         </SecondaryButton>
 
-                        <DangerButton className="ms-3" disabled={processing}>
+                        <DangerButton className="ms-3 eclipse:!bg-red-800 hover:eclipse:!bg-red-700 eclipse:shadow-[0_0_15px_rgba(220,38,38,0.6)] transition-all" disabled={processing}>
                             Delete Account
                         </DangerButton>
                     </div>

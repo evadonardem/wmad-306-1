@@ -1,9 +1,10 @@
 import defaultTheme from 'tailwindcss/defaultTheme';
 import forms from '@tailwindcss/forms';
+import plugin from 'tailwindcss/plugin';
 
 /** @type {import('tailwindcss').Config} */
 export default {
-    darkMode: 'class', // <--- This enables the manual toggle
+    darkMode: 'class',
 
     content: [
         './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
@@ -20,5 +21,11 @@ export default {
         },
     },
 
-    plugins: [forms],
+    plugins: [
+        forms,
+        // This custom plugin creates the 'eclipse:' prefix!
+        plugin(function({ addVariant }) {
+            addVariant('eclipse', '.eclipse &')
+        })
+    ],
 };

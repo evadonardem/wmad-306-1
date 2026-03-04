@@ -13,12 +13,19 @@ class ArticlePolicy
         return $user->hasRole('writer');
     }
 
-    // Only the Writer who owns the article can submit it, and only if it's a draft or needs revision
+    // UPDATED: Added 'pending_review' to the allowed statuses for the owner
+    // This allows the "Unsubmit" and "Revise" actions to pass authorization
     public function submit(User $user, Article $article): bool
     {
         return $user->hasRole('writer') &&
                $user->id === $article->writer_id &&
-               in_array($article->status->name, ['draft', 'needs_revision']);
+               in_array($article->status->name, ['draft', 'needs_revision', 'pending_review']);
+    }
+
+    // NEW: Explicit delete policy for drafts
+    public function delete(User $user, Article $article): bool
+    {
+        return $user->id === $article->writer_id && $article->status->name === 'draft';
     }
 
     // Only Editors can request a revision, and only on submitted articles
