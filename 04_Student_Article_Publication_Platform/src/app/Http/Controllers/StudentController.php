@@ -3,49 +3,76 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
-use App\Models\ArticleStatus;
+use App\Models\Category;
 use App\Models\Comment;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use App\Notifications\CommentPostedNotification;
+use App\Notifications\CommentReplyNotification;
 
 class StudentController extends Controller
 {
-    use AuthorizesRequests;
-
-    public function studentDashboard()
+    public function studentDashboard(Request $request)
     {
-        $publishedStatus = ArticleStatus::where('name', 'published')->first();
+        $query = Article::with(['writer', 'category'])
+            ->with(['comments' => function ($q) {
+                // Only load top-level comments; replies are loaded recursively
+                $q->whereNull('parent_id')->with('user', 'replies')->latest();
+            }])
+            ->whereHas('status', function ($q) {
+                $q->where('name', 'published');
+            });
 
-        // Students only see published articles, including the comments on them
-        $articles = Article::with(['writer', 'category', 'comments.student'])
-            ->where('status_id', $publishedStatus->id)
-            ->latest()
-            ->get();
+        // Search Filter
+        if ($request->filled('search')) {
+            $query->where('title', 'like', '%' . $request->search . '%')
+                  ->orWhere('content', 'like', '%' . $request->search . '%');
+        }
 
-        return Inertia::render('Student/Dashboard', ['articles' => $articles]);
+        // Category Filter
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        return Inertia::render('Student/Dashboard', [
+            'articles' => $query->latest()->get(),
+            'categories' => Category::all(),
+            'filters' => $request->only(['search', 'category_id'])
+        ]);
     }
 
     public function comment(Request $request, Article $article)
     {
-        // THE FIX: We explicitly tell Laravel to use the Comment model's policy!
-        $this->authorize('comment', [Comment::class, $article]);
-
-        $validated = $request->validate(['content' => 'required|string']);
+        $validated = $request->validate([
+            'content' => 'required|string|max:1000',
+            'parent_id' => 'nullable|exists:comments,id'
+        ]);
 
         $comment = Comment::create([
+            'student_id' => auth()->id(), // FIXED: Saving as student_id
             'article_id' => $article->id,
-            'student_id' => $request->user()->id,
+            'parent_id' => $validated['parent_id'] ?? null,
             'content' => $validated['content'],
         ]);
 
-        // Eager load the relationships needed for the notification
-        $comment->load('article.writer', 'student');
+        // If this is a reply, notify the original commenter
+        if ($comment->parent_id) {
+            $parentComment = Comment::find($comment->parent_id);
+            if ($parentComment->student_id !== auth()->id()) { // FIXED: Checking student_id
+                $parentComment->user->notify(new CommentReplyNotification(auth()->user(), $article->title));
+            }
+        }
 
-        // Phase 9: Notify the writer that a student commented
-        $comment->article->writer->notify(new CommentPostedNotification($comment));
+        return back()->with('success', 'Comment posted.');
+    }
 
-        return back()->with('success', 'Comment posted!');
+    public function deleteComment(Comment $comment)
+    {
+        // Security check: Only the owner can delete their comment
+        if (auth()->id() !== $comment->student_id) { // FIXED: Checking student_id
+            return abort(403, 'Unauthorized action.');
+        }
+
+        $comment->delete(); // This will cascade and delete all replies to this comment too
+        return back()->with('success', 'Comment deleted.');
     }
 }

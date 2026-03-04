@@ -53,10 +53,14 @@ Route::middleware(['auth', 'role:editor'])->group(function () {
     Route::post('/articles/{article}/publish', [EditorController::class, 'publish'])->name('articles.publish');
 });
 
-// Student Reading Hub
+// ==========================================
+// Student Routes
+// ==========================================
 Route::middleware(['auth', 'role:student'])->group(function () {
     Route::get('/student/dashboard', [StudentController::class, 'studentDashboard'])->name('student.dashboard');
     Route::post('/articles/{article}/comment', [StudentController::class, 'comment'])->name('articles.comment');
+    // NEW: Route to allow students to delete their own comments
+    Route::delete('/comments/{comment}', [StudentController::class, 'deleteComment'])->name('comments.destroy');
 });
 
 require __DIR__.'/auth.php';
