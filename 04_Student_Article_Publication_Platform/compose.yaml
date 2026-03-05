@@ -25,6 +25,7 @@ services:
       dos2unix /scripts/* &&
       chmod +x /scripts/* &&
       /scripts/init.sh &&
+      cd /var/www/html && npm run dev &
       apache2-foreground"
 
   db:

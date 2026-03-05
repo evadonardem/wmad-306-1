@@ -39,6 +39,7 @@ class EditorController extends Controller
     {
         $this->authorize('publish', $article);
         $article->update(['published_at' => now()]);
+        event(new \App\Events\NewArticlePublished($article->fresh(['category'])));
 
         return back()->with('success', 'Article published successfully.');
     }

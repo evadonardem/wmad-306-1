@@ -11,5 +11,6 @@ Route::middleware(['auth', 'verified', 'role:student'])
     ->group(function (): void {
         Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
         Route::get('/articles', [StudentController::class, 'studentDashboard'])->name('articles.index');
+        Route::get('/profile', [StudentController::class, 'profile'])->name('profile');
         Route::post('/articles/{article}/comments', [StudentController::class, 'comment'])->middleware('permission:comment.create')->name('articles.comment');
     });

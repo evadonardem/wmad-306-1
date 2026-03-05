@@ -29,6 +29,8 @@
         "@mui/material": "^7.3.8",
         "framer-motion": "^12.34.3",
         "jodit-react": "^5.3.21",
+        "laravel-echo": "^2.3.0",
+        "pusher-js": "^8.4.0",
         "recharts": "^3.7.0"
     }
 }

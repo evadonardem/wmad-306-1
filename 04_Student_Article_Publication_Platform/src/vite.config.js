@@ -11,10 +11,12 @@ export default defineConfig({
         react(),
     ],
     server: {
-        https:false,
+        https: false,
         host: true,
+        port: 5173,
         hmr: {
             host: 'localhost',
+            port: 5173,
             protocol: 'ws',
         },
     },

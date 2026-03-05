@@ -39,11 +39,12 @@ class RoleSeeder extends Seeder
         $adminRole = Role::findOrCreate('admin', $guard);
         $writerRole = Role::findOrCreate('writer', $guard);
         $editorRole = Role::findOrCreate('editor', $guard);
-        // Keep student role present for role-based routing and access checks.
-        Role::findOrCreate('student', $guard);
+
+        $studentRole = Role::findOrCreate('student', $guard);
 
         $adminRole->syncPermissions(Permission::query()->pluck('name')->all());
         $writerRole->syncPermissions(['article.create', 'article.submit', 'article.revise']);
         $editorRole->syncPermissions(['article.review', 'article.request-revision', 'article.publish', 'article.approve-public', 'comment.moderate']);
+        $studentRole->syncPermissions(['comment.create']);
     }
 }
