@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Article extends Model
@@ -66,5 +67,20 @@ class Article extends Model
     {
         // Editor user that approved this article for public browsing.
         return $this->belongsTo(User::class, 'public_approved_by');
+    }
+
+    public function stars(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'article_stars')->withTimestamps();
+    }
+
+    public function views(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'article_views')->withTimestamps();
+    }
+
+    public function saves(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'article_saves')->withTimestamps();
     }
 }

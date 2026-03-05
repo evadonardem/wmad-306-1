@@ -14,22 +14,69 @@ import {
   Tooltip,
   Fade,
   CircularProgress,
+  alpha,
+  useTheme,
 } from '@mui/material';
 import {
   BookmarkBorder,
   Bookmark,
   Visibility,
   ChatBubbleOutline,
-  Share,
   Star,
   TrendingUp,
   Schedule,
   ArrowForward,
   Search as SearchIcon,
+  Whatshot,
 } from '@mui/icons-material';
 import { COLORS, DARK_COLORS, SORT_OPTIONS } from './dashboardTheme';
 
-function EmptyState({ icon, title, description, actionLabel, onClick, isDark }) {
+// Metric Badge Component - Original style
+const MetricBadge = ({ icon, value, color, tooltip }) => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+
+  return (
+    <Tooltip title={tooltip} arrow placement="top">
+      <Stack direction="row" spacing={0.5} alignItems="center">
+        <Box sx={{ color: isDark ? DARK_COLORS.textSecondary : color, display: 'flex', alignItems: 'center' }}>
+          {icon}
+        </Box>
+        <Typography variant="caption" sx={{ fontWeight: 600, color: isDark ? DARK_COLORS.textSecondary : 'text.primary' }}>
+          {value}
+        </Typography>
+      </Stack>
+    </Tooltip>
+  );
+};
+
+// Category Chip Component - Original style
+const CategoryChip = ({ label, color, isDark }) => {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
+
+  return (
+    <Chip
+      label={label}
+      size="small"
+      sx={{
+        height: 24,
+        fontSize: '0.75rem',
+        fontWeight: 600,
+        bgcolor: isDarkMode ? alpha(DARK_COLORS.royalPurple, 0.2) : alpha(COLORS.royalPurple, 0.1),
+        color: isDarkMode ? DARK_COLORS.royalPurple : COLORS.royalPurple,
+        borderRadius: 1,
+        '& .MuiChip-label': { px: 1.5 },
+      }}
+    />
+  );
+};
+
+// Empty State Component - Original style
+const EmptyState = ({ icon, title, description, actionLabel, onClick }) => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+
   return (
     <Fade in timeout={600}>
       <Paper
@@ -38,8 +85,8 @@ function EmptyState({ icon, title, description, actionLabel, onClick, isDark }) 
           p: 6,
           textAlign: 'center',
           borderRadius: 3,
-          border: `1px dashed ${isDark ? DARK_COLORS.border : COLORS.gray300}`,
-          bgcolor: isDark ? `${DARK_COLORS.cardBg}80` : 'background.paper',
+          border: `1px dashed ${isDark ? alpha(DARK_COLORS.border, 0.5) : alpha(COLORS.mediumPurple, 0.2)}`,
+          bgcolor: isDark ? alpha(DARK_COLORS.cardBg, 0.5) : 'background.paper',
         }}
       >
         <Box sx={{
@@ -49,7 +96,7 @@ function EmptyState({ icon, title, description, actionLabel, onClick, isDark }) 
         }}>
           {icon}
         </Box>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
           {title}
         </Typography>
         <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3, maxWidth: 300, mx: 'auto' }}>
@@ -64,6 +111,7 @@ function EmptyState({ icon, title, description, actionLabel, onClick, isDark }) 
             color: '#fff',
             borderRadius: 2,
             textTransform: 'none',
+            px: 3,
             '&:hover': {
               bgcolor: isDark ? DARK_COLORS.royalPurple : COLORS.royalPurple,
             },
@@ -74,33 +122,38 @@ function EmptyState({ icon, title, description, actionLabel, onClick, isDark }) 
       </Paper>
     </Fade>
   );
-}
+};
 
-// Loading indicator component
-const LoadingIndicator = ({ isDark }) => (
-  <Fade in timeout={600}>
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        py: 4,
-        gap: 2,
-      }}
-    >
-      <CircularProgress
-        size={32}
+// Loading indicator component - Original style
+const LoadingIndicator = () => {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+
+  return (
+    <Fade in timeout={600}>
+      <Box
         sx={{
-          color: isDark ? DARK_COLORS.softPink : COLORS.softPink,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          py: 4,
+          gap: 2,
         }}
-      />
-      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-        Loading more articles...
-      </Typography>
-    </Box>
-  </Fade>
-);
+      >
+        <CircularProgress
+          size={32}
+          sx={{
+            color: isDark ? DARK_COLORS.softPink : COLORS.softPink,
+          }}
+        />
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          Loading more articles...
+        </Typography>
+      </Box>
+    </Fade>
+  );
+};
 
 export default function FeedSection({
   activeNav,
@@ -115,7 +168,8 @@ export default function FeedSection({
   borderColor,
   onOpenArticle,
 }) {
-  const isDark = false; // This should come from theme context
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   const [displayedArticles, setDisplayedArticles] = useState([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -138,14 +192,10 @@ export default function FeedSection({
 
     setLoading(true);
 
-    // Simulate network delay for smooth loading
     setTimeout(() => {
       const nextPage = page + 1;
-      const start = (nextPage - 1) * ARTICLES_PER_PAGE;
       const end = nextPage * ARTICLES_PER_PAGE;
-      const newArticles = filteredArticles.slice(0, end);
-
-      setDisplayedArticles(newArticles);
+      setDisplayedArticles(filteredArticles.slice(0, end));
       setPage(nextPage);
       setHasMore(end < filteredArticles.length);
       setLoading(false);
@@ -186,10 +236,11 @@ export default function FeedSection({
       sx={{
         p: { xs: 2, md: 3 },
         borderRadius: 3,
-        border: `1px solid ${borderColor}`,
+        border: `1px solid ${isDark ? alpha(DARK_COLORS.border, 0.5) : alpha(COLORS.mediumPurple, 0.12)}`,
         bgcolor: 'background.paper',
       }}
     >
+      {/* Header Section */}
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         spacing={2}
@@ -198,7 +249,7 @@ export default function FeedSection({
         sx={{ mb: 3 }}
       >
         <Stack direction="row" spacing={2} alignItems="center">
-          <Typography variant="h2" sx={{ fontWeight: 700 }}>
+          <Typography variant="h2" sx={{ fontWeight: 700, color: 'text.primary' }}>
             {activeNav === 'saved' ? 'Saved Articles' : 'Your Feed'}
           </Typography>
           {filteredArticles.length > 0 && (
@@ -206,8 +257,8 @@ export default function FeedSection({
               label={filteredArticles.length}
               size="small"
               sx={{
-                bgcolor: isDark ? DARK_COLORS.softPink : COLORS.softPink,
-                color: '#fff',
+                bgcolor: isDark ? alpha(DARK_COLORS.softPink, 0.1) : alpha(COLORS.softPink, 0.1),
+                color: isDark ? DARK_COLORS.softPink : COLORS.softPink,
                 fontWeight: 600,
                 borderRadius: 1.5,
               }}
@@ -221,8 +272,9 @@ export default function FeedSection({
             onChange={(event) => onSortChange(event.target.value)}
             sx={{
               borderRadius: 2,
+              color: 'text.primary',
               '& .MuiOutlinedInput-notchedOutline': {
-                borderColor: borderColor,
+                borderColor: isDark ? alpha(DARK_COLORS.border, 0.5) : alpha(COLORS.mediumPurple, 0.2),
               },
               '&:hover .MuiOutlinedInput-notchedOutline': {
                 borderColor: isDark ? DARK_COLORS.softPink : COLORS.softPink,
@@ -230,12 +282,15 @@ export default function FeedSection({
             }}
           >
             {SORT_OPTIONS.map((option) => (
-              <MenuItem key={option} value={option}>{option}</MenuItem>
+              <MenuItem key={option.value || option} value={option.value || option}>
+                {option.label || option}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>
       </Stack>
 
+      {/* Empty States */}
       {activeNav === 'saved' && filteredArticles.length === 0 && (
         <EmptyState
           icon={<Bookmark sx={{ fontSize: 48 }} />}
@@ -243,7 +298,6 @@ export default function FeedSection({
           description="Articles you save will appear right here for easy access"
           actionLabel="Browse Articles"
           onClick={() => {}}
-          isDark={isDark}
         />
       )}
 
@@ -254,10 +308,10 @@ export default function FeedSection({
           description="Try different keywords or browse our trending section"
           actionLabel="View Trending"
           onClick={() => {}}
-          isDark={isDark}
         />
       )}
 
+      {/* Articles List */}
       <Stack spacing={2}>
         {displayedArticles.map((article, index) => {
           const bookmarked = bookmarkedIds.has(article.id);
@@ -268,18 +322,22 @@ export default function FeedSection({
             <Fade in timeout={300 + index * 100} key={article.id || index}>
               <Paper
                 elevation={0}
+                onClick={() => onOpenArticle(article.id)}
                 sx={{
                   p: 2.5,
                   borderRadius: 2,
-                  border: `1px solid ${borderColor}`,
+                  border: `1px solid ${isDark ? alpha(DARK_COLORS.border, 0.5) : alpha(COLORS.mediumPurple, 0.12)}`,
                   transition: 'all 250ms ease',
                   cursor: 'pointer',
                   position: 'relative',
                   overflow: 'hidden',
+                  bgcolor: 'background.paper',
                   '&:hover': {
                     transform: 'translateY(-2px)',
                     borderColor: isDark ? DARK_COLORS.softPink : COLORS.softPink,
-                    boxShadow: `0 8px 24px ${isDark ? DARK_COLORS.softPink : COLORS.softPink}20`,
+                    boxShadow: isDark
+                      ? `0 8px 24px ${alpha(DARK_COLORS.softPink, 0.15)}`
+                      : `0 8px 24px ${alpha(COLORS.softPink, 0.15)}`,
                   },
                   // Progress bar on top edge
                   '&::after': article.progress > 0 ? {
@@ -289,7 +347,7 @@ export default function FeedSection({
                     left: 0,
                     width: `${article.progress}%`,
                     height: '3px',
-                    background: `linear-gradient(90deg, ${COLORS.softPink}, ${COLORS.royalPurple})`,
+                    background: `linear-gradient(90deg, ${isDark ? DARK_COLORS.softPink : COLORS.softPink}, ${isDark ? DARK_COLORS.royalPurple : COLORS.royalPurple})`,
                     transition: 'width 300ms ease',
                   } : {},
                   '&::before': isHot ? {
@@ -305,17 +363,17 @@ export default function FeedSection({
                     opacity: 0.8,
                   } : {},
                 }}
-                onClick={() => onOpenArticle(article.id)}
               >
                 <Stack spacing={2}>
+                  {/* Top Row - Categories & Metadata */}
                   <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
                     <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
                       <Chip
                         label={article.category}
                         size="small"
                         sx={{
-                          bgcolor: isDark ? DARK_COLORS.royalPurple : COLORS.royalPurple,
-                          color: '#fff',
+                          bgcolor: isDark ? alpha(DARK_COLORS.royalPurple, 0.2) : alpha(COLORS.royalPurple, 0.1),
+                          color: isDark ? DARK_COLORS.royalPurple : COLORS.royalPurple,
                           fontWeight: 600,
                           borderRadius: 1,
                           height: 24,
@@ -323,8 +381,8 @@ export default function FeedSection({
                         }}
                       />
                       <Stack direction="row" spacing={0.5} alignItems="center">
-                        <Schedule sx={{ fontSize: 14, color: textSecondary }} />
-                        <Typography variant="caption" sx={{ color: textSecondary }}>
+                        <Schedule sx={{ fontSize: 14, color: 'text.disabled' }} />
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                           {article.readMins} min read
                         </Typography>
                       </Stack>
@@ -333,8 +391,8 @@ export default function FeedSection({
                           label="New"
                           size="small"
                           sx={{
-                            bgcolor: isDark ? DARK_COLORS.softPink : COLORS.softPink,
-                            color: '#fff',
+                            bgcolor: alpha(COLORS.info, 0.1),
+                            color: COLORS.info,
                             fontWeight: 600,
                             borderRadius: 1,
                             height: 20,
@@ -347,8 +405,8 @@ export default function FeedSection({
                           label={`${article.progress}%`}
                           size="small"
                           sx={{
-                            bgcolor: isDark ? DARK_COLORS.mediumPurple : COLORS.mediumPurple,
-                            color: '#fff',
+                            bgcolor: isDark ? alpha(DARK_COLORS.mediumPurple, 0.2) : alpha(COLORS.mediumPurple, 0.1),
+                            color: isDark ? DARK_COLORS.mediumPurple : COLORS.mediumPurple,
                             fontWeight: 600,
                             borderRadius: 1,
                             height: 20,
@@ -366,9 +424,9 @@ export default function FeedSection({
                           onToggleBookmark(article.id);
                         }}
                         sx={{
-                          color: bookmarked ? (isDark ? DARK_COLORS.softPink : COLORS.softPink) : textSecondary,
+                          color: bookmarked ? (isDark ? DARK_COLORS.softPink : COLORS.softPink) : 'text.disabled',
                           '&:hover': {
-                            bgcolor: isDark ? `${DARK_COLORS.softPink}20` : `${COLORS.softPink}10`,
+                            bgcolor: isDark ? alpha(DARK_COLORS.softPink, 0.1) : alpha(COLORS.softPink, 0.1),
                           },
                         }}
                       >
@@ -377,6 +435,7 @@ export default function FeedSection({
                     </Tooltip>
                   </Stack>
 
+                  {/* Title & Excerpt */}
                   <Box>
                     <Typography
                       variant="h3"
@@ -384,6 +443,8 @@ export default function FeedSection({
                         fontWeight: 700,
                         mb: 1,
                         lineHeight: 1.3,
+                        color: 'text.primary',
+                        fontSize: '1.1rem',
                       }}
                     >
                       {article.title}
@@ -391,7 +452,7 @@ export default function FeedSection({
                     <Typography
                       variant="body2"
                       sx={{
-                        color: textSecondary,
+                        color: 'text.secondary',
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical',
@@ -402,30 +463,25 @@ export default function FeedSection({
                     </Typography>
                   </Box>
 
+                  {/* Metrics Row */}
                   <Stack direction="row" alignItems="center" justifyContent="space-between">
                     <Stack direction="row" spacing={2} alignItems="center">
                       <Stack direction="row" spacing={0.5} alignItems="center">
-                        <Visibility sx={{ fontSize: 16, color: textSecondary }} />
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {(article.views / 1000).toFixed(1)}k
+                        <Visibility sx={{ fontSize: 16, color: 'text.disabled' }} />
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                          {(article.viewCount || 0).toLocaleString()}
                         </Typography>
                       </Stack>
                       <Stack direction="row" spacing={0.5} alignItems="center">
-                        <ChatBubbleOutline sx={{ fontSize: 16, color: textSecondary }} />
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        <ChatBubbleOutline sx={{ fontSize: 16, color: 'text.disabled' }} />
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
                           {article.commentCount || 0}
                         </Typography>
                       </Stack>
                       <Stack direction="row" spacing={0.5} alignItems="center">
-                        <Share sx={{ fontSize: 16, color: textSecondary }} />
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {article.shares}
-                        </Typography>
-                      </Stack>
-                      <Stack direction="row" spacing={0.5} alignItems="center">
-                        <Star sx={{ fontSize: 16, color: textSecondary }} />
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {article.stars}
+                        <Star sx={{ fontSize: 16, color: 'text.disabled' }} />
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                          {article.starCount || 0}
                         </Typography>
                       </Stack>
                     </Stack>
@@ -458,9 +514,9 @@ export default function FeedSection({
       </Stack>
 
       {/* Infinite scroll sentinel */}
-      {hasMore && (
+      {hasMore && filteredArticles.length > 0 && (
         <Box ref={loadingRef} sx={{ mt: 2 }}>
-          {loading ? <LoadingIndicator isDark={isDark} /> : null}
+          {loading ? <LoadingIndicator /> : null}
         </Box>
       )}
     </Paper>

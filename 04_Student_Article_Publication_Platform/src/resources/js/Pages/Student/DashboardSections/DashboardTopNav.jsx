@@ -22,7 +22,6 @@ import {
     SearchRounded,
     NotificationsNoneRounded,
     ManageAccountsRounded,
-    Settings,
     LogoutRounded,
     ChevronLeft,
     ChevronRight,
@@ -141,17 +140,24 @@ export default function DashboardTopNav({
         textTransform: 'none',
         fontSize: '0.875rem',
         letterSpacing: '0.01em',
-        transition: 'all 0.2s ease-in-out',
+        transition: 'all 0.25s ease-in-out',
         color: isActive
             ? (isDark ? DARK_COLORS.softPink : COLORS.deepPurple)
             : (isDark ? alpha('#FFF', 0.6) : alpha(COLORS.royalPurple, 0.7)),
-        px: 1.5,
-        py: 0.5,
-        borderRadius: '8px',
-        bgcolor: isActive ? (isDark ? alpha(DARK_COLORS.softPink, 0.1) : alpha(COLORS.softPink, 0.08)) : 'transparent',
+        px: 1.6,
+        py: 0.6,
+        borderRadius: '999px',
+        border: '1px solid',
+        borderColor: isActive
+            ? (isDark ? alpha(DARK_COLORS.softPink, 0.28) : alpha(COLORS.softPink, 0.25))
+            : 'transparent',
+        bgcolor: isActive
+            ? (isDark ? alpha(DARK_COLORS.softPink, 0.12) : alpha(COLORS.softPink, 0.12))
+            : 'transparent',
         '&:hover': {
-            bgcolor: isDark ? alpha('#FFF', 0.05) : alpha(COLORS.softPink, 0.05),
+            bgcolor: isDark ? alpha('#FFF', 0.06) : alpha(COLORS.softPink, 0.09),
             color: isDark ? '#FFF' : COLORS.deepPurple,
+            borderColor: isDark ? alpha(DARK_COLORS.softPink, 0.2) : alpha(COLORS.softPink, 0.2),
         },
     });
 
@@ -160,42 +166,80 @@ export default function DashboardTopNav({
             elevation={0}
             sx={{
                 position: 'sticky',
-                top: 0,
+                top: 8,
                 zIndex: 1200,
-                px: { xs: 2, md: 4 },
-                borderRadius: 0,
-                borderBottom: '1px solid',
-                borderColor: isDark ? alpha(DARK_COLORS.border, 0.6) : alpha(COLORS.mediumPurple, 0.12),
-                bgcolor: isDark ? alpha(DARK_COLORS.cardBg, 0.9) : alpha('#FFFFFF', 0.9),
-                backdropFilter: 'blur(12px)',
-                boxShadow: trigger ? '0 4px 20px -5px rgba(0,0,0,0.1)' : 'none',
+                px: { xs: 1.5, md: 2.5 },
+                py: 1,
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: isDark ? alpha(DARK_COLORS.border, 0.75) : alpha(COLORS.mediumPurple, 0.16),
+                bgcolor: isDark ? alpha(DARK_COLORS.cardBg, 0.82) : alpha('#FFFFFF', 0.86),
+                backdropFilter: 'blur(16px)',
+                boxShadow: trigger
+                    ? (isDark ? '0 12px 32px -18px rgba(0,0,0,0.9)' : '0 12px 32px -18px rgba(84, 58, 120, 0.35)')
+                    : 'none',
                 transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
-                height: 70,
+                minHeight: 74,
                 display: 'flex',
                 alignItems: 'center',
             }}
         >
-            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ width: '100%' }}>
+            <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                spacing={1.5}
+                sx={{ width: '100%' }}
+            >
 
                 {/* Brand Logo */}
-                <Typography
-                    variant="h5"
+                <Stack
+                    direction="row"
+                    alignItems="center"
+                    spacing={1}
                     sx={{
-                        fontWeight: 800,
-                        letterSpacing: '-1px',
-                        background: `linear-gradient(90deg, ${COLORS.deepPurple} 0%, ${COLORS.softPink} 100%)`,
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        mr: 4,
-                        cursor: 'pointer',
-                        userSelect: 'none'
+                        px: 1.5,
+                        py: 0.75,
+                        borderRadius: 999,
+                        border: '1px solid',
+                        borderColor: isDark ? alpha(DARK_COLORS.softPink, 0.24) : alpha(COLORS.softPink, 0.28),
+                        bgcolor: isDark ? alpha(DARK_COLORS.softPink, 0.08) : alpha(COLORS.softPink, 0.08),
                     }}
                 >
-                    FYI
-                </Typography>
+                    <Typography
+                        variant="h6"
+                        sx={{
+                            fontWeight: 900,
+                            letterSpacing: '-0.04em',
+                            lineHeight: 1,
+                            background: `linear-gradient(90deg, ${COLORS.deepPurple} 0%, ${COLORS.softPink} 100%)`,
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            cursor: 'pointer',
+                            userSelect: 'none',
+                        }}
+                    >
+                        FYI
+                    </Typography>
+                </Stack>
 
                 {/* Navigation Center */}
-                <Stack direction="row" alignItems="center" spacing={1} sx={{ flexGrow: 1 }}>
+                <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="center"
+                    spacing={1}
+                    sx={{
+                        flexGrow: 1,
+                        minWidth: 0,
+                        px: { xs: 1.25, md: 1.75 },
+                        py: 0.65,
+                        borderRadius: 3,
+                        border: '1px solid',
+                        borderColor: isDark ? alpha(DARK_COLORS.border, 0.7) : alpha(COLORS.mediumPurple, 0.14),
+                        bgcolor: isDark ? alpha('#000', 0.14) : alpha(COLORS.gray100, 0.45),
+                    }}
+                >
                     <Button
                         onClick={() => onViewChange?.('feed')}
                         sx={navBtnStyle(activeView === 'feed')}
@@ -203,14 +247,18 @@ export default function DashboardTopNav({
                         Feed
                     </Button>
 
-                    <Divider orientation="vertical" flexItem sx={{ mx: 1, height: 20, my: 'auto', opacity: 0.5 }} />
+                    <Divider orientation="vertical" flexItem sx={{ mx: 0.5, height: 24, my: 'auto', opacity: 0.5 }} />
 
-                    <Stack direction="row" alignItems="center" spacing={0.5}>
+                    <Stack direction="row" alignItems="center" spacing={0.5} sx={{ justifyContent: 'center' }}>
                         <IconButton
                             onClick={handlePrevCategories}
                             disabled={!showLeftArrow}
                             size="small"
-                            sx={{ opacity: showLeftArrow ? 1 : 0.3 }}
+                            sx={{
+                                opacity: showLeftArrow ? 1 : 0.3,
+                                border: '1px solid',
+                                borderColor: isDark ? alpha(DARK_COLORS.border, 0.8) : alpha(COLORS.mediumPurple, 0.15),
+                            }}
                         >
                             <ChevronLeft fontSize="small" />
                         </IconButton>
@@ -231,7 +279,11 @@ export default function DashboardTopNav({
                             onClick={handleNextCategories}
                             disabled={!showRightArrow}
                             size="small"
-                            sx={{ opacity: showRightArrow ? 1 : 0.3 }}
+                            sx={{
+                                opacity: showRightArrow ? 1 : 0.3,
+                                border: '1px solid',
+                                borderColor: isDark ? alpha(DARK_COLORS.border, 0.8) : alpha(COLORS.mediumPurple, 0.15),
+                            }}
                         >
                             <ChevronRight fontSize="small" />
                         </IconButton>
@@ -239,7 +291,7 @@ export default function DashboardTopNav({
                 </Stack>
 
                 {/* Right Utilities */}
-                <Stack direction="row" spacing={1.5} alignItems="center">
+                <Stack direction="row" spacing={1} alignItems="center">
                     {/* Search Field */}
                     <TextField
                         size="small"
@@ -249,16 +301,16 @@ export default function DashboardTopNav({
                         onBlur={() => setSearchFocused(false)}
                         placeholder="Search..."
                         sx={{
-                            width: searchFocused ? { xs: 180, md: 280 } : { xs: 140, md: 220 },
+                            width: searchFocused ? { xs: 170, md: 280 } : { xs: 130, md: 220 },
                             transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                             '& .MuiOutlinedInput-root': {
                                 height: 38,
-                                borderRadius: '10px',
-                                bgcolor: isDark ? alpha('#000', 0.2) : alpha(COLORS.gray100, 0.5),
+                                borderRadius: '999px',
+                                bgcolor: isDark ? alpha('#000', 0.18) : alpha(COLORS.gray100, 0.7),
                                 border: '1px solid',
                                 borderColor: searchFocused
                                     ? (isDark ? DARK_COLORS.softPink : COLORS.softPink)
-                                    : 'transparent',
+                                    : (isDark ? alpha(DARK_COLORS.border, 0.75) : alpha(COLORS.mediumPurple, 0.15)),
                                 '& fieldset': { border: 'none' },
                                 fontSize: '0.85rem',
                             },
@@ -276,8 +328,23 @@ export default function DashboardTopNav({
                         }}
                     />
 
-                    <Stack direction="row" spacing={0.5}>
-                        <IconButton size="small" sx={{ color: 'text.secondary' }} onClick={handleNotifClick}>
+                    <Stack
+                        direction="row"
+                        spacing={0.5}
+                        sx={{
+                            px: 0.5,
+                            py: 0.25,
+                            borderRadius: 999,
+                            border: '1px solid',
+                            borderColor: isDark ? alpha(DARK_COLORS.border, 0.7) : alpha(COLORS.mediumPurple, 0.15),
+                            bgcolor: isDark ? alpha('#000', 0.12) : alpha('#FFF', 0.7),
+                        }}
+                    >
+                        <IconButton
+                            size="small"
+                            sx={{ color: 'text.secondary' }}
+                            onClick={handleNotifClick}
+                        >
                             <Badge
                                 badgeContent={unreadCount}
                                 color="error"
@@ -348,7 +415,11 @@ export default function DashboardTopNav({
                                 </Box>
                             )}
                         </Menu>
-                        <IconButton onClick={onToggleMode} size="small" sx={{ color: 'text.secondary' }}>
+                        <IconButton
+                            onClick={onToggleMode}
+                            size="small"
+                            sx={{ color: 'text.secondary' }}
+                        >
                             {isDark ? <LightModeRounded fontSize="small" /> : <DarkModeRounded fontSize="small" />}
                         </IconButton>
                     </Stack>
@@ -424,9 +495,6 @@ export default function DashboardTopNav({
                 <Divider sx={{ opacity: 0.6 }} />
                 <MenuItem onClick={() => router.visit(route('student.profile'))} sx={{ py: 1.2, gap: 1.5, fontSize: '0.875rem' }}>
                     <ManageAccountsRounded fontSize="small" sx={{ opacity: 0.7 }} /> Profile
-                </MenuItem>
-                <MenuItem onClick={() => router.visit(route('profile.edit'))} sx={{ py: 1.2, gap: 1.5, fontSize: '0.875rem' }}>
-                    <Settings fontSize="small" sx={{ opacity: 0.7 }} /> Profile Settings
                 </MenuItem>
                 <Divider sx={{ opacity: 0.6 }} />
                 <MenuItem onClick={() => router.post(route('logout'))} sx={{ py: 1.2, gap: 1.5, fontSize: '0.875rem', color: 'error.main' }}>

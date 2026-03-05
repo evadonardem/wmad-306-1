@@ -43,4 +43,22 @@ class ArticlePolicy
     {
         return $user->hasRole('student') && $article->published_at !== null;
     }
+
+    /** Determine whether the user can star the article. */
+    public function star(User $user, Article $article): bool
+    {
+        return $user->hasRole('student') && $article->published_at !== null;
+    }
+
+    /** Determine whether the user can record a view on the article. */
+    public function view(User $user, Article $article): bool
+    {
+        return $user->hasRole('student') && $article->published_at !== null;
+    }
+
+    /** Determine whether the user can save/unsave the article. */
+    public function save(User $user, Article $article): bool
+    {
+        return $user->hasRole('student') && $article->published_at !== null;
+    }
 }

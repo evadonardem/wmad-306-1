@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -23,6 +24,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'bio',
+        'location',
+        'phone',
         'account_status',
         'suspended_at',
     ];
@@ -64,5 +68,20 @@ class User extends Authenticatable
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class);
+    }
+
+    public function starredArticles(): BelongsToMany
+    {
+        return $this->belongsToMany(Article::class, 'article_stars')->withTimestamps();
+    }
+
+    public function viewedArticles(): BelongsToMany
+    {
+        return $this->belongsToMany(Article::class, 'article_views')->withTimestamps();
+    }
+
+    public function savedArticles(): BelongsToMany
+    {
+        return $this->belongsToMany(Article::class, 'article_saves')->withTimestamps();
     }
 }

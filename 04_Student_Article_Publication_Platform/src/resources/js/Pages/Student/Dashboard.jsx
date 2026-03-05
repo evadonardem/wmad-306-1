@@ -1,6 +1,8 @@
 import { useMemo, useState, useEffect } from 'react';
 import { router, usePage } from '@inertiajs/react';
-import { Box, CssBaseline, Stack, ThemeProvider, useMediaQuery, Fade } from '@mui/material';
+import axios from 'axios';
+import { Box, CssBaseline, Stack, useMediaQuery, Fade } from '@mui/material';
+import { ThemeProvider } from '@mui/material/styles';
 import StudentLayout from '../Shared/Layouts/StudentLayout';
 import DashboardTopNav, { CATEGORIES } from './DashboardSections/DashboardTopNav';
 import FeedSection from './DashboardSections/FeedSection';
@@ -30,8 +32,10 @@ export default function Dashboard({ articles = [] }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [articleCommentState, setArticleCommentState] = useState({});
+  const [articleEngagementState, setArticleEngagementState] = useState({});
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [commentError, setCommentError] = useState('');
+  const [isTogglingStar, setIsTogglingStar] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('dashboardTheme', mode);
@@ -45,24 +49,32 @@ export default function Dashboard({ articles = [] }) {
     Array.isArray(articles) ? articles : []
   ), [articles]);
 
+  useEffect(() => {
+    const savedIds = new Set(
+      sourceArticles
+        .filter((article) => Boolean(article.isSaved))
+        .map((article) => article.id)
+    );
+    setBookmarkedIds(savedIds);
+  }, [sourceArticles]);
+
   const preparedArticles = useMemo(() => {
     return sourceArticles.map((article, index) => {
       const excerpt = article.excerpt || '';
       const override = articleCommentState[article.id] || {};
+      const engagementOverride = articleEngagementState[article.id] || {};
       return {
         ...article,
+        ...engagementOverride,
         ...override,
         excerpt,
         readMins: estimateReadingTime(excerpt || article.title),
-        views: 2300 - index * 117,
-        shares: 8 + (index % 9),
-        stars: 70 + index * 3,
         hot: index < 3,
         progress: index % 2 === 0 ? 70 : 30,
         trending: index < 5 ? Math.floor(Math.random() * 100) + 50 : undefined,
       };
     });
-  }, [articleCommentState, sourceArticles]);
+  }, [articleCommentState, articleEngagementState, sourceArticles]);
 
   const filteredArticles = useMemo(() => {
     const keyword = search.trim().toLowerCase();
@@ -87,7 +99,7 @@ export default function Dashboard({ articles = [] }) {
 
     switch (sortBy) {
       case 'Popular':
-        list = [...list].sort((a, b) => b.views - a.views);
+        list = [...list].sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0));
         break;
       case 'Most Discussed':
         list = [...list].sort((a, b) => (b.commentCount || 0) - (a.commentCount || 0));
@@ -121,16 +133,47 @@ export default function Dashboard({ articles = [] }) {
     readingStreak: 7,
   }), [preparedArticles, bookmarkedIds]);
 
-  const toggleBookmark = (id) => {
+  const toggleBookmark = async (id) => {
+    if (!id) return;
+
+    let nextSavedState = false;
+
     setBookmarkedIds((previous) => {
       const next = new Set(previous);
       if (next.has(id)) {
         next.delete(id);
+        nextSavedState = false;
       } else {
         next.add(id);
+        nextSavedState = true;
       }
       return next;
     });
+
+    try {
+      const { data } = await axios.post(route('student.articles.save.toggle', id));
+      if (typeof data?.isSaved === 'boolean' && data.isSaved !== nextSavedState) {
+        setBookmarkedIds((previous) => {
+          const next = new Set(previous);
+          if (data.isSaved) {
+            next.add(id);
+          } else {
+            next.delete(id);
+          }
+          return next;
+        });
+      }
+    } catch {
+      setBookmarkedIds((previous) => {
+        const next = new Set(previous);
+        if (nextSavedState) {
+          next.delete(id);
+        } else {
+          next.add(id);
+        }
+        return next;
+      });
+    }
   };
 
   const handleOpenArticle = (articleId) => {
@@ -138,6 +181,54 @@ export default function Dashboard({ articles = [] }) {
     if (article) {
       setSelectedArticle(article);
       setModalOpen(true);
+      void recordView(article.id);
+    }
+  };
+
+  const syncEngagementState = (articleId, payload = {}) => {
+    const nextEngagement = {
+      viewCount: Number(payload.viewCount ?? 0),
+      starCount: Number(payload.starCount ?? 0),
+      isStarred: Boolean(payload.isStarred),
+    };
+
+    setArticleEngagementState((previous) => ({
+      ...previous,
+      [articleId]: {
+        ...(previous[articleId] || {}),
+        ...nextEngagement,
+      },
+    }));
+
+    setSelectedArticle((previous) => {
+      if (!previous || previous.id !== articleId) return previous;
+      return {
+        ...previous,
+        ...nextEngagement,
+      };
+    });
+  };
+
+  const recordView = async (articleId) => {
+    try {
+      const { data } = await axios.post(route('student.articles.view', articleId));
+      syncEngagementState(articleId, data);
+    } catch {
+      // Fail silently for non-critical analytics updates.
+    }
+  };
+
+  const handleToggleStar = async (articleId) => {
+    if (!articleId || isTogglingStar) return;
+
+    setIsTogglingStar(true);
+    try {
+      const { data } = await axios.post(route('student.articles.star.toggle', articleId));
+      syncEngagementState(articleId, data);
+    } catch {
+      // Keep UI stable even if request fails.
+    } finally {
+      setIsTogglingStar(false);
     }
   };
 
@@ -149,6 +240,7 @@ export default function Dashboard({ articles = [] }) {
 
   const appendLocalComment = (articleId, body, parentId = null) => {
     const authorName = auth?.user?.name || 'You';
+    const baseArticle = preparedArticles.find((item) => item.id === articleId);
     const newComment = {
       id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       body,
@@ -160,8 +252,8 @@ export default function Dashboard({ articles = [] }) {
 
     setArticleCommentState((previous) => {
       const previousState = previous[articleId] || {};
-      const previousComments = previousState.comments || [];
-      const previousCount = Number(previousState.commentCount ?? selectedArticle?.commentCount ?? 0);
+      const previousComments = previousState.comments || baseArticle?.comments || [];
+      const previousCount = Number(previousState.commentCount ?? baseArticle?.commentCount ?? 0);
       let updatedComments;
       if (parentId) {
         updatedComments = previousComments.map((c) =>
@@ -184,8 +276,8 @@ export default function Dashboard({ articles = [] }) {
 
     setSelectedArticle((previous) => {
       if (!previous || previous.id !== articleId) return previous;
-      const previousComments = previous.comments || [];
-      const previousCount = Number(previous.commentCount || 0);
+      const previousComments = previous.comments || baseArticle?.comments || [];
+      const previousCount = Number(previous.commentCount ?? baseArticle?.commentCount ?? 0);
       let updatedComments;
       if (parentId) {
         updatedComments = previousComments.map((c) =>
@@ -229,6 +321,20 @@ export default function Dashboard({ articles = [] }) {
     if (!selectedArticle) return -1;
     return preparedArticles.findIndex((article) => article.id === selectedArticle.id);
   }, [preparedArticles, selectedArticle]);
+
+  useEffect(() => {
+    if (!selectedArticle?.id) return;
+
+    const refreshed = preparedArticles.find((article) => article.id === selectedArticle.id);
+    if (refreshed) {
+      setSelectedArticle((previous) => ({ ...previous, ...refreshed }));
+    }
+  }, [preparedArticles, selectedArticle?.id]);
+
+  useEffect(() => {
+    if (!modalOpen || !selectedArticle?.id) return;
+    void recordView(selectedArticle.id);
+  }, [modalOpen, selectedArticle?.id]);
 
   const handleNextArticle = selectedArticleIndex >= 0 && selectedArticleIndex < preparedArticles.length - 1
     ? () => setSelectedArticle(preparedArticles[selectedArticleIndex + 1])
@@ -278,15 +384,15 @@ export default function Dashboard({ articles = [] }) {
                     gap: { xs: 2, md: 3 },
                     gridTemplateColumns: {
                       xs: '1fr',
-                      md: '1fr 300px',
-                      lg: '1fr 340px',
+                      md: 'minmax(0, 7fr) minmax(0, 3fr)',
+                      lg: 'minmax(0, 7fr) minmax(0, 3fr)',
                     },
                     alignItems: 'start',
                     position: 'relative',
                     pb: { xs: 8, md: 0 },
                   }}
                 >
-                  <Stack spacing={{ xs: 2, md: 3 }} sx={{ minWidth: 0, maxWidth: { md: 920, lg: 980 } }}>
+                  <Stack spacing={{ xs: 2, md: 3 }} sx={{ minWidth: 0 }}>
                     <FeedSection
                       activeNav={activeNav}
                       filteredArticles={filteredArticles}
@@ -306,6 +412,7 @@ export default function Dashboard({ articles = [] }) {
                     position: 'sticky',
                     top: 88,
                     alignSelf: 'flex-start',
+                    minWidth: 0,
                     display: { xs: 'none', md: 'block' }
                   }}>
                     <RightWidgets
@@ -337,8 +444,10 @@ export default function Dashboard({ articles = [] }) {
           article={selectedArticle}
           open={modalOpen}
           onClose={handleCloseModal}
-          onToggleBookmark={toggleBookmark}
-          isBookmarked={selectedArticle ? bookmarkedIds.has(selectedArticle.id) : false}
+          onToggleStar={handleToggleStar}
+          isStarred={Boolean(selectedArticle?.isStarred)}
+          starCount={Number(selectedArticle?.starCount || 0)}
+          isTogglingStar={isTogglingStar}
           mode={mode}
           onNext={handleNextArticle}
           onPrevious={handlePreviousArticle}

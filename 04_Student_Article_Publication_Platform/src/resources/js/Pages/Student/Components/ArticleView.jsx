@@ -17,13 +17,11 @@ import {
 } from '@mui/material';
 import {
     Close,
-    BookmarkBorder,
-    Bookmark,
-    Share,
+    StarBorder,
+    Star,
     Schedule,
     Visibility,
     Comment,
-    Download,
     ArrowBack,
     ArrowForward,
 } from '@mui/icons-material';
@@ -36,8 +34,10 @@ export default function ArticleView({
     article,
     open = false,
     onClose,
-    onToggleBookmark,
-    isBookmarked = false,
+    onToggleStar,
+    isStarred = false,
+    starCount = 0,
+    isTogglingStar = false,
     mode = 'light',
     onNext,
     onPrevious,
@@ -129,17 +129,15 @@ export default function ArticleView({
 
                         <Stack direction="row" spacing={1}>
                             <IconButton
-                                onClick={() => onToggleBookmark?.(article.id)}
-                                sx={{ color: isBookmarked ? COLORS.softPink : mutedColor }}
+                                onClick={() => onToggleStar?.(article.id)}
+                                disabled={isTogglingStar}
+                                sx={{ color: isStarred ? COLORS.softPink : mutedColor }}
                             >
-                                {isBookmarked ? <Bookmark /> : <BookmarkBorder />}
+                                {isStarred ? <Star /> : <StarBorder />}
                             </IconButton>
-                            <IconButton sx={{ color: mutedColor }}>
-                                <Share />
-                            </IconButton>
-                            <IconButton sx={{ color: mutedColor }}>
-                                <Download />
-                            </IconButton>
+                            <Typography variant="caption" sx={{ color: mutedColor, alignSelf: 'center', minWidth: 20 }}>
+                                {starCount}
+                            </Typography>
                         </Stack>
                     </Stack>
 
@@ -283,17 +281,15 @@ export default function ArticleView({
                         </Typography>
                         <Stack direction="row" spacing={1}>
                             <IconButton
-                                onClick={() => onToggleBookmark?.(article.id)}
-                                sx={{ color: isBookmarked ? COLORS.softPink : mutedColor }}
+                                onClick={() => onToggleStar?.(article.id)}
+                                disabled={isTogglingStar}
+                                sx={{ color: isStarred ? COLORS.softPink : mutedColor }}
                             >
-                                {isBookmarked ? <Bookmark /> : <BookmarkBorder />}
+                                {isStarred ? <Star /> : <StarBorder />}
                             </IconButton>
-                            <IconButton sx={{ color: mutedColor }}>
-                                <Share />
-                            </IconButton>
-                            <IconButton sx={{ color: mutedColor }}>
-                                <Download />
-                            </IconButton>
+                            <Typography variant="caption" sx={{ color: mutedColor, alignSelf: 'center', minWidth: 20 }}>
+                                {starCount}
+                            </Typography>
                             <IconButton onClick={onClose} sx={{ color: mutedColor }}>
                                 <Close />
                             </IconButton>
@@ -328,9 +324,6 @@ export default function ArticleView({
                             />
 
                             <Box sx={{ mt: 4 }}>
-                                <Typography variant="h3" sx={{ color: textColor, mb: 2, fontSize: 18 }}>
-                                    You might also enjoy
-                                </Typography>
                                 <RecommendedList
                                     articles={article.recommendations || []}
                                     isDark={isDark}
@@ -415,17 +408,18 @@ export default function ArticleView({
 }
 
 function ArticleContent({ article, readingTime, textColor, mutedColor, isDark }) {
+    const liveViews =
+        typeof article.views === 'number'
+            ? article.views
+            : typeof article.viewCount === 'number'
+              ? article.viewCount
+              : typeof article.view_count === 'number'
+                ? article.view_count
+                : null;
+
     return (
         <Stack spacing={2}>
             <Stack spacing={2}>
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
-                    <Chip
-                        label={article.category || 'General'}
-                        size="small"
-                        sx={{ bgcolor: COLORS.royalPurple, color: '#fff', borderRadius: 1.5, fontWeight: 500 }}
-                    />
-                </Stack>
-
                 <Typography
                     variant="h1"
                     sx={{ fontSize: { xs: 24, md: 32 }, fontWeight: 700, color: textColor, lineHeight: 1.2 }}
@@ -457,12 +451,14 @@ function ArticleContent({ article, readingTime, textColor, mutedColor, isDark })
                         <Typography variant="caption" sx={{ color: mutedColor }}>
                             {readingTime} min read
                         </Typography>
-                        <Stack direction="row" spacing={0.5} alignItems="center">
-                            <Visibility sx={{ fontSize: 16, color: mutedColor }} />
-                            <Typography variant="caption" sx={{ color: mutedColor }}>
-                                {article.views?.toLocaleString() || 0} views
-                            </Typography>
-                        </Stack>
+                        {liveViews !== null && (
+                            <Stack direction="row" spacing={0.5} alignItems="center">
+                                <Visibility sx={{ fontSize: 16, color: mutedColor }} />
+                                <Typography variant="caption" sx={{ color: mutedColor }}>
+                                    {liveViews.toLocaleString()} views
+                                </Typography>
+                            </Stack>
+                        )}
                     </Stack>
                 </Stack>
             </Stack>
