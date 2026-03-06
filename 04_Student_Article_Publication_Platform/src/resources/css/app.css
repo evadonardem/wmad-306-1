@@ -1,3 +1,31 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+    --newspaper-newsprint: #1a1a1a;
+    --newspaper-paper: #f8f8f8;
+    --newspaper-aged: #f0f0f0;
+    --newspaper-ink: #2c2c2c;
+    --newspaper-accent: #4a4a4a;
+    --newspaper-border: #d4d4d4;
+    --newspaper-byline: #666666;
+    --newspaper-headline: #1a1a1a;
+    --newspaper-accent1: #4a4a4a;
+    --newspaper-accent2: #666666;
+}
+
+html,
+body,
+#app {
+    background-color: var(--newspaper-paper);
+    color: var(--newspaper-ink);
+}
+
+body {
+    transition: background-color 220ms ease, color 220ms ease;
+}
+
+a {
+    color: var(--newspaper-newsprint);
+}

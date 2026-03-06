@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Shared\PublicArticleController;
+use App\Http\Controllers\ThemePreferenceController;
 use App\Models\Article;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -61,6 +62,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::patch('/preferences/theme', [ThemePreferenceController::class, 'update'])->name('preferences.theme.update');
 });
 
 require __DIR__.'/auth.php';
@@ -69,3 +71,5 @@ require __DIR__.'/writer.php';
 require __DIR__.'/editor.php';
 require __DIR__.'/student.php';
 require __DIR__.'/admin.php';
+
+
