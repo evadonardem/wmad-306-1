@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Article;
+use App\Models\Comment;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -15,19 +18,148 @@ use Spatie\Permission\Models\Role;
 
 class AdminDashboardController extends Controller
 {
-    private const MANAGED_ROLES = ['admin', 'writer', 'editor'];
+    private const MANAGED_ROLES = ['admin', 'writer', 'editor', 'student'];
     private const ACCOUNT_STATUSES = ['active', 'suspended', 'pending', 'deleted'];
 
     /** Render the admin dashboard view. */
     public function index(): Response
     {
-        return Inertia::render('Admin/Dashboard', $this->buildAdminUserPayload());
+        return Inertia::render('Admin/Dashboard', [
+            'stats' => $this->buildDashboardStats(),
+            'activity' => $this->buildWeeklyActivity(),
+            'recentUsers' => $this->buildRecentUsers(),
+            'recentArticles' => $this->buildRecentArticles(),
+        ]);
     }
 
     /** Render the admin user-management view. */
     public function users(): Response
     {
         return Inertia::render('Admin/users', $this->buildAdminUserPayload());
+    }
+
+    private function managedUsersQuery()
+    {
+        return User::query()->whereHas('roles', function ($query): void {
+            $query->whereIn('name', self::MANAGED_ROLES);
+        });
+    }
+
+    private function buildDashboardStats(): array
+    {
+        $managedUsers = $this->managedUsersQuery();
+
+        $totalUsers = (clone $managedUsers)
+            ->where('account_status', '!=', 'deleted')
+            ->count();
+
+        $activeUsers = (clone $managedUsers)
+            ->where('account_status', 'active')
+            ->count();
+
+        $pendingUsers = (clone $managedUsers)
+            ->where('account_status', 'pending')
+            ->count();
+
+        $writers = (clone $managedUsers)
+            ->where('account_status', '!=', 'deleted')
+            ->whereHas('roles', fn ($q) => $q->where('name', 'writer'))
+            ->count();
+
+        $editors = (clone $managedUsers)
+            ->where('account_status', '!=', 'deleted')
+            ->whereHas('roles', fn ($q) => $q->where('name', 'editor'))
+            ->count();
+
+        $students = (clone $managedUsers)
+            ->where('account_status', '!=', 'deleted')
+            ->whereHas('roles', fn ($q) => $q->where('name', 'student'))
+            ->count();
+
+        $today = Carbon::today();
+
+        $totalArticles = Article::query()->count();
+        $publishedArticles = Article::query()->whereNotNull('published_at')->count();
+        $pendingArticles = Article::query()->whereNull('published_at')->count();
+        $publicArticles = Article::query()->where('is_public', true)->count();
+        $newUsersToday = (clone $managedUsers)->whereDate('created_at', $today)->count();
+        $newCommentsToday = Comment::query()->whereDate('created_at', $today)->count();
+
+        return [
+            'totalUsers' => $totalUsers,
+            'activeUsers' => $activeUsers,
+            'pendingUsers' => $pendingUsers,
+            'writers' => $writers,
+            'editors' => $editors,
+            'students' => $students,
+            'totalArticles' => $totalArticles,
+            'publishedArticles' => $publishedArticles,
+            'pendingArticles' => $pendingArticles,
+            'publicArticles' => $publicArticles,
+            'totalComments' => Comment::query()->count(),
+            'newUsersToday' => $newUsersToday,
+            'newCommentsToday' => $newCommentsToday,
+        ];
+    }
+
+    private function buildWeeklyActivity(): array
+    {
+        $days = collect(range(6, 0))->map(function (int $offset): array {
+            $day = Carbon::today()->subDays($offset);
+
+            return [
+                'date' => $day->toDateString(),
+                'label' => $day->format('D'),
+                'newUsers' => User::query()->whereDate('created_at', $day)->count(),
+                'publishedArticles' => Article::query()->whereDate('published_at', $day)->count(),
+                'newComments' => Comment::query()->whereDate('created_at', $day)->count(),
+            ];
+        });
+
+        return $days->values()->all();
+    }
+
+    private function buildRecentUsers(): array
+    {
+        return $this->managedUsersQuery()
+            ->select(['id', 'name', 'email', 'account_status', 'created_at'])
+            ->with('roles:name')
+            ->orderByDesc('created_at')
+            ->limit(6)
+            ->get()
+            ->map(fn (User $user): array => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'roles' => $user->roles->pluck('name')->values(),
+                'account_status' => $user->account_status,
+                'created_at' => $user->created_at,
+            ])
+            ->values()
+            ->all();
+    }
+
+    private function buildRecentArticles(): array
+    {
+        return Article::query()
+            ->select(['id', 'title', 'published_at', 'created_at', 'is_public', 'user_id'])
+            ->with(['author:id,name'])
+            ->withCount('comments')
+            ->latest('created_at')
+            ->limit(6)
+            ->get()
+            ->map(fn (Article $article): array => [
+                'id' => $article->id,
+                'title' => $article->title,
+                'author' => $article->author?->name,
+                'comments_count' => $article->comments_count,
+                'is_public' => (bool) $article->is_public,
+                'status' => $article->published_at ? 'Published' : 'Pending',
+                'created_at' => $article->created_at,
+                'published_at' => $article->published_at,
+            ])
+            ->values()
+            ->all();
     }
 
     private function buildAdminUserPayload(): array
@@ -164,3 +296,6 @@ class AdminDashboardController extends Controller
         return back()->with('success', 'User account deleted successfully.');
     }
 }
+
+
+

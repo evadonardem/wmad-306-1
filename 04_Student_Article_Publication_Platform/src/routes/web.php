@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Shared\PublicArticleController;
 use App\Http\Controllers\ThemePreferenceController;
 use App\Models\Article;
+use App\Models\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -11,8 +12,21 @@ use Inertia\Inertia;
 // Render the public landing page with recent approved articles.
 Route::get('/', function () {
     // Feed landing page cards with latest public-approved published content.
+    $landingStats = [
+        'studentWriters' => User::role('writer')->count(),
+        'publishedArticles' => Article::query()
+            ->whereNotNull('published_at')
+            ->where('is_public', true)
+            ->count(),
+    ];
     $recentArticles = Article::query()
-        ->with(['author:id,name', 'category:id,name'])
+        ->with([
+            'author:id,name',
+            'category:id,name',
+            'comments' => fn ($query) => $query
+                ->with('user:id,name')
+                ->latest(),
+        ])
         ->withCount('comments')
         ->whereNotNull('published_at')
         ->where('is_public', true)
@@ -27,6 +41,7 @@ Route::get('/', function () {
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
         'recentArticles' => $recentArticles,
+        'landingStats' => $landingStats,
     ]);
 });
 
@@ -63,6 +78,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::patch('/preferences/theme', [ThemePreferenceController::class, 'update'])->name('preferences.theme.update');
+    Route::post('/articles/{article}/comments', [PublicArticleController::class, 'comment'])->name('public.articles.comment');
 });
 
 require __DIR__.'/auth.php';
@@ -71,5 +87,9 @@ require __DIR__.'/writer.php';
 require __DIR__.'/editor.php';
 require __DIR__.'/student.php';
 require __DIR__.'/admin.php';
+
+
+
+
 
 

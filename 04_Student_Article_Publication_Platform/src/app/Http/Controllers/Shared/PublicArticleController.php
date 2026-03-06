@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Shared;
 
 use App\Http\Controllers\Controller;
 use App\Models\Article;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -15,7 +17,11 @@ class PublicArticleController extends Controller
         return Inertia::render('Public/ArticlesIndex', [
             // Public listing includes only editor-approved published articles.
             'articles' => Article::query()
-                ->with(['author:id,name', 'category:id,name'])
+                ->with([
+                    'author:id,name',
+                    'category:id,name',
+                    'comments' => fn ($query) => $query->with('user:id,name')->latest(),
+                ])
                 ->withCount('comments')
                 ->whereNotNull('published_at')
                 ->where('is_public', true)
@@ -36,8 +42,30 @@ class PublicArticleController extends Controller
             'article' => $article->load([
                 'author:id,name',
                 'category:id,name',
-                'comments.user:id,name',
+                'comments' => fn ($query) => $query->with('user:id,name')->latest(),
             ]),
         ]);
     }
+
+    /** Allow any authenticated user to comment on public published articles. */
+    public function comment(Request $request, Article $article): RedirectResponse
+    {
+        abort_unless($article->published_at !== null && $article->is_public, 404);
+
+        $validated = $request->validate([
+            'body' => ['required', 'string'],
+            'parent_id' => ['nullable', 'exists:comments,id'],
+        ]);
+
+        $article->comments()->create([
+            'user_id' => $request->user()->id,
+            'body' => $validated['body'],
+            'parent_id' => $validated['parent_id'] ?? null,
+        ]);
+
+        return back()->with('success', 'Comment posted successfully.');
+    }
 }
+
+
+

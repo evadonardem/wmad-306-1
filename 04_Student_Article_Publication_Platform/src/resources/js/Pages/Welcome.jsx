@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useThemeContext, NEWSPAPER_THEMES, getThemeColors } from '@/Components/ThemeContext';
 import AuthModal from '@/Components/AuthModal';
 
-export default function Welcome({ auth, recentArticles = [] }) {
+export default function Welcome({ auth, recentArticles = [], landingStats = {} }) {
 
 
     const [isFlipped, setIsFlipped] = useState(false);
@@ -74,14 +74,16 @@ export default function Welcome({ auth, recentArticles = [] }) {
         }
     ];
 
+    const formatCount = (value) => new Intl.NumberFormat('en-US').format(Number(value ?? 0));
+
     const benefits = [
         {
-            stat: '500+',
+            stat: formatCount(landingStats.studentWriters),
             label: 'Student Writers',
             description: 'Join a thriving community of student writers sharing their perspectives.'
         },
         {
-            stat: '1,200+',
+            stat: formatCount(landingStats.publishedArticles),
             label: 'Published Articles',
             description: 'Discover a diverse range of topics from science to creative writing.'
         },
@@ -92,11 +94,18 @@ export default function Welcome({ auth, recentArticles = [] }) {
         }
     ];
 
+    const [commentErrors, setCommentErrors] = useState({});
+    const commentForm = useForm({
+        body: '',
+        parent_id: null,
+    });
+
     const featuredArticles = recentArticles.slice(0, 2);
-    const secondaryArticles = recentArticles.slice(2, 5);
+    const secondaryArticles = recentArticles.slice(2, 4);
 
     const handleCommentInput = (articleId, value) => {
         setCommentDrafts((prev) => ({ ...prev, [articleId]: value }));
+        setCommentErrors((prev) => ({ ...prev, [articleId]: null }));
     };
 
     const promptRegisterToComment = (articleId) => {
@@ -109,7 +118,30 @@ export default function Welcome({ auth, recentArticles = [] }) {
     const handleCommentSubmit = (articleId) => {
         if (!auth.user) {
             promptRegisterToComment(articleId);
+            return;
         }
+
+        const body = (commentDrafts[articleId] ?? '').trim();
+        if (!body) {
+            setCommentErrors((prev) => ({ ...prev, [articleId]: 'Please enter a comment.' }));
+            return;
+        }
+
+        commentForm
+            .transform(() => ({ body, parent_id: null }))
+            .post(`/articles/${articleId}/comments`, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setCommentDrafts((prev) => ({ ...prev, [articleId]: '' }));
+                    setCommentErrors((prev) => ({ ...prev, [articleId]: null }));
+                },
+                onError: (errors) => {
+                    setCommentErrors((prev) => ({
+                        ...prev,
+                        [articleId]: errors?.body ?? 'Unable to post comment right now.',
+                    }));
+                },
+            });
     };
 
     const renderCommentsSection = (article) => {
@@ -118,6 +150,42 @@ export default function Welcome({ auth, recentArticles = [] }) {
             <div className="mt-6 mb-8">
                 <div className="rounded-lg border border-gray-200 bg-white/80 p-4" style={{ color: colors.ink, background: colors.paper }}>
                     <div className="font-serif font-bold text-base mb-2" style={{ color: colors.newsprint }}>Comments</div>
+                    {Array.isArray(article.comments) && article.comments.length > 0 ? (
+                        <div className="space-y-3 mb-3">
+                            {[article.comments[0]].filter(Boolean).map((comment) => (
+                                <div key={comment.id} className="border-l-2 pl-3" style={{ borderColor: colors.border }}>
+                                    <div className="font-serif text-sm font-bold" style={{ color: colors.newsprint }}>
+                                        {comment.user?.name ?? 'Anonymous'}
+                                    </div>
+                                    <div className="font-serif text-sm mt-1" style={{ color: colors.ink }}>
+                                        {comment.body}
+                                    </div>
+                                    <div className="font-mono text-xs mt-1" style={{ color: colors.byline }}>
+                                        {comment.created_at
+                                            ? new Date(comment.created_at).toLocaleDateString('en-US', {
+                                                month: 'short',
+                                                day: 'numeric',
+                                                year: 'numeric',
+                                            })
+                                            : 'Just now'}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="font-serif text-sm italic mb-3" style={{ color: colors.byline }}>
+                            No comments yet.
+                        </div>
+                    )}
+                    <div className="mt-2">
+                        <a
+                            href={article.id ? `/articles/${article.id}#comments` : '/articles'}
+                            className="font-mono text-xs underline"
+                            style={{ color: colors.byline }}
+                        >
+                            View more comments
+                        </a>
+                    </div>
                     <div className="flex items-center gap-2 mt-2">
                         <input
                             type="text"
@@ -134,10 +202,16 @@ export default function Welcome({ auth, recentArticles = [] }) {
                             className="px-4 py-2 rounded font-serif text-sm"
                             style={{ backgroundColor: colors.newsprint, color: colors.paper }}
                             onClick={() => handleCommentSubmit(articleId)}
+                            disabled={commentForm.processing}
                         >
-                            Post
+                            {commentForm.processing ? 'Posting...' : 'Post'}
                         </button>
                     </div>
+                    {commentErrors[articleId] && (
+                        <div className="mt-2 font-serif text-sm text-red-700">
+                            {commentErrors[articleId]}
+                        </div>
+                    )}
                     {!auth.user && showRegisterPrompt[articleId] && (
                         <div className="mt-3 p-3 rounded bg-pink-50 border border-pink-200 text-pink-800 font-serif text-sm">
                             Register an account to comment.
@@ -443,7 +517,7 @@ export default function Welcome({ auth, recentArticles = [] }) {
                                         color: colors.byline
                                     }}
                                 >
-                                    {currentTheme === 'vintage' ? 'Est. 1920' :
+                                    {currentTheme === 'vintage' ? currentTime.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) :
                                      currentTheme === 'financial' ? 'Markets & Minds' :
                                      currentTheme === 'broadsheet' ? 'The Student Voice' :
                                      currentTheme === 'berliner' ? 'Die Studentenzeitung' :
@@ -1157,4 +1231,12 @@ export default function Welcome({ auth, recentArticles = [] }) {
         </>
     );
 }
+
+
+
+
+
+
+
+
 
