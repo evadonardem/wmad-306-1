@@ -61,7 +61,7 @@ export default function Welcome({ auth, recentArticles = [], landingStats = {} }
         setLastScrollY(currentScrollY);
 
         // Update active section
-        const sections = ['home', 'features', 'articles', 'about', 'write'];
+        const sections = ['home', 'features', 'articles', 'about', 'submit='];
         for (const section of sections) {
             const element = document.getElementById(section);
             if (element) {
@@ -494,7 +494,7 @@ export default function Welcome({ auth, recentArticles = [], landingStats = {} }
                                 { id: 'features', label: 'Features' },
                                 { id: 'articles', label: 'Articles' },
                                 { id: 'about', label: 'About' },
-                                { id: 'submit', label: 'Join Us' }
+                                { id: 'submit', label: 'Submit' }
                             ].map((item, index) => (
                                 <motion.li
                                     key={item.id}
@@ -880,7 +880,7 @@ export default function Welcome({ auth, recentArticles = [], landingStats = {} }
                     </motion.div>
 
                     {/* Featured Articles */}
-                    <div className="grid lg:grid-cols-2 gap-8 mb-12 items-stretch">
+                    <div className="grid lg:grid-cols-2 gap-8 mb-12">
                         {featuredArticles.map((article, index) => (
                             <motion.a
                                 key={article.id ?? index}
@@ -894,7 +894,7 @@ export default function Welcome({ auth, recentArticles = [], landingStats = {} }
                                     }
                                 }}
                                 whileHover={{ y: -5 }}
-                                className="group cursor-pointer h-full flex flex-col"
+                                className="group cursor-pointer"
                             >
                                 <motion.div
                                     className="border-b-2 pb-4 mb-4"
@@ -919,7 +919,7 @@ export default function Welcome({ auth, recentArticles = [], landingStats = {} }
                                 >
                                     {article.excerpt || 'An in-depth look at the stories shaping our campus community...'}
                                 </motion.p>
-                                <div className="mt-auto flex justify-between items-center text-sm font-mono" style={{ color: colors.border }}>
+                                <div className="flex justify-between items-center text-sm font-mono" style={{ color: colors.border }}>
                                     <span>By {article.author?.name ?? 'Staff Writer'}</span>
                                     <span>{article.published_at ? new Date(article.published_at).toLocaleDateString('en-US', {
                                         month: 'short',
@@ -931,7 +931,7 @@ export default function Welcome({ auth, recentArticles = [], landingStats = {} }
                     </div>
 
                     {/* Secondary Articles */}
-                    <div className="grid md:grid-cols-2 gap-6 pt-8 border-t" style={{ borderColor: colors.border }}>
+                    <div className="grid md:grid-cols-3 gap-6 pt-8 border-t" style={{ borderColor: colors.border }}>
                         {secondaryArticles.map((article, index) => (
                             <motion.a
                                 key={article.id ?? index}
@@ -945,7 +945,7 @@ export default function Welcome({ auth, recentArticles = [], landingStats = {} }
                                     }
                                 }}
                                 whileHover={{ y: -5 }}
-                                className="group cursor-pointer h-full flex flex-col"
+                                className="group cursor-pointer"
                             >
                                 <div className="mb-2">
                                     <span className="font-mono text-xs uppercase" style={{ color: colors.textSecondary }}>
@@ -964,7 +964,7 @@ export default function Welcome({ auth, recentArticles = [], landingStats = {} }
                                 >
                                     {article.excerpt || 'Read more about this developing story...'}
                                 </motion.p>
-                                <div className="mt-auto text-xs font-mono" style={{ color: colors.border }}>
+                                <div className="text-xs font-mono" style={{ color: colors.border }}>
                                     {article.published_at ? new Date(article.published_at).toLocaleDateString('en-US', {
                                         month: 'short',
                                         day: 'numeric'
