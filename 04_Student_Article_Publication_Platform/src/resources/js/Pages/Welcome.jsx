@@ -1,13 +1,15 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
+import { useThemeContext, NEWSPAPER_THEMES, getThemeColors } from '@/Components/ThemeContext';
 import AuthModal from '@/Components/AuthModal';
 
 export default function Welcome({ auth, recentArticles = [] }) {
+
+
     const [isFlipped, setIsFlipped] = useState(false);
     const [showAuth, setShowAuth] = useState(false);
     const [authMode, setAuthMode] = useState('login');
-    const [currentTheme, setCurrentTheme] = useState('classic');
     const [showThemePicker, setShowThemePicker] = useState(false);
     const [currentTime, setCurrentTime] = useState(new Date());
     const targetRef = useRef(null);
@@ -15,6 +17,9 @@ export default function Welcome({ auth, recentArticles = [] }) {
         target: targetRef,
         offset: ["start start", "end start"]
     });
+    const [commentDrafts, setCommentDrafts] = useState({});
+    const [showRegisterPrompt, setShowRegisterPrompt] = useState({});
+    const { theme: currentTheme, setTheme: setCurrentTheme } = useThemeContext();
 
     // Update time for newspaper dateline
     useEffect(() => {
@@ -26,139 +31,8 @@ export default function Welcome({ auth, recentArticles = [] }) {
 
     const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
     const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.8]);
-
-    // Multiple newspaper color themes
-    const themes = {
-        // Classic Black & White
-        classic: {
-            name: 'Classic',
-            icon: '📰',
-            newsprint: '#1a1a1a',
-            paper: '#f8f8f8',
-            aged: '#f0f0f0',
-            ink: '#2c2c2c',
-            accent: '#4a4a4a',
-            border: '#d4d4d4',
-            byline: '#666666',
-            headline: '#1a1a1a',
-            accent1: '#4a4a4a',
-            accent2: '#666666',
-        },
-
-        // Vintage Sepia
-        vintage: {
-            name: 'Vintage',
-            icon: '📜',
-            newsprint: '#5c4b3c',
-            paper: '#f4ecd8',
-            aged: '#e8d9c5',
-            ink: '#3e3328',
-            accent: '#8b7a66',
-            border: '#cbb99f',
-            byline: '#7f6e5a',
-            headline: '#4a3c2f',
-            accent1: '#a48d76',
-            accent2: '#b6a187',
-        },
-
-        // Modern Minimal
-        modern: {
-            name: 'Modern',
-            icon: '✨',
-            newsprint: '#0a0a0a',
-            paper: '#ffffff',
-            aged: '#fafafa',
-            ink: '#1e1e1e',
-            accent: '#757575',
-            border: '#e0e0e0',
-            byline: '#9e9e9e',
-            headline: '#212121',
-            accent1: '#616161',
-            accent2: '#424242',
-        },
-
-        // Financial Times Pink
-        financial: {
-            name: 'Financial',
-            icon: '📈',
-            newsprint: '#2c2c2c',
-            paper: '#fff1e0',
-            aged: '#ffe8d4',
-            ink: '#333333',
-            accent: '#ff8c69',
-            border: '#ffb399',
-            byline: '#ff6b4a',
-            headline: '#2b2b2b',
-            accent1: '#ff5252',
-            accent2: '#ff7b7b',
-        },
-
-        // Broadsheet Blue
-        broadsheet: {
-            name: 'Broadsheet',
-            icon: '🌊',
-            newsprint: '#1e2b3c',
-            paper: '#f0f4fa',
-            aged: '#e4ecf5',
-            ink: '#2c3e50',
-            accent: '#3498db',
-            border: '#bdd8f0',
-            byline: '#5d7a9a',
-            headline: '#1a2634',
-            accent1: '#2980b9',
-            accent2: '#4a6fa5',
-        },
-
-        // Berliner Burgundy
-        berliner: {
-            name: 'Berliner',
-            icon: '🇩🇪',
-            newsprint: '#2d1f24',
-            paper: '#f5ece9',
-            aged: '#efe1dc',
-            ink: '#3c2a30',
-            accent: '#9e4a5c',
-            border: '#ddc5c0',
-            byline: '#b28b95',
-            headline: '#351f26',
-            accent1: '#b45d6f',
-            accent2: '#a1455a',
-        },
-
-        // Guardian Green
-        guardian: {
-            name: 'Guardian',
-            icon: '🌿',
-            newsprint: '#1f3a3a',
-            paper: '#f0f7f0',
-            aged: '#e4f0e4',
-            ink: '#2d4a4a',
-            accent: '#2e8b57',
-            border: '#b8d9b8',
-            byline: '#4f7a4f',
-            headline: '#1d3535',
-            accent1: '#3cb371',
-            accent2: '#66b266',
-        },
-
-        // Sunset Edition
-        sunset: {
-            name: 'Sunset',
-            icon: '🌅',
-            newsprint: '#3a2618',
-            paper: '#fff1e6',
-            aged: '#ffe4d6',
-            ink: '#4a3322',
-            accent: '#ff9966',
-            border: '#ffccbb',
-            byline: '#cc8866',
-            headline: '#442e1c',
-            accent1: '#ff884d',
-            accent2: '#ffaa80',
-        }
-    };
-
-    const colors = themes[currentTheme];
+    const themes = NEWSPAPER_THEMES;
+    const colors = getThemeColors(currentTheme);
 
     const features = [
         {
@@ -220,6 +94,59 @@ export default function Welcome({ auth, recentArticles = [] }) {
 
     const featuredArticles = recentArticles.slice(0, 2);
     const secondaryArticles = recentArticles.slice(2, 5);
+
+    const handleCommentInput = (articleId, value) => {
+        setCommentDrafts((prev) => ({ ...prev, [articleId]: value }));
+    };
+
+    const promptRegisterToComment = (articleId) => {
+        if (auth.user) return;
+        setShowRegisterPrompt((prev) => ({ ...prev, [articleId]: true }));
+        setAuthMode('register');
+        setShowAuth(true);
+    };
+
+    const handleCommentSubmit = (articleId) => {
+        if (!auth.user) {
+            promptRegisterToComment(articleId);
+        }
+    };
+
+    const renderCommentsSection = (article) => {
+        const articleId = article.id;
+        return (
+            <div className="mt-6 mb-8">
+                <div className="rounded-lg border border-gray-200 bg-white/80 p-4" style={{ color: colors.ink, background: colors.paper }}>
+                    <div className="font-serif font-bold text-base mb-2" style={{ color: colors.newsprint }}>Comments</div>
+                    <div className="flex items-center gap-2 mt-2">
+                        <input
+                            type="text"
+                            className="w-full border rounded px-3 py-2 text-sm"
+                            placeholder="Add a comment..."
+                            value={commentDrafts[articleId] || ''}
+                            onChange={(e) => handleCommentInput(articleId, e.target.value)}
+                            onFocus={() => promptRegisterToComment(articleId)}
+                            onClick={() => promptRegisterToComment(articleId)}
+                            readOnly={!auth.user}
+                        />
+                        <button
+                            type="button"
+                            className="px-4 py-2 rounded font-serif text-sm"
+                            style={{ backgroundColor: colors.newsprint, color: colors.paper }}
+                            onClick={() => handleCommentSubmit(articleId)}
+                        >
+                            Post
+                        </button>
+                    </div>
+                    {!auth.user && showRegisterPrompt[articleId] && (
+                        <div className="mt-3 p-3 rounded bg-pink-50 border border-pink-200 text-pink-800 font-serif text-sm">
+                            Register an account to comment.
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    };
 
     const formatDate = (date) => {
         return date.toLocaleDateString('en-US', {
@@ -734,83 +661,95 @@ export default function Welcome({ auth, recentArticles = [] }) {
                     {/* Featured Articles */}
                     <div className="grid lg:grid-cols-2 gap-8 mb-12">
                         {featuredArticles.map((article, index) => (
-                            <motion.a
+                            <motion.div
                                 key={article.id ?? index}
-                                href={article.id ? `/articles/${article.id}` : '/articles'}
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
-                                className="group cursor-pointer"
+                                className="group"
                             >
-                                <motion.div
-                                    className="border-b-2 pb-4 mb-4"
-                                    style={{
-                                        borderColor: colors.newsprint,
-                                        color: colors.byline
-                                    }}
+                                <a
+                                    href={article.id ? `/articles/${article.id}` : '/articles'}
+                                    className="block cursor-pointer"
                                 >
-                                    <span className="font-mono text-xs uppercase tracking-wider">
-                                        {article.category?.name ?? 'FEATURE STORY'}
-                                    </span>
-                                </motion.div>
-                                <motion.h3
-                                    className="font-serif text-3xl font-bold mb-3 group-hover:opacity-70 transition line-clamp-3"
-                                    style={{ color: colors.newsprint }}
-                                >
-                                    {article.title}
-                                </motion.h3>
-                                <motion.p
-                                    className="font-serif mb-3 italic line-clamp-2"
-                                    style={{ color: colors.byline }}
-                                >
-                                    {article.excerpt || 'An in-depth look at the stories shaping our campus community...'}
-                                </motion.p>
-                                <div className="flex justify-between items-center text-sm font-mono" style={{ color: colors.border }}>
-                                    <span>By {article.author?.name ?? 'Staff Writer'}</span>
-                                    <span>{article.published_at ? new Date(article.published_at).toLocaleDateString('en-US', {
-                                        month: 'short',
-                                        day: 'numeric'
-                                    }) : 'Just in'}</span>
-                                </div>
-                            </motion.a>
+                                    <motion.div
+                                        className="border-b-2 pb-4 mb-4"
+                                        style={{
+                                            borderColor: colors.newsprint,
+                                            color: colors.byline
+                                        }}
+                                    >
+                                        <span className="font-mono text-xs uppercase tracking-wider">
+                                            {article.category?.name ?? 'FEATURE STORY'}
+                                        </span>
+                                    </motion.div>
+                                    <motion.h3
+                                        className="font-serif text-3xl font-bold mb-3 group-hover:opacity-70 transition line-clamp-3"
+                                        style={{ color: colors.newsprint }}
+                                    >
+                                        {article.title}
+                                    </motion.h3>
+                                    <motion.p
+                                        className="font-serif mb-3 italic line-clamp-2"
+                                        style={{ color: colors.byline }}
+                                    >
+                                        {article.excerpt || 'An in-depth look at the stories shaping our campus community...'}
+                                    </motion.p>
+                                    <div className="flex justify-between items-center text-sm font-mono" style={{ color: colors.border }}>
+                                        <span>By {article.author?.name ?? 'Staff Writer'}</span>
+                                        <span>{article.published_at ? new Date(article.published_at).toLocaleDateString('en-US', {
+                                            month: 'short',
+                                            day: 'numeric'
+                                        }) : 'Just in'}</span>
+                                    </div>
+                                </a>
+                                {/* Comments Section for this article */}
+                                {renderCommentsSection(article)}
+                            </motion.div>
                         ))}
                     </div>
 
                     {/* Secondary Articles */}
                     <div className="grid md:grid-cols-3 gap-6 pt-8 border-t" style={{ borderColor: colors.border }}>
                         {secondaryArticles.map((article, index) => (
-                            <motion.a
+                            <motion.div
                                 key={article.id ?? index}
-                                href={article.id ? `/articles/${article.id}` : '/articles'}
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
-                                className="group cursor-pointer"
+                                className="group"
                             >
-                                <div className="mb-2">
-                                    <span className="font-mono text-xs uppercase" style={{ color: colors.byline }}>
-                                        {article.category?.name ?? 'NEWS'}
-                                    </span>
-                                </div>
-                                <motion.h3
-                                    className="font-serif text-lg font-bold mb-2 group-hover:opacity-70 transition line-clamp-2"
-                                    style={{ color: colors.newsprint }}
+                                <a
+                                    href={article.id ? `/articles/${article.id}` : '/articles'}
+                                    className="block cursor-pointer"
                                 >
-                                    {article.title}
-                                </motion.h3>
-                                <motion.p
-                                    className="font-serif text-sm mb-2 line-clamp-2"
-                                    style={{ color: colors.byline }}
-                                >
-                                    {article.excerpt || 'Read more about this developing story...'}
-                                </motion.p>
-                                <div className="text-xs font-mono" style={{ color: colors.border }}>
-                                    {article.published_at ? new Date(article.published_at).toLocaleDateString('en-US', {
-                                        month: 'short',
-                                        day: 'numeric'
-                                    }) : 'New'}
-                                </div>
-                            </motion.a>
+                                    <div className="mb-2">
+                                        <span className="font-mono text-xs uppercase" style={{ color: colors.byline }}>
+                                            {article.category?.name ?? 'NEWS'}
+                                        </span>
+                                    </div>
+                                    <motion.h3
+                                        className="font-serif text-lg font-bold mb-2 group-hover:opacity-70 transition line-clamp-2"
+                                        style={{ color: colors.newsprint }}
+                                    >
+                                        {article.title}
+                                    </motion.h3>
+                                    <motion.p
+                                        className="font-serif text-sm mb-2 line-clamp-2"
+                                        style={{ color: colors.byline }}
+                                    >
+                                        {article.excerpt || 'Read more about this developing story...'}
+                                    </motion.p>
+                                    <div className="text-xs font-mono" style={{ color: colors.border }}>
+                                        {article.published_at ? new Date(article.published_at).toLocaleDateString('en-US', {
+                                            month: 'short',
+                                            day: 'numeric'
+                                        }) : 'New'}
+                                    </div>
+                                </a>
+                                {/* Comments Section for this article */}
+                                {renderCommentsSection(article)}
+                            </motion.div>
                         ))}
                     </div>
 
@@ -1218,3 +1157,4 @@ export default function Welcome({ auth, recentArticles = [] }) {
         </>
     );
 }
+

@@ -29,6 +29,7 @@ class User extends Authenticatable
         'phone',
         'account_status',
         'suspended_at',
+        'theme_preference',
     ];
 
     /**
@@ -85,3 +86,4 @@ class User extends Authenticatable
         return $this->belongsToMany(Article::class, 'article_saves')->withTimestamps();
     }
 }
+
