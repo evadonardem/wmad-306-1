@@ -1,227 +1,171 @@
-import { Head, Link, useForm } from '@inertiajs/react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
-import { useThemeContext, NEWSPAPER_THEMES, getThemeColors } from '@/Components/ThemeContext';
+import { useTheme } from '@/Contexts/ThemeContext';
 import AuthModal from '@/Components/AuthModal';
+import { Avatar, TextField, Button } from '@mui/material';
 
 export default function ArticlesIndex({ articles = [], auth = {} }) {
     const [showAuth, setShowAuth] = useState(false);
     const [authMode, setAuthMode] = useState('register');
-    const [showThemePicker, setShowThemePicker] = useState(false);
     const [commentDrafts, setCommentDrafts] = useState({});
     const [showRegisterPrompt, setShowRegisterPrompt] = useState({});
-    const [commentErrors, setCommentErrors] = useState({});
-    const commentForm = useForm({
-        body: '',
-        parent_id: null,
-    });
-
-    const { theme: currentTheme, setTheme: setCurrentTheme } = useThemeContext();
-    const themes = NEWSPAPER_THEMES;
-    const colors = getThemeColors(currentTheme);
 
     const handleCommentInput = (articleId, value) => {
         setCommentDrafts((prev) => ({ ...prev, [articleId]: value }));
-        setCommentErrors((prev) => ({ ...prev, [articleId]: null }));
-    };
-
-    const promptRegisterToComment = (articleId) => {
-        if (auth.user) return;
-        setShowRegisterPrompt((prev) => ({ ...prev, [articleId]: true }));
-        setAuthMode('register');
-        setShowAuth(true);
     };
 
     const handleCommentSubmit = (articleId) => {
         if (!auth.user) {
-            promptRegisterToComment(articleId);
+            setShowRegisterPrompt((prev) => ({ ...prev, [articleId]: true }));
+            setAuthMode('register');
+            setShowAuth(true);
             return;
         }
+        // Authenticated comment logic would go here
+    };
 
-        const body = (commentDrafts[articleId] ?? '').trim();
-        if (!body) {
-            setCommentErrors((prev) => ({ ...prev, [articleId]: 'Please enter a comment.' }));
-            return;
-        }
+    // Minimal color palette for consistency
+    const { theme: currentTheme } = useTheme();
+    const themes = {
+        classic: {
+            newsprint: '#1a1a1a', paper: '#f8f8f8', accent: '#4a4a4a', byline: '#666666', border: '#d4d4d4',
+        },
+        vintage: {
+            newsprint: '#5c4b3c', paper: '#f4ecd8', accent: '#8b7a66', byline: '#7f6e5a', border: '#cbb99f',
+        },
+        modern: {
+            newsprint: '#0a0a0a', paper: '#ffffff', accent: '#757575', byline: '#9e9e9e', border: '#e0e0e0',
+        },
+        financial: {
+            newsprint: '#2c2c2c', paper: '#fff1e0', accent: '#ff8c69', byline: '#ff6b4a', border: '#ffb399',
+        },
+        broadsheet: {
+            newsprint: '#1e2b3c', paper: '#f0f4fa', accent: '#3498db', byline: '#5d7a9a', border: '#bdd8f0',
+        },
+        berliner: {
+            newsprint: '#2d1f24', paper: '#f5ece9', accent: '#9e4a5c', byline: '#b28b95', border: '#ddc5c0',
+        },
+        guardian: {
+            newsprint: '#1f3a3a', paper: '#f0f7f0', accent: '#2e8b57', byline: '#4f7a4f', border: '#b8d9b8',
+        },
+        sunset: {
+            newsprint: '#3a2618', paper: '#fff1e6', accent: '#ff9966', byline: '#cc8866', border: '#ffccbb',
+        },
+    };
+    const colors = themes[currentTheme] || themes.classic;
 
-        commentForm
-            .transform(() => ({ body, parent_id: null }))
-            .post(`/articles/${articleId}/comments`, {
-                preserveScroll: true,
-                onSuccess: () => {
-                    setCommentDrafts((prev) => ({ ...prev, [articleId]: '' }));
-                    setCommentErrors((prev) => ({ ...prev, [articleId]: null }));
-                },
-                onError: (errors) => {
-                    setCommentErrors((prev) => ({
-                        ...prev,
-                        [articleId]: errors?.body ?? 'Unable to post comment right now.',
-                    }));
-                },
-            });
+    const renderCommentsSection = (article) => {
+        const articleId = article.id;
+        return (
+            <div className="mt-4 mb-2">
+                <div className="rounded-lg border border-gray-200 bg-white/80 p-3" style={{ color: colors.newsprint, background: colors.paper }}>
+                    <div className="font-serif font-bold text-base mb-2" style={{ color: colors.newsprint }}>Comments</div>
+                    {Array.isArray(article.comments) && article.comments.length > 0 ? (
+                        <div className="space-y-2 mb-2">
+                            {article.comments.map((c) => (
+                                <div key={c.id} className="flex items-start gap-2">
+                                    <Avatar sx={{ width: 24, height: 24, bgcolor: colors.accent }}>{c.author?.charAt(0) || 'U'}</Avatar>
+                                    <div>
+                                        <div className="font-serif font-semibold text-xs" style={{ color: colors.newsprint }}>{c.author || 'Anonymous'}</div>
+                                        <div className="text-xs" style={{ color: colors.byline }}>{c.created_at ? new Date(c.created_at).toLocaleString() : 'just now'}</div>
+                                        <div className="font-serif text-xs mt-1" style={{ color: colors.newsprint }}>{c.body}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-xs italic mb-2" style={{ color: colors.byline }}>No comments yet.</div>
+                    )}
+                    <div className="flex items-center gap-2 mt-1">
+                        <TextField
+                            size="small"
+                            fullWidth
+                            placeholder="Add a comment..."
+                            value={commentDrafts[articleId] || ''}
+                            onChange={e => handleCommentInput(articleId, e.target.value)}
+                            disabled={!!auth.user === false}
+                            sx={{
+                                fontFamily: 'Georgia, Times, "Times New Roman", serif',
+                                background: colors.paper,
+                                borderRadius: 1,
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: 1,
+                                    fontFamily: 'Georgia, Times, "Times New Roman", serif',
+                                },
+                            }}
+                        />
+                        <Button
+                            variant="contained"
+                            sx={{
+                                bgcolor: colors.newsprint,
+                                color: colors.paper,
+                                borderRadius: 1,
+                                fontFamily: 'Georgia, Times, "Times New Roman", serif',
+                                fontWeight: 700,
+                                textTransform: 'none',
+                                '&:hover': { bgcolor: colors.accent, color: colors.paper },
+                            }}
+                            onClick={() => handleCommentSubmit(articleId)}
+                        >
+                            Post
+                        </Button>
+                    </div>
+                    {!auth.user && showRegisterPrompt[articleId] && (
+                        <div className="mt-2 p-2 rounded bg-pink-50 border border-pink-200 text-pink-800 font-serif text-xs flex items-center gap-2">
+                            <svg className="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" /></svg>
+                            <span>Register an account to comment.</span>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
     };
 
     return (
         <>
-            <Head title="All Public Articles" />
-
-            <div className="fixed bottom-6 right-6 z-50">
-                <motion.button
-                    whileHover={{ scale: 1.08 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setShowThemePicker(!showThemePicker)}
-                    className="w-12 h-12 rounded-full shadow-lg flex items-center justify-center text-xl"
-                    style={{ backgroundColor: colors.accent, color: colors.paper }}
-                >
-                    Theme
-                </motion.button>
-
-                <AnimatePresence>
-                    {showThemePicker && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 12, scale: 0.9 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 12, scale: 0.9 }}
-                            className="absolute bottom-14 right-0 p-3 rounded-lg shadow-xl min-w-[200px]"
-                            style={{ backgroundColor: colors.paper, border: `1px solid ${colors.border}` }}
-                        >
-                            <div className="font-serif text-sm font-bold mb-2" style={{ color: colors.newsprint }}>Newspaper Themes</div>
-                            <div className="space-y-1">
-                                {Object.entries(themes).map(([key, theme]) => (
-                                    <button
-                                        key={key}
-                                        type="button"
-                                        onClick={() => {
-                                            setCurrentTheme(key);
-                                            setShowThemePicker(false);
-                                        }}
-                                        className="flex w-full items-center gap-2 px-2 py-2 rounded text-left"
-                                        style={{
-                                            backgroundColor: currentTheme === key ? `${colors.accent}22` : 'transparent',
-                                            color: colors.newsprint,
-                                        }}
-                                    >
-                                        <span>{theme.icon}</span>
-                                        <span className="font-serif text-sm">{theme.name}</span>
-                                        {currentTheme === key && <span className="ml-auto">OK</span>}
-                                    </button>
-                                ))}
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
-
-            <main className="min-h-screen" style={{ backgroundColor: colors.paper, color: colors.newsprint }}>
-                <div className="max-w-6xl mx-auto px-6 py-10">
-                    <div className="border-b-2 pb-4 mb-8" style={{ borderColor: colors.border }}>
-                        <div className="flex items-center justify-between gap-4">
-                            <div>
-                                <p className="font-mono text-xs tracking-[0.25em]" style={{ color: colors.byline }}>LATEST EDITION</p>
-                                <h1 className="font-serif text-4xl font-black">All Public Articles</h1>
-                                <p className="font-serif text-sm mt-1" style={{ color: colors.byline }}>
-                                    Browse the full archive. Today&apos;s landing section shows only 4 highlights.
-                                </p>
-                            </div>
-                            <Link href="/" className="px-4 py-2 border-2 font-mono text-xs tracking-wider" style={{ borderColor: colors.newsprint, color: colors.newsprint }}>
-                                BACK TO HOME
-                            </Link>
-                        </div>
+            <Head title="Public Articles" />
+            <main className="min-h-screen bg-slate-950 text-white">
+                <div className="mx-auto max-w-5xl px-6 py-12">
+                    <div className="mb-8 flex items-center justify-between">
+                        <h1 className="text-3xl font-bold">Public Articles</h1>
+                        <Link href="/" className="text-sm text-pink-300 hover:text-pink-200">
+                            Back to Home
+                        </Link>
                     </div>
-
                     {articles.length === 0 && (
-                        <div className="border p-6 font-serif italic" style={{ borderColor: colors.border, color: colors.byline, backgroundColor: colors.aged }}>
+                        <p className="rounded-lg border border-white/10 bg-white/5 p-4 text-slate-300">
                             No public articles are available yet.
-                        </div>
+                        </p>
                     )}
-
-                    <div className="grid gap-6 md:grid-cols-2">
-                        {articles.map((article) => {
-                            const latestComment = Array.isArray(article.comments) ? article.comments[0] : null;
-
-                            return (
-                                <article key={article.id} className="border p-5" style={{ borderColor: colors.border, backgroundColor: colors.aged }}>
-                                    <Link href={route('public.articles.show', article.id)} className="block">
-                                        <div className="font-mono text-xs uppercase tracking-wider mb-2" style={{ color: colors.byline }}>
-                                            {article.category?.name ?? 'General'}
-                                        </div>
-                                        <h2 className="font-serif text-2xl font-bold leading-tight mb-2" style={{ color: colors.newsprint }}>
-                                            {article.title}
-                                        </h2>
-                                        <p className="font-serif text-sm line-clamp-3" style={{ color: colors.ink }}>
-                                            {article.excerpt || article.content}
-                                        </p>
-                                        <div className="mt-3 font-mono text-xs" style={{ color: colors.byline }}>
-                                            By {article.author?.name ?? 'Unknown'}
-                                        </div>
-                                    </Link>
-
-                                    <div className="mt-4 pt-4 border-t" style={{ borderColor: colors.border }}>
-                                        <div className="font-serif font-bold text-sm mb-2" style={{ color: colors.newsprint }}>Comments</div>
-
-                                        {latestComment ? (
-                                            <div className="space-y-3 mb-3">
-                                                <div className="border-l-2 pl-3" style={{ borderColor: colors.border }}>
-                                                    <div className="font-serif text-sm font-bold">{latestComment.user?.name ?? 'Anonymous'}</div>
-                                                    <div className="font-serif text-sm" style={{ color: colors.ink }}>{latestComment.body}</div>
-                                                    <div className="font-mono text-xs" style={{ color: colors.byline }}>
-                                                        {latestComment.created_at
-                                                            ? new Date(latestComment.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                                                            : 'Just now'}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="font-serif text-sm italic mb-3" style={{ color: colors.byline }}>No comments yet.</div>
-                                        )}
-
-                                        <div className="mt-2 mb-2">
-                                            <a href={article.id ? `/articles/${article.id}#comments` : '/articles'} className="font-mono text-xs underline" style={{ color: colors.byline }}>
-                                                View more comments
-                                            </a>
-                                        </div>
-
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="text"
-                                                className="w-full border rounded px-3 py-2 text-sm font-serif"
-                                                style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
-                                                placeholder="Add a comment..."
-                                                value={commentDrafts[article.id] || ''}
-                                                onChange={(e) => handleCommentInput(article.id, e.target.value)}
-                                                onFocus={() => promptRegisterToComment(article.id)}
-                                                onClick={() => promptRegisterToComment(article.id)}
-                                                readOnly={!auth.user}
-                                            />
-                                            <button
-                                                type="button"
-                                                className="px-4 py-2 rounded font-serif text-sm"
-                                                style={{ backgroundColor: colors.newsprint, color: colors.paper }}
-                                                onClick={() => handleCommentSubmit(article.id)}
-                                                disabled={commentForm.processing}
-                                            >
-                                                {commentForm.processing ? 'Posting...' : 'Post'}
-                                            </button>
-                                        </div>
-
-                                        {commentErrors[article.id] && (
-                                            <div className="mt-2 text-sm font-serif text-red-700">{commentErrors[article.id]}</div>
-                                        )}
-
-                                        {!auth.user && showRegisterPrompt[article.id] && (
-                                            <div className="mt-2 p-2 rounded border font-serif text-sm" style={{ borderColor: '#f9a8d4', backgroundColor: '#fdf2f8', color: '#be185d' }}>
-                                                Register an account to comment.
-                                            </div>
-                                        )}
-                                    </div>
-                                </article>
-                            );
-                        })}
+                    <div className="grid gap-4 md:grid-cols-2">
+                        {articles.map((article) => (
+                            <div key={article.id} className="rounded-xl border border-white/10 bg-white/5 p-5 transition hover:border-pink-400/40">
+                                <Link
+                                    href={route('public.articles.show', article.id)}
+                                    className="block hover:underline"
+                                >
+                                    <p className="text-xs text-slate-400">
+                                        {article.category?.name ?? 'General'}
+                                    </p>
+                                    <h2 className="mt-1 text-xl font-semibold">{article.title}</h2>
+                                    <p className="mt-2 text-sm text-slate-300 line-clamp-3">
+                                        {article.content}
+                                    </p>
+                                    <p className="mt-3 text-xs text-slate-400">
+                                        By {article.author?.name ?? 'Unknown'}
+                                    </p>
+                                </Link>
+                                {renderCommentsSection(article)}
+                            </div>
+                        ))}
                     </div>
                 </div>
             </main>
-
-            <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} initialMode={authMode} />
+            <AuthModal
+                isOpen={showAuth}
+                onClose={() => setShowAuth(false)}
+                initialMode={authMode}
+            />
         </>
     );
 }

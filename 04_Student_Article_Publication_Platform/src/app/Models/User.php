@@ -29,8 +29,25 @@ class User extends Authenticatable
         'phone',
         'account_status',
         'suspended_at',
-        'theme_preference',
+        'preferences',
     ];
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'preferences' => 'array',
+    ];
+
+    public function getPreference($key, $default = null)
+    {
+        return data_get($this->preferences, $key, $default);
+    }
+
+    public function setPreference($key, $value)
+    {
+        $preferences = $this->preferences ?? [];
+        data_set($preferences, $key, $value);
+        $this->preferences = $preferences;
+        $this->save();
+    }
 
     /**
      * The attributes that should be hidden for serialization.

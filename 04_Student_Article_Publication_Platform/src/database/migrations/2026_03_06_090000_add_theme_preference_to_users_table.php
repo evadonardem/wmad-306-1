@@ -9,14 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('theme_preference', 32)->default('classic')->after('suspended_at');
+            $table->json('preferences')->nullable()->after('remember_token');
         });
     }
 
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('theme_preference');
+            $table->dropColumn('preferences');
         });
     }
 };
