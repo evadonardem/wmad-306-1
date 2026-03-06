@@ -13,6 +13,31 @@ class ArticlePolicy
         return $user->hasRole('writer');
     }
 
+    /** Determine whether the user can view the article for editing. */
+    public function view(User $user, Article $article): bool
+    {
+        if ($user->hasRole('writer')) {
+            return $article->user_id === $user->id;
+        }
+
+        if ($user->hasRole('editor')) {
+            return true;
+        }
+
+        // Students can view/record views only for published articles.
+        if ($user->hasRole('student')) {
+            return $article->published_at !== null;
+        }
+
+        return false;
+    }
+
+    /** Determine whether the user can update the article draft content. */
+    public function update(User $user, Article $article): bool
+    {
+        return $user->hasRole('writer') && $article->user_id === $user->id;
+    }
+
     /** Determine whether the user can submit the article. */
     public function submit(User $user, Article $article): bool
     {
@@ -46,12 +71,6 @@ class ArticlePolicy
 
     /** Determine whether the user can star the article. */
     public function star(User $user, Article $article): bool
-    {
-        return $user->hasRole('student') && $article->published_at !== null;
-    }
-
-    /** Determine whether the user can record a view on the article. */
-    public function view(User $user, Article $article): bool
     {
         return $user->hasRole('student') && $article->published_at !== null;
     }
