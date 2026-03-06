@@ -23,9 +23,11 @@ export default {
 
     plugins: [
         forms,
-        // This custom plugin creates the 'eclipse:' prefix!
+        // This custom plugin creates the 'eclipse:' and 'lunar:' prefixes!
         plugin(function({ addVariant }) {
-            addVariant('eclipse', '.eclipse &')
+            addVariant('eclipse', '.eclipse &');
+            // 🚩 Lunar Variant for Pink Moon Theme
+            addVariant('lunar', '.lunar &');
         })
     ],
 };

@@ -2,8 +2,13 @@ import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, router } from '@inertiajs/react';
 import { Paper, Typography, Box, TextField, MenuItem, FormControl, Select, Chip } from '@mui/material';
+import GroupIcon from '@mui/icons-material/Group';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import EditNoteIcon from '@mui/icons-material/EditNote';
+import RateReviewIcon from '@mui/icons-material/RateReview';
+import SchoolIcon from '@mui/icons-material/School';
 
-export default function AdminDashboard({ auth, users }) {
+export default function AdminDashboard({ auth, users, metrics }) {
     const [searchQuery, setSearchQuery] = useState('');
 
     // Filter users based on the search bar (Name or Email)
@@ -18,6 +23,15 @@ export default function AdminDashboard({ auth, users }) {
         }, { preserveScroll: true });
     };
 
+    // Data structure for the new KPI Ribbon
+    const kpiCards = [
+        { title: 'Total Users', count: metrics?.total || 0, icon: <GroupIcon fontSize="large" className="text-cyan-500 eclipse:!text-red-500" /> },
+        { title: 'Admins', count: metrics?.admins || 0, icon: <AdminPanelSettingsIcon fontSize="large" className="text-cyan-500 eclipse:!text-red-500" /> },
+        { title: 'Editors', count: metrics?.editors || 0, icon: <RateReviewIcon fontSize="large" className="text-cyan-500 eclipse:!text-red-500" /> },
+        { title: 'Writers', count: metrics?.writers || 0, icon: <EditNoteIcon fontSize="large" className="text-cyan-500 eclipse:!text-red-500" /> },
+        { title: 'Students', count: metrics?.students || 0, icon: <SchoolIcon fontSize="large" className="text-cyan-500 eclipse:!text-red-500" /> },
+    ];
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -27,12 +41,27 @@ export default function AdminDashboard({ auth, users }) {
 
             <div className="py-12 bg-slate-50 dark:bg-slate-950 eclipse:bg-transparent min-h-screen transition-colors duration-500">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <Paper elevation={3} sx={{ p: 4 }} className="dark:!bg-slate-900 eclipse:!bg-rose-900/60 eclipse:backdrop-blur-xl dark:!text-white eclipse:!text-rose-50 border dark:border-slate-800 eclipse:border-red-900/50 transition-colors duration-500">
 
+                    {/* NEW: ANALYTICS KPI RIBBON */}
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                        {kpiCards.map((card, index) => (
+                            <Paper key={index} elevation={3} className="p-6 flex flex-col items-center justify-center dark:!bg-slate-900 eclipse:!bg-rose-950/80 eclipse:backdrop-blur-xl border dark:border-slate-800 eclipse:border-red-900/50 hover:eclipse:shadow-[0_0_20px_rgba(220,38,38,0.2)] transition-all duration-300">
+                                {card.icon}
+                                <Typography variant="h3" className="!font-black mt-3 text-slate-800 dark:text-white eclipse:text-rose-50">
+                                    {card.count}
+                                </Typography>
+                                <Typography variant="caption" className="uppercase tracking-widest text-gray-500 dark:text-gray-400 eclipse:text-rose-300 font-bold mt-1 text-center">
+                                    {card.title}
+                                </Typography>
+                            </Paper>
+                        ))}
+                    </div>
+
+                    <Paper elevation={3} sx={{ p: 4 }} className="dark:!bg-slate-900 eclipse:!bg-rose-950/80 eclipse:backdrop-blur-xl dark:!text-white eclipse:!text-rose-50 border dark:border-slate-800 eclipse:border-red-900/50 transition-colors duration-500">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                             <div>
                                 <Typography variant="h5" className="!font-black !mb-2">User Management</Typography>
-                                <Typography variant="body2" className="text-gray-500 dark:text-slate-400 eclipse:text-rose-300 transition-colors">Search for a student and instantly upgrade their platform access.</Typography>
+                                <Typography variant="body2" className="text-gray-500 dark:text-slate-400 eclipse:text-rose-300 transition-colors">Search for a user and instantly modify their platform access.</Typography>
                             </div>
 
                             {/* Live Search Bar */}
@@ -51,7 +80,7 @@ export default function AdminDashboard({ auth, users }) {
                                 <Typography variant="body1" className="text-center py-8 text-gray-500 eclipse:text-rose-300">No users found matching "{searchQuery}"</Typography>
                             ) : (
                                 filteredUsers.map((user) => (
-                                    <Box key={user.id} className="p-4 border border-gray-100 dark:border-slate-800 eclipse:border-red-900/40 eclipse:bg-rose-950/40 rounded-xl flex flex-col md:flex-row justify-between items-center gap-4 hover:eclipse:shadow-[0_0_15px_rgba(220,38,38,0.15)] transition-all">
+                                    <Box key={user.id} className="p-4 border border-gray-100 dark:border-slate-800 eclipse:border-red-900/40 eclipse:bg-rose-900/20 rounded-xl flex flex-col md:flex-row justify-between items-center gap-4 hover:eclipse:shadow-[0_0_15px_rgba(220,38,38,0.15)] transition-all">
 
                                         <div className="flex-1">
                                             <Typography variant="subtitle1" className="!font-bold">{user.name}</Typography>

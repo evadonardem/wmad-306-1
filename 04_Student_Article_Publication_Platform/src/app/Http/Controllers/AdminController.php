@@ -10,8 +10,19 @@ class AdminController extends Controller
 {
     public function index()
     {
-        // Get all users and their current roles
-        $users = User::with('roles')->get()->map(function($user) {
+        // Fetch all users with their roles eagerly loaded
+        $users = User::with('roles')->get();
+
+        // Calculate Metrics for the new KPI Ribbon
+        $metrics = [
+            'total' => $users->count(),
+            'admins' => $users->filter(fn($user) => $user->roles->contains('name', 'admin'))->count(),
+            'editors' => $users->filter(fn($user) => $user->roles->contains('name', 'editor'))->count(),
+            'writers' => $users->filter(fn($user) => $user->roles->contains('name', 'writer'))->count(),
+            'students' => $users->filter(fn($user) => $user->roles->contains('name', 'student'))->count(),
+        ];
+
+        $mappedUsers = $users->map(function($user) {
             return [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -21,7 +32,8 @@ class AdminController extends Controller
         });
 
         return Inertia::render('Admin/Dashboard', [
-            'users' => $users
+            'users' => $mappedUsers,
+            'metrics' => $metrics // Passing the counts to React
         ]);
     }
 

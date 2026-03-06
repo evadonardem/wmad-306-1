@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Article;
 use App\Models\ArticleStatus;
 use App\Models\User;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -16,16 +17,26 @@ class WriterController extends Controller
     use AuthorizesRequests;
 
     /**
-     * Display the writer's dashboard with filtered article groups.
+     * Display the writer's dashboard with articles and comments.
      */
     public function dashboard(Request $request)
     {
-        $articles = Article::with(['status', 'category'])
-            ->where('writer_id', $request->user()->id)
-            ->latest()
-            ->get();
+        // UPDATED: Eager loading comments and nested replies
+        $articles = Article::with([
+            'status',
+            'category',
+            'comments' => function ($query) {
+                // We only want the top-level comments; the model handles the tree
+                $query->whereNull('parent_id')
+                      ->with(['user', 'replies.user']) // Loads comment authors and reply authors
+                      ->latest();
+            }
+        ])
+        ->where('writer_id', $request->user()->id)
+        ->latest()
+        ->get();
 
-        $categories = \App\Models\Category::all();
+        $categories = Category::all();
 
         return Inertia::render('Writer/Dashboard', [
             'articles' => $articles,

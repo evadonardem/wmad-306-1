@@ -30,7 +30,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Admin Management (Phase 6)
+// Admin Management
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin', [AdminController::class, 'index'])->name('articles.admin');
     Route::post('/admin/users/{user}/role', [AdminController::class, 'updateRole'])->name('admin.users.update-role');
@@ -41,7 +41,11 @@ Route::middleware(['auth', 'role:writer'])->group(function () {
     Route::get('/writer/dashboard', [WriterController::class, 'dashboard'])->name('writer.dashboard');
     Route::post('/articles', [WriterController::class, 'store'])->name('articles.store');
     Route::post('/articles/{article}/submit', [WriterController::class, 'submit'])->name('articles.submit');
+
+    // FIX: Synced these two names so the Save button works for revisions
     Route::put('/articles/{article}/revise', [WriterController::class, 'revise'])->name('articles.revise');
+    Route::put('/articles/{article}', [WriterController::class, 'revise'])->name('articles.update');
+
     Route::post('/articles/{article}/unsubmit', [WriterController::class, 'unsubmit'])->name('articles.unsubmit');
     Route::delete('/articles/{article}', [WriterController::class, 'destroy'])->name('articles.destroy');
 });
@@ -54,13 +58,24 @@ Route::middleware(['auth', 'role:editor'])->group(function () {
 });
 
 // ==========================================
-// Student Routes
+// SHARED COMMUNICATION (Student & Writer)
 // ==========================================
+Route::middleware(['auth', 'role:student|writer'])->group(function () {
+    Route::post('/articles/{article}/comment', [StudentController::class, 'comment'])->name('articles.comment');
+    Route::delete('/comments/{comment}', [StudentController::class, 'deleteComment'])->name('comments.destroy');
+});
+
+// Student Specific Actions
 Route::middleware(['auth', 'role:student'])->group(function () {
     Route::get('/student/dashboard', [StudentController::class, 'studentDashboard'])->name('student.dashboard');
-    Route::post('/articles/{article}/comment', [StudentController::class, 'comment'])->name('articles.comment');
-    // NEW: Route to allow students to delete their own comments
-    Route::delete('/comments/{comment}', [StudentController::class, 'deleteComment'])->name('comments.destroy');
+});
+
+// Global Notification Actions
+Route::middleware('auth')->group(function () {
+    Route::post('/notifications/{id}/mark-as-read', function ($id) {
+        auth()->user()->notifications()->findOrFail($id)->markAsRead();
+        return back();
+    })->name('notifications.markAsRead');
 });
 
 require __DIR__.'/auth.php';

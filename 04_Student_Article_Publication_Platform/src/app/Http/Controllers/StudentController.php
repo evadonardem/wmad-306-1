@@ -15,20 +15,19 @@ class StudentController extends Controller
     {
         $query = Article::with(['writer', 'category'])
             ->with(['comments' => function ($q) {
-                // Only load top-level comments; replies are loaded recursively
                 $q->whereNull('parent_id')->with('user', 'replies')->latest();
             }])
             ->whereHas('status', function ($q) {
                 $q->where('name', 'published');
             });
 
-        // Search Filter
         if ($request->filled('search')) {
-            $query->where('title', 'like', '%' . $request->search . '%')
+            $query->where(function($q) use ($request) {
+                $q->where('title', 'like', '%' . $request->search . '%')
                   ->orWhere('content', 'like', '%' . $request->search . '%');
+            });
         }
 
-        // Category Filter
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->category_id);
         }
@@ -48,17 +47,21 @@ class StudentController extends Controller
         ]);
 
         $comment = Comment::create([
-            'student_id' => auth()->id(), // FIXED: Saving as student_id
+            'student_id' => auth()->id(),
             'article_id' => $article->id,
             'parent_id' => $validated['parent_id'] ?? null,
             'content' => $validated['content'],
         ]);
 
-        // If this is a reply, notify the original commenter
         if ($comment->parent_id) {
             $parentComment = Comment::find($comment->parent_id);
-            if ($parentComment->student_id !== auth()->id()) { // FIXED: Checking student_id
-                $parentComment->user->notify(new CommentReplyNotification(auth()->user(), $article->title));
+            if ($parentComment->student_id !== auth()->id()) {
+                // FIXED: Now passing $article->id so the notification knows where to scroll
+                $parentComment->user->notify(new CommentReplyNotification(
+                    auth()->user(),
+                    $article->title,
+                    $article->id
+                ));
             }
         }
 
@@ -67,12 +70,11 @@ class StudentController extends Controller
 
     public function deleteComment(Comment $comment)
     {
-        // Security check: Only the owner can delete their comment
-        if (auth()->id() !== $comment->student_id) { // FIXED: Checking student_id
+        if (auth()->id() !== $comment->student_id) {
             return abort(403, 'Unauthorized action.');
         }
 
-        $comment->delete(); // This will cascade and delete all replies to this comment too
+        $comment->delete();
         return back()->with('success', 'Comment deleted.');
     }
 }
