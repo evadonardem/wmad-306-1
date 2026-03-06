@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             ArticleStatusSeeder::class,
             CategorySeeder::class,
+            SubmissionDeadlineSeeder::class,
             UserSeeder::class,
         ]);
 

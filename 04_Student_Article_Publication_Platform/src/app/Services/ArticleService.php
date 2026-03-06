@@ -5,9 +5,24 @@ namespace App\Services;
 use App\Models\Article;
 use App\Models\ArticleStatus;
 use App\Models\User;
+use Illuminate\Support\Str;
 
 class ArticleService
 {
+    private function generateUniqueSlug(string $title): string
+    {
+        $base = Str::slug($title);
+        $slug = $base;
+        $suffix = 2;
+
+        while (Article::query()->where('slug', $slug)->exists()) {
+            $slug = $base.'-'.$suffix;
+            $suffix++;
+        }
+
+        return $slug;
+    }
+
     /** Create a draft article for the given writer. */
     public function createDraft(User $writer, array $attributes): Article
     {
@@ -16,6 +31,7 @@ class ArticleService
         return $writer->articles()->create([
             ...$attributes,
             'article_status_id' => $draftStatusId,
+            'slug' => $this->generateUniqueSlug($attributes['title'] ?? 'draft'),
         ]);
     }
 

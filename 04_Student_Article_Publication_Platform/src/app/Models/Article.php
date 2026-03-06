@@ -58,6 +58,11 @@ class Article extends Model
         return $this->hasMany(Revision::class);
     }
 
+    public function draftVersions(): HasMany
+    {
+        return $this->hasMany(DraftVersion::class);
+    }
+
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class);

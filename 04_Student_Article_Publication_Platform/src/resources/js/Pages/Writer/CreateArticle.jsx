@@ -1,11 +1,11 @@
 import WriterLayout from '@/Layouts/WriterLayout';
 import ArticleForm from './Components/ArticleForm';
 
-export default function CreateArticle() {
+export default function CreateArticle({ categories = [] }) {
     return (
         <WriterLayout>
             <h2>Create Article</h2>
-            <ArticleForm />
+            <ArticleForm categories={categories} />
         </WriterLayout>
     );
 }
