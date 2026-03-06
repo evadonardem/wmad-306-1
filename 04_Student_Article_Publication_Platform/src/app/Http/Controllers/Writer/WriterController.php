@@ -31,10 +31,17 @@ class WriterController extends Controller
     }
 
     /** Submit an existing article for editorial review. */
-    public function submit(Article $article): RedirectResponse
+    public function submit(Request $request, Article $article): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $this->authorize('submit', $article);
         $this->articleService->submit($article);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok' => true,
+                'article' => $article->refresh()->load('status'),
+            ]);
+        }
 
         return back()->with('success', 'Article submitted for review.');
     }

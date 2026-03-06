@@ -156,6 +156,8 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
     const [lastSavedAt, setLastSavedAt] = useState(null);
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState(null);
 
     const [versions, setVersions] = useState(
         [...(initialDraftVersions ?? [])].sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
@@ -232,10 +234,56 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
             );
             setLastSavedAt(res.data?.savedAt ?? new Date().toISOString());
             setDirty(false);
+            return true;
         } catch (e) {
             setSaveError(e?.response?.data?.message ?? 'Autosave failed');
+            return false;
         } finally {
             setSaving(false);
+        }
+    }
+
+    async function submitForReview() {
+        if (!isEdit) return;
+        if (saving || submitting) return;
+
+        setSubmitError(null);
+        setSubmitting(true);
+
+        try {
+            const confirmed = window.confirm('Submit this article for editorial review?');
+            if (!confirmed) {
+                setSubmitting(false);
+                return;
+            }
+
+            // Ensure the latest content is persisted before submitting.
+            if (dirty) {
+                const ok = await runAutosave();
+                if (!ok) {
+                    setSubmitError('Please resolve save errors before submitting.');
+                    setSubmitting(false);
+                    return;
+                }
+            }
+
+            await axios.post(
+                route('writer.articles.submit', article.id),
+                {},
+                { headers: { Accept: 'application/json' } }
+            );
+
+            setSubmitting(false);
+            setSubmitError(null);
+            router.visit(route('writer.dashboard'));
+        } catch (e) {
+            const status = e?.response?.status;
+            if (status === 403) {
+                setSubmitError('You do not have permission to submit this article.');
+            } else {
+                setSubmitError(e?.response?.data?.message ?? 'Submit failed.');
+            }
+            setSubmitting(false);
         }
     }
 
@@ -354,6 +402,22 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
         return 'No similarity detected';
     }, [plagiarism]);
 
+    const submitDisabledReason = useMemo(() => {
+        if (!isEdit) return 'Draft must be created first.';
+        if (saving) return 'Currently saving.';
+        if (submitting) return 'Currently submitting.';
+        if (!title.trim()) return 'Add a title before submitting.';
+        if (!plainText.trim()) return 'Add some content before submitting.';
+
+        const statusSlug = article?.status?.slug ?? null;
+        if (statusSlug === 'submitted') return 'This article is already submitted.';
+        if (statusSlug === 'published') return 'This article is already published.';
+
+        return null;
+    }, [isEdit, saving, submitting, title, plainText, article?.status?.slug]);
+
+    const submitDisabled = submitDisabledReason != null;
+
     return (
         <div className="mx-auto max-w-7xl px-4 py-6">
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
@@ -410,7 +474,7 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
                                         type="button"
                                         onClick={() => runAutosave()}
                                         disabled={saving}
-                                        className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium"
+                                        className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                         Save now
                                     </button>
@@ -418,11 +482,28 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
                                         type="button"
                                         onClick={() => saveSnapshot()}
                                         disabled={saving}
-                                        className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium"
+                                        className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                         Save version snapshot
                                     </button>
+                                    <button
+                                        type="button"
+                                        onClick={submitForReview}
+                                        disabled={submitDisabled}
+                                        title={submitDisabledReason ?? ''}
+                                        className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        {submitting ? 'Submitting…' : 'Submit'}
+                                    </button>
                                 </div>
+                            ) : null}
+
+                            {submitDisabledReason && !submitError ? (
+                                <div className="mt-2 text-xs text-gray-600">Submit disabled: {submitDisabledReason}</div>
+                            ) : null}
+
+                            {submitError ? (
+                                <div className="mt-2 text-sm text-red-700">{submitError}</div>
                             ) : null}
                         </div>
                     </div>

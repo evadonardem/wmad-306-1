@@ -1,7 +1,12 @@
 import { Link } from '@inertiajs/react';
 
 export default function SubmittedList({ articles = [] }) {
-    const submitted = articles.filter((article) => article.submitted_at);
+    const submitted = articles.filter((article) => {
+        const slug = article?.status?.slug ?? null;
+        if (slug) return slug !== 'draft';
+        // Fallback for legacy records with missing status relation.
+        return Boolean(article.submitted_at || article.published_at);
+    });
 
     return (
         <section className="space-y-2">
@@ -26,7 +31,13 @@ export default function SubmittedList({ articles = [] }) {
                                 <span className="text-xs text-gray-500">ID: {article.id}</span>
                             </div>
                             <div className="text-xs text-gray-600">
-                                Submitted: {article.submitted_at ? new Date(article.submitted_at).toLocaleString() : 'N/A'}
+                                Status: {article?.status?.name ?? article?.status?.slug ?? 'N/A'}
+                                {article.submitted_at ? (
+                                    <span> — Submitted: {new Date(article.submitted_at).toLocaleString()}</span>
+                                ) : null}
+                                {article.published_at ? (
+                                    <span> — Published: {new Date(article.published_at).toLocaleString()}</span>
+                                ) : null}
                             </div>
                         </li>
                     ))}

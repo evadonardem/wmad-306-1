@@ -4,26 +4,27 @@ namespace App\Http\Controllers\Writer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Article;
+use App\Models\ArticleStatus;
 use App\Models\SubmissionDeadline;
 use Illuminate\Http\Request;
+use App\Models\User;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class WriterDashboardController extends Controller
 {
-    /** Render the writer dashboard with the user's recent articles. */
-    public function index(Request $request): Response
+    private function computePersonalAnalytics(User $user): array
     {
-        $user = $request->user();
+        $statusIds = ArticleStatus::query()
+            ->whereIn('slug', ['submitted', 'revision-requested', 'published'])
+            ->pluck('id')
+            ->all();
 
-        $articles = $user->articles()
-            ->with(['category', 'status'])
-            ->latest()
-            ->get();
-
-        $submittedQuery = $user->articles()->whereNotNull('submitted_at');
+        $submittedQuery = $user->articles()->whereIn('article_status_id', $statusIds);
         $submittedCount = (clone $submittedQuery)->count();
-        $publishedCount = (clone $submittedQuery)->whereNotNull('published_at')->count();
+
+        $publishedStatusId = ArticleStatus::query()->where('slug', 'published')->value('id');
+        $publishedCount = $publishedStatusId ? $user->articles()->where('article_status_id', $publishedStatusId)->count() : 0;
 
         $avgFeedbackSeconds = (clone $submittedQuery)
             ->with(['revisions' => fn ($q) => $q->select(['id', 'article_id', 'created_at'])->oldest()])
@@ -50,12 +51,25 @@ class WriterDashboardController extends Controller
             ->filter()
             ->average();
 
-        $personalAnalytics = [
+        return [
             'submittedCount' => $submittedCount,
             'publishedCount' => $publishedCount,
             'acceptanceRate' => $submittedCount > 0 ? round(($publishedCount / $submittedCount) * 100, 2) : null,
             'avgEditorFeedbackHours' => $avgFeedbackSeconds !== null ? round($avgFeedbackSeconds / 3600, 2) : null,
         ];
+    }
+
+    /** Render the writer dashboard with the user's recent articles. */
+    public function index(Request $request): Response
+    {
+        $user = $request->user();
+
+        $articles = $user->articles()
+            ->with(['category', 'status'])
+            ->latest()
+            ->get();
+
+        $personalAnalytics = $this->computePersonalAnalytics($user);
 
         $upcomingDeadlines = SubmissionDeadline::query()
             ->with('category:id,name')
@@ -88,6 +102,13 @@ class WriterDashboardController extends Controller
             'upcomingDeadlines' => $upcomingDeadlines,
             'relatedArticles' => $relatedArticles,
             'notifications' => $user->notifications()->latest()->limit(10)->get(),
+        ]);
+    }
+
+    public function personalAnalytics(Request $request): \Illuminate\Http\JsonResponse
+    {
+        return response()->json([
+            'personalAnalytics' => $this->computePersonalAnalytics($request->user()),
         ]);
     }
 }

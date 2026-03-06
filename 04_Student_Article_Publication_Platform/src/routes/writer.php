@@ -13,6 +13,7 @@ Route::middleware(['auth', 'verified', 'role:writer'])
     ->as('writer.')
     ->group(function (): void {
         Route::get('/dashboard', [WriterDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard/personal-analytics', [WriterDashboardController::class, 'personalAnalytics'])->name('dashboard.personalAnalytics');
 
         // Writer pages
         Route::get('/articles/create', [WriterArticleController::class, 'create'])->name('articles.create');

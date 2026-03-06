@@ -1,7 +1,12 @@
 import { Link } from '@inertiajs/react';
 
 export default function DraftList({ articles = [] }) {
-    const drafts = articles.filter((article) => !article.submitted_at);
+    const drafts = articles.filter((article) => {
+        const slug = article?.status?.slug ?? null;
+        if (slug) return slug === 'draft';
+        // Fallback for legacy records with missing status relation.
+        return !article.submitted_at && !article.published_at;
+    });
 
     return (
         <section className="space-y-2">

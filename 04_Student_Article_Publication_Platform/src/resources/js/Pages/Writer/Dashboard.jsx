@@ -1,5 +1,7 @@
 import WriterLayout from "../Shared/Layouts/WriterLayout";
 import { Link } from '@inertiajs/react';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 import DraftList from './Components/DraftList';
 import SubmittedList from './Components/SubmittedList';
 
@@ -10,6 +12,39 @@ export default function Dashboard({
     relatedArticles = [],
     notifications = [],
 }) {
+    const [liveAnalytics, setLiveAnalytics] = useState(personalAnalytics ?? {});
+
+    useEffect(() => {
+        setLiveAnalytics(personalAnalytics ?? {});
+    }, [personalAnalytics]);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        async function refresh() {
+            try {
+                const res = await axios.get(route('writer.dashboard.personalAnalytics'), {
+                    headers: { Accept: 'application/json' },
+                });
+                if (cancelled) return;
+                if (res?.data?.personalAnalytics) {
+                    setLiveAnalytics(res.data.personalAnalytics);
+                }
+            } catch {
+                // Ignore transient errors; keep last known values.
+            }
+        }
+
+        // Poll for near-real-time updates.
+        const id = setInterval(refresh, 5_000);
+        refresh();
+
+        return () => {
+            cancelled = true;
+            clearInterval(id);
+        };
+    }, []);
+
     return (
         <WriterLayout>
             <div className="mx-auto max-w-6xl px-4 py-6">
@@ -65,19 +100,19 @@ export default function Dashboard({
                         <section className="rounded-md border border-gray-200 bg-white p-4">
                             <h3 className="text-lg font-semibold">Personal Analytics</h3>
                             <ul className="mt-2 space-y-1 text-sm text-gray-700">
-                                <li>Submitted: {personalAnalytics.submittedCount ?? 0}</li>
-                                <li>Published: {personalAnalytics.publishedCount ?? 0}</li>
+                                <li>Submitted: {liveAnalytics.submittedCount ?? 0}</li>
+                                <li>Published: {liveAnalytics.publishedCount ?? 0}</li>
                                 <li>
                                     Acceptance Rate:{' '}
-                                    {personalAnalytics.acceptanceRate == null
+                                    {liveAnalytics.acceptanceRate == null
                                         ? 'N/A'
-                                        : personalAnalytics.acceptanceRate + '%'}
+                                        : liveAnalytics.acceptanceRate + '%'}
                                 </li>
                                 <li>
                                     Avg Editor Feedback Time:{' '}
-                                    {personalAnalytics.avgEditorFeedbackHours == null
+                                    {liveAnalytics.avgEditorFeedbackHours == null
                                         ? 'N/A'
-                                        : personalAnalytics.avgEditorFeedbackHours + ' hours'}
+                                        : liveAnalytics.avgEditorFeedbackHours + ' hours'}
                                 </li>
                             </ul>
                         </section>
