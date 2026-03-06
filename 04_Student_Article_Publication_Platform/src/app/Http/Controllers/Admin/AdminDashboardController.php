@@ -145,7 +145,8 @@ class AdminDashboardController extends Controller
             ->select(['id', 'title', 'published_at', 'created_at', 'is_public', 'user_id'])
             ->with(['author:id,name'])
             ->withCount('comments')
-            ->latest('created_at')
+            ->whereNotNull('published_at')
+            ->latest('published_at')
             ->limit(6)
             ->get()
             ->map(fn (Article $article): array => [
@@ -154,7 +155,7 @@ class AdminDashboardController extends Controller
                 'author' => $article->author?->name,
                 'comments_count' => $article->comments_count,
                 'is_public' => (bool) $article->is_public,
-                'status' => $article->published_at ? 'Published' : 'Pending',
+                'status' => 'Published',
                 'created_at' => $article->created_at,
                 'published_at' => $article->published_at,
             ])
@@ -296,6 +297,5 @@ class AdminDashboardController extends Controller
         return back()->with('success', 'User account deleted successfully.');
     }
 }
-
 
 

@@ -1,4 +1,4 @@
-import WriterLayout from "../Shared/Layouts/WriterLayout";
+import WriterLayout from '@/Layouts/WriterLayout';
 import { Link } from '@inertiajs/react';
 import axios from 'axios';
 import { useEffect, useState } from 'react';

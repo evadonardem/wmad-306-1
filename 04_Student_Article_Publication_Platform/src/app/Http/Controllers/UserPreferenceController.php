@@ -16,7 +16,7 @@ class UserPreferenceController extends Controller
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'theme' => 'sometimes|in:classic,modern,broadsheet,guardian,berliner,heritage,dawn,rustic',
+            'theme' => 'sometimes|in:classic,vintage,modern,financial,broadsheet,berliner,guardian,sunset,heritage,dawn,rustic',
             'dark_mode' => 'sometimes|boolean',
         ]);
 
@@ -33,3 +33,4 @@ class UserPreferenceController extends Controller
         ]);
     }
 }
+

@@ -1,4 +1,4 @@
-import { Paper, BottomNavigation, BottomNavigationAction, Fab, Zoom, Box } from '@mui/material';
+import { Paper, BottomNavigation, BottomNavigationAction, Zoom, Box } from '@mui/material';
 import {
   AutoAwesome,
   BookmarkBorder,
@@ -7,6 +7,7 @@ import {
   MenuBook,
 } from '@mui/icons-material';
 import { SIDEBAR_ITEMS } from './Student/DashboardSections/dashboardTheme';
+import { useTheme as useGlobalTheme } from '@/Contexts/ThemeContext';
 
 const iconMap = {
   feed: <AutoAwesome />,
@@ -16,6 +17,8 @@ const iconMap = {
 };
 
 export default function MobileBottomNav({ activeNav, onSelect }) {
+  const { colors } = useGlobalTheme();
+
   return (
     <Box sx={{ display: { xs: 'block', md: 'none' } }}>
       <Zoom in timeout={300}>
@@ -32,8 +35,8 @@ export default function MobileBottomNav({ activeNav, onSelect }) {
             minWidth: 320,
             maxWidth: '90%',
             backdropFilter: 'blur(10px)',
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            border: '1px solid rgba(0, 0, 0, 0.08)',
+            backgroundColor: `${colors.paper}e6`,
+            border: `1px solid ${colors.border}`,
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
             transition: 'all 300ms ease',
             '&:hover': {
@@ -51,10 +54,10 @@ export default function MobileBottomNav({ activeNav, onSelect }) {
               '& .MuiBottomNavigationAction-root': {
                 minWidth: 64,
                 px: 1.5,
-                color: 'text.secondary',
+                color: colors.byline,
                 transition: 'all 200ms ease',
                 '&.Mui-selected': {
-                  color: '#D27685',
+                  color: colors.accent,
                   '& .MuiBottomNavigationAction-label': {
                     fontSize: '0.75rem',
                     fontWeight: 600,
@@ -65,7 +68,7 @@ export default function MobileBottomNav({ activeNav, onSelect }) {
                   transition: 'all 200ms ease',
                 },
                 '&:hover': {
-                  color: '#9E4784',
+                  color: colors.newsprint,
                   transform: 'translateY(-2px)',
                 },
               },

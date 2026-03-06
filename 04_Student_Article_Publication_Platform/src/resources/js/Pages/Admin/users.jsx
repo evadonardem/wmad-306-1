@@ -349,7 +349,7 @@ export default function Users({ users = [], roles = [] }) {
                                 <CardContent>
                                     <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.75}>
                                         <Typography variant="caption" sx={{ color: colors.byline, textTransform: 'uppercase', letterSpacing: 0.6 }}>{card.label}</Typography>
-                                        <Box sx={{ display: 'inline-flex', p: 0.75, borderRadius: 2, bgcolor: alpha(card.tone, 0.12), color: card.tone }}>{card.icon}</Box>
+                                        <Box className="icon-shell" data-icon-shell="true" sx={{ display: 'inline-flex', p: 0.75, borderRadius: 2, bgcolor: alpha(card.tone, 0.12), color: card.tone }}>{card.icon}</Box>
                                     </Stack>
                                     <Typography variant="h4" fontWeight={900} sx={{ color: colors.newsprint }}>{card.value}</Typography>
                                     <Typography variant="caption" sx={{ color: colors.byline, display: 'block', mb: 1 }}>{card.note}</Typography>

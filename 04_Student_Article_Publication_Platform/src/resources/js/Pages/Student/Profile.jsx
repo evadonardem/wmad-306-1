@@ -1,5 +1,5 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import axios from 'axios';
 import {
     Avatar,
@@ -32,6 +32,7 @@ import {
 } from '@mui/icons-material';
 import StudentLayout from '@/Layouts/StudentLayout';
 import { createDashboardTheme, COLORS, DARK_COLORS } from './DashboardSections/dashboardTheme';
+import { useTheme as useGlobalTheme } from '@/Contexts/ThemeContext';
 
 const InfoRow = ({ label, value, icon }) => {
     const theme = useTheme();
@@ -164,7 +165,6 @@ export default function Profile({
     savedArticles: initialSavedArticles = [],
 }) {
     const { auth } = usePage().props;
-    const [mode, setMode] = useState(() => localStorage.getItem('dashboardTheme') || 'light');
     const profileData = {
         fullName: profile?.fullName || auth?.user?.name || 'Student User',
         email: profile?.email || auth?.user?.email || 'student@university.edu',
@@ -175,12 +175,9 @@ export default function Profile({
         Array.isArray(initialSavedArticles) ? initialSavedArticles : []
     ));
 
-    useEffect(() => {
-        localStorage.setItem('dashboardTheme', mode);
-    }, [mode]);
-
-    const theme = useMemo(() => createDashboardTheme(mode), [mode]);
-    const isDark = mode === 'dark';
+    const { isDarkMode, setIsDarkMode } = useGlobalTheme();
+    const theme = useMemo(() => createDashboardTheme(isDarkMode ? 'dark' : 'light'), [isDarkMode]);
+    const isDark = isDarkMode;
 
     const handleAvatarChange = (event) => {
         const file = event.target.files[0];
@@ -250,9 +247,9 @@ export default function Profile({
                                     </Typography>
                                 </Stack>
                                 <Stack direction="row" spacing={1}>
-                                    <Tooltip title={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
-                                        <IconButton onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')} sx={{ color: theme.palette.text.primary, border: `1.5px solid ${theme.palette.text.primary}`, borderRadius: 0, bgcolor: theme.palette.background.default, fontFamily: theme.typography.fontFamily }}>
-                                            {mode === 'dark' ? <LightModeRounded /> : <DarkModeRounded />}
+                                    <Tooltip title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
+                                        <IconButton onClick={() => setIsDarkMode(!isDarkMode)} sx={{ color: theme.palette.text.primary, border: `1.5px solid ${theme.palette.text.primary}`, borderRadius: 0, bgcolor: theme.palette.background.default, fontFamily: theme.typography.fontFamily }}>
+                                            {isDarkMode ? <LightModeRounded /> : <DarkModeRounded />}
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Profile settings">
@@ -299,7 +296,7 @@ export default function Profile({
                                 {/* Theme Toggle */}
                                 <Tooltip title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
                                     <IconButton
-                                        onClick={() => setMode((prev) => (prev === 'light' ? 'dark' : 'light'))}
+                                        onClick={() => setIsDarkMode((prev) => !prev)}
                                         sx={{
                                             color: theme.palette.primary.main,
                                             bgcolor: theme.palette.action.selected,
@@ -463,3 +460,5 @@ export default function Profile({
     );
 
 }
+
+

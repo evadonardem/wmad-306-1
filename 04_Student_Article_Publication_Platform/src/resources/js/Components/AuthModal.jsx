@@ -9,9 +9,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
     const colors = getThemeColors(theme);
 
     useEffect(() => {
-        if (isOpen) {
-            setMode(initialMode);
-        }
+        if (isOpen) setMode(initialMode);
     }, [isOpen, initialMode]);
 
     const loginForm = useForm({
@@ -59,16 +57,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                 />
 
                 <motion.div
-                    initial={{ opacity: 0, y: 16, scale: 0.98 }}
+                    initial={{ opacity: 0, y: 12, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 16, scale: 0.98 }}
-                    transition={{ duration: 0.2 }}
+                    exit={{ opacity: 0, y: 12, scale: 0.98 }}
                     className="relative w-full max-w-md rounded-xl border shadow-2xl"
-                    style={{
-                        backgroundColor: colors.paper,
-                        borderColor: colors.border,
-                        color: colors.newsprint,
-                    }}
+                    style={{ backgroundColor: colors.paper, borderColor: colors.border, color: colors.newsprint }}
                 >
                     <button
                         type="button"
@@ -81,12 +74,30 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                     </button>
 
                     <div className="border-b px-5 py-4" style={{ borderColor: colors.border }}>
-                        <p className="font-mono text-[11px] uppercase tracking-[0.15em]" style={{ color: colors.byline }}>
-                            Quick Access
-                        </p>
-                        <h2 className="mt-1 font-serif text-2xl font-black">
-                            {mode === 'login' ? 'Sign In' : 'Create Account'}
-                        </h2>
+                        <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setMode('login')}
+                                className="rounded px-3 py-1 text-xs font-mono uppercase tracking-wider"
+                                style={{
+                                    backgroundColor: mode === 'login' ? `${colors.accent}22` : 'transparent',
+                                    color: colors.newsprint,
+                                }}
+                            >
+                                Sign In
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setMode('register')}
+                                className="rounded px-3 py-1 text-xs font-mono uppercase tracking-wider"
+                                style={{
+                                    backgroundColor: mode === 'register' ? `${colors.accent}22` : 'transparent',
+                                    color: colors.newsprint,
+                                }}
+                            >
+                                Register
+                            </button>
+                        </div>
                     </div>
 
                     <div className="px-5 py-4">
@@ -96,9 +107,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                                     type="email"
                                     value={loginForm.data.email}
                                     onChange={(e) => loginForm.setData('email', e.target.value)}
-                                    className="w-full rounded border px-3 py-2 text-sm"
+                                    className="w-full rounded-lg border px-3 py-2 text-sm"
                                     style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
                                     placeholder="Email"
+                                    required
                                 />
                                 {loginForm.errors.email && <p className="text-xs text-red-700">{loginForm.errors.email}</p>}
 
@@ -106,9 +118,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                                     type="password"
                                     value={loginForm.data.password}
                                     onChange={(e) => loginForm.setData('password', e.target.value)}
-                                    className="w-full rounded border px-3 py-2 text-sm"
+                                    className="w-full rounded-lg border px-3 py-2 text-sm"
                                     style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
                                     placeholder="Password"
+                                    required
                                 />
                                 {loginForm.errors.password && <p className="text-xs text-red-700">{loginForm.errors.password}</p>}
 
@@ -130,22 +143,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                                 <button
                                     type="submit"
                                     disabled={loginForm.processing}
-                                    className="w-full rounded border px-4 py-2 text-sm font-serif font-bold"
+                                    className="w-full rounded-lg border px-4 py-2 text-sm font-serif font-bold"
                                     style={{ borderColor: colors.newsprint, backgroundColor: colors.newsprint, color: colors.paper }}
                                 >
                                     {loginForm.processing ? 'Signing in...' : 'Sign In'}
                                 </button>
-
-                                <div className="flex justify-end">
-                                    <button
-                                        type="button"
-                                        onClick={() => setMode('register')}
-                                        className="text-xs font-mono uppercase tracking-wider underline"
-                                        style={{ color: colors.byline }}
-                                    >
-                                        Register
-                                    </button>
-                                </div>
                             </form>
                         ) : (
                             <form onSubmit={handleRegister} className="space-y-3">
@@ -153,9 +155,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                                     type="text"
                                     value={registerForm.data.name}
                                     onChange={(e) => registerForm.setData('name', e.target.value)}
-                                    className="w-full rounded border px-3 py-2 text-sm"
+                                    className="w-full rounded-lg border px-3 py-2 text-sm"
                                     style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
                                     placeholder="Full name"
+                                    required
                                 />
                                 {registerForm.errors.name && <p className="text-xs text-red-700">{registerForm.errors.name}</p>}
 
@@ -163,9 +166,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                                     type="email"
                                     value={registerForm.data.email}
                                     onChange={(e) => registerForm.setData('email', e.target.value)}
-                                    className="w-full rounded border px-3 py-2 text-sm"
+                                    className="w-full rounded-lg border px-3 py-2 text-sm"
                                     style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
                                     placeholder="Email"
+                                    required
                                 />
                                 {registerForm.errors.email && <p className="text-xs text-red-700">{registerForm.errors.email}</p>}
 
@@ -174,17 +178,19 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                                         type="password"
                                         value={registerForm.data.password}
                                         onChange={(e) => registerForm.setData('password', e.target.value)}
-                                        className="w-full rounded border px-3 py-2 text-sm"
+                                        className="w-full rounded-lg border px-3 py-2 text-sm"
                                         style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
                                         placeholder="Password"
+                                        required
                                     />
                                     <input
                                         type="password"
                                         value={registerForm.data.password_confirmation}
                                         onChange={(e) => registerForm.setData('password_confirmation', e.target.value)}
-                                        className="w-full rounded border px-3 py-2 text-sm"
+                                        className="w-full rounded-lg border px-3 py-2 text-sm"
                                         style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
                                         placeholder="Confirm"
+                                        required
                                     />
                                 </div>
 
@@ -195,22 +201,11 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                                 <button
                                     type="submit"
                                     disabled={registerForm.processing}
-                                    className="w-full rounded border px-4 py-2 text-sm font-serif font-bold"
+                                    className="w-full rounded-lg border px-4 py-2 text-sm font-serif font-bold"
                                     style={{ borderColor: colors.newsprint, backgroundColor: colors.newsprint, color: colors.paper }}
                                 >
                                     {registerForm.processing ? 'Creating account...' : 'Create Account'}
                                 </button>
-
-                                <div className="flex justify-end">
-                                    <button
-                                        type="button"
-                                        onClick={() => setMode('login')}
-                                        className="text-xs font-mono uppercase tracking-wider underline"
-                                        style={{ color: colors.byline }}
-                                    >
-                                        Sign In
-                                    </button>
-                                </div>
                             </form>
                         )}
                     </div>

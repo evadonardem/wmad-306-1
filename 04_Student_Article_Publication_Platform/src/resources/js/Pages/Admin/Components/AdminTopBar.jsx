@@ -16,11 +16,9 @@ import {
 import {
     AdminPanelSettingsRounded,
     ArticleRounded,
-    AssessmentRounded,
     LogoutRounded,
     ManageAccountsRounded,
     PaletteRounded,
-    SettingsRounded,
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { NEWSPAPER_THEMES, getThemeColors, useThemeContext } from '@/Components/ThemeContext';
@@ -29,8 +27,6 @@ const NAV_ITEMS = [
     { key: 'dashboard', label: 'Dashboard', action: () => router.visit('/admin/dashboard') },
     { key: 'users', label: 'Users', action: () => router.visit('/admin/users') },
     { key: 'articles', label: 'Articles', action: () => router.visit('/articles') },
-    { key: 'reports', label: 'Reports', action: () => router.visit('/admin/dashboard#live-reports') },
-    { key: 'settings', label: 'Settings', action: () => router.visit('/profile') },
 ];
 
 export default function AdminTopBar({ active = 'dashboard' }) {
@@ -61,6 +57,8 @@ export default function AdminTopBar({ active = 'dashboard' }) {
             <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1.5}>
                 <Stack direction="row" alignItems="center" spacing={1.25}>
                     <Box
+                        className="icon-shell"
+                        data-icon-shell="true"
                         sx={{
                             display: 'inline-flex',
                             alignItems: 'center',
@@ -99,7 +97,7 @@ export default function AdminTopBar({ active = 'dashboard' }) {
                                     borderColor: colors.newsprint,
                                 },
                             }}
-                            startIcon={item.key === 'articles' ? <ArticleRounded fontSize="small" /> : item.key === 'reports' ? <AssessmentRounded fontSize="small" /> : item.key === 'settings' ? <SettingsRounded fontSize="small" /> : null}
+                            startIcon={item.key === 'articles' ? <ArticleRounded fontSize="small" /> : null}
                         >
                             {item.label}
                         </Button>

@@ -1,17 +1,18 @@
 import InputError from '@/Components/InputError';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
+import { getThemeColors, useThemeContext } from '@/Components/ThemeContext';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function ForgotPassword({ status }) {
+    const { theme } = useThemeContext();
+    const colors = getThemeColors(theme);
+
     const { data, setData, post, processing, errors } = useForm({
         email: '',
     });
 
     const submit = (e) => {
         e.preventDefault();
-
         post(route('password.email'));
     };
 
@@ -19,43 +20,60 @@ export default function ForgotPassword({ status }) {
         <GuestLayout>
             <Head title="Forgot Password" />
 
-            <div className="mb-5 border-b pb-4">
-                <p className="text-xs font-mono uppercase tracking-[0.2em] text-gray-600">Account Recovery</p>
-                <h1 className="mt-1 font-serif text-3xl font-black">Forgot Password</h1>
-                <p className="mt-2 text-sm text-gray-700">
-                    Enter your email and we will send a secure reset link.
-                </p>
-            </div>
-
-            {status && (
-                <div className="mb-4 rounded border border-green-200 bg-green-50 p-3 text-sm font-medium text-green-700">
-                    {status}
+            <div className="space-y-5">
+                <div className="rounded-lg border p-4" style={{ borderColor: colors.border, backgroundColor: `${colors.aged}66` }}>
+                    <p className="text-[11px] font-mono uppercase tracking-[0.22em]" style={{ color: colors.byline }}>
+                        Recovery Center
+                    </p>
+                    <h1 className="mt-2 font-serif text-3xl font-black leading-tight" style={{ color: colors.newsprint }}>
+                        Forgot your password?
+                    </h1>
+                    <p className="mt-1 text-sm" style={{ color: colors.byline }}>
+                        We will email you a secure reset link to regain access to your account.
+                    </p>
                 </div>
-            )}
 
-            <form onSubmit={submit}>
-                <TextInput
-                    id="email"
-                    type="email"
-                    name="email"
-                    value={data.email}
-                    className="mt-1 block w-full"
-                    isFocused={true}
-                    onChange={(e) => setData('email', e.target.value)}
-                />
+                {status && (
+                    <div className="rounded-md border p-3 text-sm font-medium" style={{ borderColor: '#bbf7d0', backgroundColor: '#f0fdf4', color: '#166534' }}>
+                        {status}
+                    </div>
+                )}
 
-                <InputError message={errors.email} className="mt-2" />
+                <form onSubmit={submit} className="space-y-4">
+                    <div className="space-y-1">
+                        <label htmlFor="email" className="text-sm font-medium" style={{ color: colors.newsprint }}>
+                            Email Address
+                        </label>
+                        <input
+                            id="email"
+                            type="email"
+                            name="email"
+                            value={data.email}
+                            onChange={(e) => setData('email', e.target.value)}
+                            className="block w-full rounded-lg border px-3 py-2.5 text-sm"
+                            style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
+                            placeholder="you@school.edu"
+                            required
+                        />
+                        <InputError message={errors.email} className="mt-1" />
+                    </div>
 
-                <div className="mt-6 flex items-center justify-between">
-                    <Link href={route('login')} className="text-sm text-gray-600 underline hover:text-gray-900">
+                    <button
+                        type="submit"
+                        disabled={processing}
+                        className="w-full rounded-lg border px-4 py-2.5 text-sm font-serif font-bold"
+                        style={{ borderColor: colors.newsprint, backgroundColor: colors.newsprint, color: colors.paper }}
+                    >
+                        {processing ? 'Sending link...' : 'Email Reset Link'}
+                    </button>
+                </form>
+
+                <div className="flex items-center justify-end border-t pt-4" style={{ borderColor: colors.border }}>
+                    <Link href={route('login')} className="text-xs font-mono uppercase tracking-[0.16em] underline" style={{ color: colors.byline }}>
                         Back to sign in
                     </Link>
-
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Email Reset Link
-                    </PrimaryButton>
                 </div>
-            </form>
+            </div>
         </GuestLayout>
     );
 }

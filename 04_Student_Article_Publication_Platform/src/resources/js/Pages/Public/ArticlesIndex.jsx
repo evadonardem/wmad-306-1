@@ -1,16 +1,39 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { useTheme } from '@/Contexts/ThemeContext';
 import AuthModal from '@/Components/AuthModal';
 
-export default function ArticlesIndex({ articles = [], auth = {} }) {
+export default function ArticlesIndex({
+    articles = [],
+    auth = {},
+    filters = {},
+    categories = [],
+    years = [],
+    visibilityScope = 'public_only',
+    backUrl = '/',
+    backLabel = 'BACK TO HOME',
+}) {
     const [showAuth, setShowAuth] = useState(false);
     const [authMode, setAuthMode] = useState('register');
     const [showThemePicker, setShowThemePicker] = useState(false);
     const [commentDrafts, setCommentDrafts] = useState({});
     const [showRegisterPrompt, setShowRegisterPrompt] = useState({});
     const [commentErrors, setCommentErrors] = useState({});
+    const [search, setSearch] = useState(filters.search ?? '');
+    const [sort, setSort] = useState(filters.sort ?? 'date_newest');
+    const [category, setCategory] = useState(filters.category ?? '');
+    const [year, setYear] = useState(filters.year ?? '');
+    const [visibility, setVisibility] = useState(filters.visibility ?? (visibilityScope === 'published_all' ? 'all' : 'public'));
+    const yearChoices = Array.isArray(years) && years.length > 0
+        ? years
+        : Array.from(
+            new Set(
+                (Array.isArray(articles) ? articles : [])
+                    .map((article) => article?.published_at ? new Date(article.published_at).getFullYear() : null)
+                    .filter((value) => Number.isInteger(value))
+            )
+        ).sort((a, b) => b - a);
 
     const commentForm = useForm({
         body: '',
@@ -75,9 +98,26 @@ export default function ArticlesIndex({ articles = [], auth = {} }) {
             });
     };
 
+    const applyFilters = (next = {}) => {
+        const payload = {
+            search,
+            sort,
+            category,
+            year,
+            visibility,
+            ...next,
+        };
+
+        router.get(route('public.articles.index'), payload, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
+    };
+
     return (
         <>
-            <Head title="All Public Articles" />
+            <Head title="Articles" />
 
             <div className="fixed bottom-6 right-6 z-50">
                 <motion.button
@@ -132,20 +172,128 @@ export default function ArticlesIndex({ articles = [], auth = {} }) {
                         <div className="flex items-center justify-between gap-4">
                             <div>
                                 <p className="font-mono text-xs tracking-[0.25em]" style={{ color: colors.byline }}>LATEST EDITION</p>
-                                <h1 className="font-serif text-4xl font-black">All Public Articles</h1>
+                                <h1 className="font-serif text-4xl font-black">
+                                    {visibilityScope === 'published_all' ? 'All Published Articles' : 'All Public Articles'}
+                                </h1>
                                 <p className="font-serif text-sm mt-1" style={{ color: colors.byline }}>
-                                    Browse the full archive. Today&apos;s landing section shows only 4 highlights.
+                                    {visibilityScope === 'published_all'
+                                        ? 'Viewing all published articles. Use search and title sorting to manage the list.'
+                                        : 'Browsing public articles. Sign in to access the full published archive.'}
                                 </p>
                             </div>
-                            <Link href="/" className="px-4 py-2 border-2 font-mono text-xs tracking-wider" style={{ borderColor: colors.newsprint, color: colors.newsprint }}>
-                                BACK TO HOME
+                            <Link href={backUrl} className="px-4 py-2 border-2 font-mono text-xs tracking-wider" style={{ borderColor: colors.newsprint, color: colors.newsprint }}>
+                                {backLabel}
                             </Link>
                         </div>
                     </div>
 
+                    <div className="mb-6 grid gap-3 md:grid-cols-[1fr_170px_170px_140px_160px_auto] items-end">
+                        <label className="block">
+                            <span className="font-mono text-xs tracking-wider" style={{ color: colors.byline }}>Search Title</span>
+                            <input
+                                type="text"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        applyFilters({ search: e.currentTarget.value, sort, category, year, visibility });
+                                    }
+                                }}
+                                placeholder="Type article title..."
+                                className="mt-1 w-full border rounded px-3 py-2 text-sm font-serif"
+                                style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
+                            />
+                        </label>
+
+                        <label className="block">
+                            <span className="font-mono text-xs tracking-wider" style={{ color: colors.byline }}>Sort by Title</span>
+                            <select
+                                value={sort}
+                                onChange={(e) => {
+                                    const nextSort = e.target.value;
+                                    setSort(nextSort);
+                                    applyFilters({ sort: nextSort });
+                                }}
+                                className="mt-1 w-full border rounded px-3 py-2 text-sm font-serif"
+                                style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
+                            >
+                                <option value="title_asc">A to Z</option>
+                                <option value="title_desc">Z to A</option>
+                                <option value="date_newest">Date (Newest)</option>
+                                <option value="date_oldest">Date (Oldest)</option>
+                            </select>
+                        </label>
+
+                        <label className="block">
+                            <span className="font-mono text-xs tracking-wider" style={{ color: colors.byline }}>Filter Category</span>
+                            <select
+                                value={category}
+                                onChange={(e) => {
+                                    const nextCategory = e.target.value;
+                                    setCategory(nextCategory);
+                                    applyFilters({ category: nextCategory });
+                                }}
+                                className="mt-1 w-full border rounded px-3 py-2 text-sm font-serif"
+                                style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
+                            >
+                                <option value="">All Categories</option>
+                                {categories.map((cat) => (
+                                    <option key={cat.id} value={String(cat.id)}>{cat.name}</option>
+                                ))}
+                            </select>
+                        </label>
+
+                        <label className="block">
+                            <span className="font-mono text-xs tracking-wider" style={{ color: colors.byline }}>Filter Visibility</span>
+                            <select
+                                value={visibility}
+                                onChange={(e) => {
+                                    const nextVisibility = e.target.value;
+                                    setVisibility(nextVisibility);
+                                    applyFilters({ visibility: nextVisibility });
+                                }}
+                                disabled={visibilityScope !== 'published_all'}
+                                className="mt-1 w-full border rounded px-3 py-2 text-sm font-serif"
+                                style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
+                            >
+                                <option value="all">All</option>
+                                <option value="public">Public</option>
+                                <option value="private">Private</option>
+                            </select>
+                        </label>
+
+                        <label className="block">
+                            <span className="font-mono text-xs tracking-wider" style={{ color: colors.byline }}>Filter Year</span>
+                            <select
+                                value={year}
+                                onChange={(e) => {
+                                    const nextYear = e.target.value;
+                                    setYear(nextYear);
+                                    applyFilters({ year: nextYear });
+                                }}
+                                className="mt-1 w-full border rounded px-3 py-2 text-sm font-serif"
+                                style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
+                            >
+                                <option value="">All Years</option>
+                                {yearChoices.map((y) => (
+                                    <option key={String(y)} value={String(y)}>{String(y)}</option>
+                                ))}
+                            </select>
+                        </label>
+
+                        <button
+                            type="button"
+                            onClick={() => applyFilters()}
+                            className="px-4 py-2 border-2 font-mono text-xs tracking-wider"
+                            style={{ borderColor: colors.newsprint, color: colors.newsprint }}
+                        >
+                            APPLY
+                        </button>
+                    </div>
+
                     {articles.length === 0 && (
                         <div className="border p-6 font-serif italic" style={{ borderColor: colors.border, color: colors.byline, backgroundColor: colors.aged }}>
-                            No public articles are available yet.
+                            No articles found for the current filter.
                         </div>
                     )}
 

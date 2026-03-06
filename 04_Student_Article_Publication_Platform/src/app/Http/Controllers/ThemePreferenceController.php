@@ -19,12 +19,13 @@ class ThemePreferenceController extends Controller
                 'berliner',
                 'guardian',
                 'sunset',
+                'heritage',
+                'dawn',
+                'rustic',
             ])],
         ]);
 
-        $request->user()->forceFill([
-            'theme_preference' => $validated['theme'],
-        ])->save();
+        $request->user()->setPreference('theme', $validated['theme']);
 
         return response()->noContent();
     }

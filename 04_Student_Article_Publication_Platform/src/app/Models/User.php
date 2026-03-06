@@ -70,6 +70,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'suspended_at' => 'datetime',
+            'preferences' => 'array',
         ];
     }
 
@@ -103,4 +104,5 @@ class User extends Authenticatable
         return $this->belongsToMany(Article::class, 'article_saves')->withTimestamps();
     }
 }
+
 

@@ -61,7 +61,7 @@ export default function Welcome({ auth, recentArticles = [], landingStats = {} }
         setLastScrollY(currentScrollY);
 
         // Update active section
-        const sections = ['home', 'features', 'articles', 'about', 'submit'];
+        const sections = ['home', 'features', 'articles', 'about', 'write'];
         for (const section of sections) {
             const element = document.getElementById(section);
             if (element) {
@@ -494,7 +494,7 @@ export default function Welcome({ auth, recentArticles = [], landingStats = {} }
                                 { id: 'features', label: 'Features' },
                                 { id: 'articles', label: 'Articles' },
                                 { id: 'about', label: 'About' },
-                                { id: 'submit', label: 'Submit' }
+                                { id: 'submit', label: 'Join Us' }
                             ].map((item, index) => (
                                 <motion.li
                                     key={item.id}
@@ -651,14 +651,13 @@ export default function Welcome({ auth, recentArticles = [], landingStats = {} }
                                         color: colors.textSecondary
                                     }}
                                 >
-                                    {currentTheme === 'vintage' ? currentTime.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) :
-                                     currentTheme === 'financial' ? 'Markets & Minds' :
-                                     currentTheme === 'broadsheet' ? 'The Student Voice' :
-                                     currentTheme === 'berliner' ? 'Die Studentenzeitung' :
-                                     currentTheme === 'guardian' ? 'Open for Ideas' :
-                                     currentTheme === 'sunset' ? 'Evening Edition' :
+                                    {theme === 'vintage' ? currentTime.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) :
+                                     theme === 'financial' ? 'Markets & Minds' :
+                                     theme === 'broadsheet' ? 'The Student Voice' :
+                                     theme === 'berliner' ? 'Die Studentenzeitung' :
+                                     theme === 'guardian' ? 'Open for Ideas' :
+                                     theme === 'sunset' ? 'Evening Edition' :
                                      'The Student Voice Since 2024'}
-                                    The Student Voice Since 2024
                                 </motion.p>
                             </motion.div>
 

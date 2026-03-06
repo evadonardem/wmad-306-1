@@ -1,14 +1,13 @@
 import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
-import { Transition } from '@headlessui/react';
+import { getThemeColors, useThemeContext } from '@/Components/ThemeContext';
 import { useForm } from '@inertiajs/react';
 import { useRef } from 'react';
 
 export default function UpdatePasswordForm({ className = '' }) {
     const passwordInput = useRef();
     const currentPasswordInput = useRef();
+    const { theme } = useThemeContext();
+    const colors = getThemeColors(theme);
 
     const {
         data,
@@ -46,95 +45,87 @@ export default function UpdatePasswordForm({ className = '' }) {
 
     return (
         <section className={className}>
-            <header>
-                <h2 className="text-lg font-medium text-gray-900">
-                    Update Password
-                </h2>
-
-                <p className="mt-1 text-sm text-gray-600">
-                    Ensure your account is using a long, random password to stay
-                    secure.
+            <header className="mb-7 rounded-xl border p-5" style={{ borderColor: colors.border, backgroundColor: `${colors.aged}88` }}>
+                <p className="text-[11px] font-mono uppercase tracking-[0.22em]" style={{ color: colors.byline }}>
+                    Security
+                </p>
+                <h3 className="mt-1 font-serif text-2xl font-black" style={{ color: colors.newsprint }}>
+                    Change Password
+                </h3>
+                <p className="mt-1 text-sm" style={{ color: colors.byline }}>
+                    Use a long and unique password to improve account security.
                 </p>
             </header>
 
-            <form onSubmit={updatePassword} className="mt-6 space-y-6">
-                <div>
-                    <InputLabel
-                        htmlFor="current_password"
-                        value="Current Password"
-                    />
-
-                    <TextInput
+            <form onSubmit={updatePassword} className="space-y-6">
+                <div className="space-y-2">
+                    <label htmlFor="current_password" className="text-sm font-semibold tracking-wide" style={{ color: colors.newsprint }}>
+                        Current Password
+                    </label>
+                    <input
                         id="current_password"
                         ref={currentPasswordInput}
                         value={data.current_password}
-                        onChange={(e) =>
-                            setData('current_password', e.target.value)
-                        }
+                        onChange={(e) => setData('current_password', e.target.value)}
                         type="password"
-                        className="mt-1 block w-full"
+                        className="block w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
+                        style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
                         autoComplete="current-password"
                     />
-
-                    <InputError
-                        message={errors.current_password}
-                        className="mt-2"
-                    />
+                    <InputError message={errors.current_password} className="mt-1" />
                 </div>
 
-                <div>
-                    <InputLabel htmlFor="password" value="New Password" />
-
-                    <TextInput
+                <div className="space-y-2">
+                    <label htmlFor="password" className="text-sm font-semibold tracking-wide" style={{ color: colors.newsprint }}>
+                        New Password
+                    </label>
+                    <input
                         id="password"
                         ref={passwordInput}
                         value={data.password}
                         onChange={(e) => setData('password', e.target.value)}
                         type="password"
-                        className="mt-1 block w-full"
+                        className="block w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
+                        style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
                         autoComplete="new-password"
                     />
-
-                    <InputError message={errors.password} className="mt-2" />
+                    <p className="text-xs" style={{ color: colors.byline }}>
+                        Use at least 8 characters with a mix of letters, numbers, and symbols.
+                    </p>
+                    <InputError message={errors.password} className="mt-1" />
                 </div>
 
-                <div>
-                    <InputLabel
-                        htmlFor="password_confirmation"
-                        value="Confirm Password"
-                    />
-
-                    <TextInput
+                <div className="space-y-2">
+                    <label htmlFor="password_confirmation" className="text-sm font-semibold tracking-wide" style={{ color: colors.newsprint }}>
+                        Confirm New Password
+                    </label>
+                    <input
                         id="password_confirmation"
                         value={data.password_confirmation}
-                        onChange={(e) =>
-                            setData('password_confirmation', e.target.value)
-                        }
+                        onChange={(e) => setData('password_confirmation', e.target.value)}
                         type="password"
-                        className="mt-1 block w-full"
+                        className="block w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2"
+                        style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
                         autoComplete="new-password"
                     />
-
-                    <InputError
-                        message={errors.password_confirmation}
-                        className="mt-2"
-                    />
+                    <InputError message={errors.password_confirmation} className="mt-1" />
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <PrimaryButton disabled={processing}>Save</PrimaryButton>
-
-                    <Transition
-                        show={recentlySuccessful}
-                        enter="transition ease-in-out"
-                        enterFrom="opacity-0"
-                        leave="transition ease-in-out"
-                        leaveTo="opacity-0"
+                <div className="flex flex-wrap items-center gap-3 border-t pt-4" style={{ borderColor: colors.border }}>
+                    <button
+                        type="submit"
+                        disabled={processing}
+                        className="rounded-xl border px-5 py-2.5 text-sm font-serif font-bold transition hover:opacity-95"
+                        style={{ borderColor: colors.newsprint, backgroundColor: colors.newsprint, color: colors.paper }}
                     >
-                        <p className="text-sm text-gray-600">
+                        {processing ? 'Saving...' : 'Save Password'}
+                    </button>
+
+                    {recentlySuccessful && (
+                        <p className="text-sm font-medium" style={{ color: colors.byline }}>
                             Saved.
                         </p>
-                    </Transition>
+                    )}
                 </div>
             </form>
         </section>

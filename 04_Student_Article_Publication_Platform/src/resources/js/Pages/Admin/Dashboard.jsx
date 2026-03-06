@@ -137,7 +137,7 @@ export default function Dashboard({ stats = {}, activity = [], recentUsers = [],
             key: 'health',
             title: 'Platform Health',
             value: `${Math.round((activeRate + publishRate) / 2)}%`,
-            helper: `${activeRate}% active users • ${publishRate}% publish rate`,
+            helper: `${activeRate}% active users â€¢ ${publishRate}% publish rate`,
             icon: <BarChartRounded fontSize="small" />,
             tone: '#2e7d32',
             progress: Math.round((activeRate + publishRate) / 2),
@@ -273,7 +273,7 @@ export default function Dashboard({ stats = {}, activity = [], recentUsers = [],
                                 <CardContent sx={{ p: 2 }}>
                                     <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
                                         <Typography variant="body2" sx={{ color: colors.byline, fontWeight: 700 }}>{card.title}</Typography>
-                                        <Box sx={{ width: 32, height: 32, borderRadius: '50%', bgcolor: alpha(card.tone, 0.14), color: card.tone, display: 'grid', placeItems: 'center' }}>
+                                        <Box className="icon-shell" data-icon-shell="true" sx={{ width: 32, height: 32, borderRadius: '50%', bgcolor: alpha(card.tone, 0.14), color: card.tone, display: 'grid', placeItems: 'center' }}>
                                             {card.icon}
                                         </Box>
                                     </Stack>
@@ -327,7 +327,7 @@ export default function Dashboard({ stats = {}, activity = [], recentUsers = [],
                         </CardContent>
                     </Card>
 
-                    <Card id="live-reports" elevation={0} sx={{ border: '1px solid', borderColor: alpha(colors.border, 0.7), mb: 2 }}>
+                    <Card elevation={0} sx={{ border: '1px solid', borderColor: alpha(colors.border, 0.7), mb: 2 }}>
                         <CardContent>
                             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
                                 <Typography variant="h6" fontWeight={800} sx={{ color: colors.newsprint }}>
@@ -355,7 +355,7 @@ export default function Dashboard({ stats = {}, activity = [], recentUsers = [],
                                         <Box key={row.date}>
                                             <Stack direction="row" justifyContent="space-between" mb={0.5}>
                                                 <Typography variant="caption" sx={{ color: colors.newsprint, fontWeight: 700 }}>{row.label}</Typography>
-                                                <Typography variant="caption" sx={{ color: colors.byline }}>{`U ${users} • A ${published} • C ${comments}`}</Typography>
+                                                <Typography variant="caption" sx={{ color: colors.byline }}>{`U ${users} â€¢ A ${published} â€¢ C ${comments}`}</Typography>
                                             </Stack>
                                             <LinearProgress
                                                 variant="determinate"
@@ -443,7 +443,7 @@ export default function Dashboard({ stats = {}, activity = [], recentUsers = [],
                             </CardContent>
                         </Card>
 
-                        <Card elevation={0} sx={{ border: '1px solid', borderColor: alpha(colors.border, 0.7) }}>
+                        <Card id="articles-management" elevation={0} sx={{ border: '1px solid', borderColor: alpha(colors.border, 0.7) }}>
                             <CardContent>
                                 <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', md: 'center' }} spacing={1} mb={1.5}>
                                     <Typography variant="h6" fontWeight={800} sx={{ color: colors.newsprint }}>Recent Article Moderation</Typography>
@@ -454,7 +454,6 @@ export default function Dashboard({ stats = {}, activity = [], recentUsers = [],
                                             <Select value={articleStatusFilter} label="Status" onChange={(e) => { setArticleStatusFilter(e.target.value); setArticlePage(0); }}>
                                                 <MenuItem value="all">All</MenuItem>
                                                 <MenuItem value="Published">Published</MenuItem>
-                                                <MenuItem value="Pending">Pending</MenuItem>
                                             </Select>
                                         </FormControl>
                                     </Stack>

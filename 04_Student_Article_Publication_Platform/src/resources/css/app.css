@@ -29,3 +29,19 @@ body {
 a {
     color: var(--newspaper-newsprint);
 }
+
+/* Global sharp-corner design language: disable all UI corner rounding. */
+body,
+body *:not(svg):not(path):not(circle):not(rect):not(polygon):not(line):not(polyline),
+body *:not(svg):not(path):not(circle):not(rect):not(polygon):not(line):not(polyline)::before,
+body *:not(svg):not(path):not(circle):not(rect):not(polygon):not(line):not(polyline)::after {
+    border-radius: 0 !important;
+}
+
+/* Exception: icon housing elements should be rounded. */
+.icon-shell,
+[data-icon-shell='true'],
+.MuiIconButton-root,
+.MuiAvatar-root {
+    border-radius: 8px !important;
+}

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { router } from '@inertiajs/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import JoditEditor from '../../Shared/JoditEditor';
+import JoditEditor from '@/Components/JoditEditor';
 
 function htmlToText(html) {
     if (!html) return '';
