@@ -373,6 +373,8 @@ export default function Dashboard({ articles = [] }) {
               mode={mode}
               onToggleMode={() => setMode((prev) => (prev === 'light' ? 'dark' : 'light'))}
               userName={auth?.user?.name}
+              userId={auth?.user?.id}
+              userEmail={auth?.user?.email}
               onOpenMobileWidgets={() => setMobileWidgetsOpen(true)}
             />
 

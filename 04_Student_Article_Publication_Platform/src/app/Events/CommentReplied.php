@@ -32,6 +32,7 @@ class CommentReplied implements ShouldBroadcastNow
     public function broadcastWith()
     {
         return [
+            'type' => 'reply',
             'comment_id' => $this->comment->id,
             'reply' => [
                 'id' => $this->reply->id,

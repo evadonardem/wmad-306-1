@@ -215,10 +215,14 @@ class StudentController extends Controller
             'parent_id' => $validated['parent_id'] ?? null,
         ]);
 
+
         if (!empty($validated['parent_id'])) {
             $parent = \App\Models\Comment::find($validated['parent_id']);
             if ($parent && $parent->user_id !== $request->user()->id) {
+                // Fire event for broadcasting
                 event(new \App\Events\CommentReplied($parent, $comment));
+                // Send notification to the original comment's user
+                $parent->user->notify(new \App\Notifications\CommentRepliedNotification($parent, $comment));
             }
         }
 

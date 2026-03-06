@@ -44,8 +44,12 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
+        // New self-registered accounts should default to student role
+        // so role-based dashboard routing resolves correctly.
+        $user->assignRole('student');
+
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect(route('student.dashboard', absolute: false));
     }
 }

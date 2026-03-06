@@ -33,6 +33,31 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $user = $request->user();
+
+        if ($user?->hasRole('admin')) {
+            return redirect()->intended(route('admin.dashboard', absolute: false));
+        }
+
+        if ($user?->hasRole('writer')) {
+            return redirect()->intended(route('writer.dashboard', absolute: false));
+        }
+
+        if ($user?->hasRole('editor')) {
+            return redirect()->intended(route('editor.dashboard', absolute: false));
+        }
+
+        if ($user?->hasRole('student')) {
+            return redirect()->intended(route('student.dashboard', absolute: false));
+        }
+
+        // Legacy accounts may exist without roles.
+        // Default them to student to avoid dashboard fallback white-screen.
+        if ($user) {
+            $user->assignRole('student');
+            return redirect()->intended(route('student.dashboard', absolute: false));
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

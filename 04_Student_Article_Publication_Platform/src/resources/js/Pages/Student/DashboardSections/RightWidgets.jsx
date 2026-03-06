@@ -141,44 +141,6 @@ const ContinueReadingItem = ({ item, onClick, isDark }) => (
           <PlayCircle sx={{ fontSize: 18, color: isDark ? DARK_COLORS.softPink : COLORS.softPink }} />
         </Tooltip>
       </Stack>
-
-      {/* Progress Bar */}
-      <Box>
-        <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
-          <Typography variant="caption" sx={{ color: 'text.disabled', fontSize: '0.6rem' }}>
-            Progress
-          </Typography>
-          <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '0.6rem', color: 'text.secondary' }}>
-            {item.progress}%
-          </Typography>
-        </Stack>
-        <Box
-          sx={{
-            height: 3,
-            width: '100%',
-            bgcolor: isDark ? alpha(DARK_COLORS.border, 0.3) : alpha(COLORS.mediumPurple, 0.1),
-            borderRadius: 1.5,
-            overflow: 'hidden',
-          }}
-        >
-          <Box
-            sx={{
-              height: '100%',
-              width: `${item.progress}%`,
-              bgcolor: isDark ? DARK_COLORS.softPink : COLORS.softPink,
-              borderRadius: 1.5,
-              transition: 'width 300ms ease',
-            }}
-          />
-        </Box>
-      </Box>
-
-      <Stack direction="row" spacing={1} alignItems="center">
-        <AccessTime sx={{ fontSize: 12, color: 'text.disabled' }} />
-        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-          {item.readMins} min left
-        </Typography>
-      </Stack>
     </Stack>
   </Paper>
 );

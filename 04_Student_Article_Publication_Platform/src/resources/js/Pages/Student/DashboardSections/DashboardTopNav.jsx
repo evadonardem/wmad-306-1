@@ -54,6 +54,7 @@ export default function DashboardTopNav({
     onToggleMode,
     userName,
     userId,
+    userEmail,
     notificationCount = 0,
 }) {
     const isDark = mode === 'dark';
@@ -108,7 +109,12 @@ export default function DashboardTopNav({
             });
         };
         const handleReply = (e) => {
-            setNotifications((prev) => [{ type: 'reply', ...e.detail }, ...prev]);
+            console.log('Received reply notification:', e.detail);
+            setNotifications((prev) => [{
+                type: 'reply',
+                ...e.detail,
+                reply: e.detail.reply || (e.detail.body ? { body: e.detail.body } : undefined)
+            }, ...prev]);
             setUnreadCount((c) => c + 1);
             setPopup({
                 message: `Your comment received a reply!`,
@@ -489,7 +495,7 @@ export default function DashboardTopNav({
                         {userName || 'Student Account'}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                        {userName ? `${userName.toLowerCase().replace(/\s+/g, '.')}@university.edu` : 'student@university.edu'}
+                        {userEmail || 'student@university.edu'}
                     </Typography>
                 </Box>
                 <Divider sx={{ opacity: 0.6 }} />

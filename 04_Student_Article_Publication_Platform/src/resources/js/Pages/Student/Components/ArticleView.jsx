@@ -448,9 +448,6 @@ function ArticleContent({ article, readingTime, textColor, mutedColor, isDark })
                                     : 'Unpublished'}
                             </Typography>
                         </Stack>
-                        <Typography variant="caption" sx={{ color: mutedColor }}>
-                            {readingTime} min read
-                        </Typography>
                         {liveViews !== null && (
                             <Stack direction="row" spacing={0.5} alignItems="center">
                                 <Visibility sx={{ fontSize: 16, color: mutedColor }} />

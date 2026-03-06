@@ -380,40 +380,8 @@ export default function FeedSection({
                           fontSize: '0.75rem',
                         }}
                       />
-                      <Stack direction="row" spacing={0.5} alignItems="center">
-                        <Schedule sx={{ fontSize: 14, color: 'text.disabled' }} />
-                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                          {article.readMins} min read
-                        </Typography>
-                      </Stack>
-                      {isNew && (
-                        <Chip
-                          label="New"
-                          size="small"
-                          sx={{
-                            bgcolor: alpha(COLORS.info, 0.1),
-                            color: COLORS.info,
-                            fontWeight: 600,
-                            borderRadius: 1,
-                            height: 20,
-                            fontSize: '0.7rem',
-                          }}
-                        />
-                      )}
-                      {article.progress > 0 && (
-                        <Chip
-                          label={`${article.progress}%`}
-                          size="small"
-                          sx={{
-                            bgcolor: isDark ? alpha(DARK_COLORS.mediumPurple, 0.2) : alpha(COLORS.mediumPurple, 0.1),
-                            color: isDark ? DARK_COLORS.mediumPurple : COLORS.mediumPurple,
-                            fontWeight: 600,
-                            borderRadius: 1,
-                            height: 20,
-                            fontSize: '0.7rem',
-                          }}
-                        />
-                      )}
+                      {/* Reading time removed */}
+                      {/* Progress chip removed - nothing rendered here */}
                     </Stack>
 
                     <Tooltip title={bookmarked ? "Remove bookmark" : "Save article"}>

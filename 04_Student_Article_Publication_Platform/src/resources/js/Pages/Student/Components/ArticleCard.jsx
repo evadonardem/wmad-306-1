@@ -32,11 +32,7 @@ export default function ArticleCard({ article, bookmarked = false, onToggleBookm
                         size="small"
                         sx={{ bgcolor: COLORS.royalPurple, color: '#fff', fontWeight: 600, borderRadius: 1.5 }}
                     />
-                    <Typography variant="caption" sx={{ color: COLORS.mediumPurple, fontWeight: 500 }}>
-                        {article.readMins || '5'} min read
-                    </Typography>
                 </Stack>
-
                 <IconButton sx={{ color: COLORS.mediumPurple }} onClick={() => onToggleBookmark?.(article.id)}>
                     {bookmarked ? <BookmarkRoundedIcon /> : <BookmarkBorderRoundedIcon />}
                 </IconButton>
