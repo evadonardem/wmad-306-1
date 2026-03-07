@@ -306,9 +306,9 @@ export default function Welcome({ auth, recentArticles = [], landingStats = {} }
         <>
             <Head title="FYI - Student Journal" />
 
-            {/* Integrated Theme Picker - Now part of the navbar design */}
+            {/* Floating Theme Picker */}
             <motion.div
-                className="fixed top-28 right-6 z-50"
+                className="fixed bottom-6 right-6 z-50"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 1, type: "spring" }}
@@ -880,7 +880,7 @@ export default function Welcome({ auth, recentArticles = [], landingStats = {} }
                     </motion.div>
 
                     {/* Featured Articles */}
-                    <div className="grid lg:grid-cols-2 gap-8 mb-12">
+                    <div className="grid lg:grid-cols-2 gap-8 mb-12 items-stretch">
                         {featuredArticles.map((article, index) => (
                             <motion.a
                                 key={article.id ?? index}
@@ -894,7 +894,7 @@ export default function Welcome({ auth, recentArticles = [], landingStats = {} }
                                     }
                                 }}
                                 whileHover={{ y: -5 }}
-                                className="group cursor-pointer"
+                                className="group cursor-pointer flex flex-col h-full min-h-[270px]"
                             >
                                 <motion.div
                                     className="border-b-2 pb-4 mb-4"
@@ -907,19 +907,21 @@ export default function Welcome({ auth, recentArticles = [], landingStats = {} }
                                         {article.category?.name ?? 'FEATURE STORY'}
                                     </span>
                                 </motion.div>
-                                <motion.h3
-                                    className="font-serif text-3xl font-bold mb-3 group-hover:opacity-70 transition line-clamp-3"
-                                    style={{ color: colors.text }}
-                                >
-                                    {article.title}
-                                </motion.h3>
-                                <motion.p
-                                    className="font-serif mb-3 italic line-clamp-2"
-                                    style={{ color: colors.textSecondary }}
-                                >
-                                    {article.excerpt || 'An in-depth look at the stories shaping our campus community...'}
-                                </motion.p>
-                                <div className="flex justify-between items-center text-sm font-mono" style={{ color: colors.border }}>
+                                <div className="flex-1">
+                                    <motion.h3
+                                        className="font-serif text-3xl font-bold mb-3 group-hover:opacity-70 transition line-clamp-3 min-h-[5.5rem]"
+                                        style={{ color: colors.text }}
+                                    >
+                                        {article.title}
+                                    </motion.h3>
+                                    <motion.p
+                                        className="font-serif mb-3 italic line-clamp-2 min-h-[3.75rem]"
+                                        style={{ color: colors.textSecondary }}
+                                    >
+                                        {article.excerpt || 'An in-depth look at the stories shaping our campus community...'}
+                                    </motion.p>
+                                </div>
+                                <div className="mt-auto pt-1 flex justify-between items-center text-sm font-mono" style={{ color: colors.border }}>
                                     <span>By {article.author?.name ?? 'Staff Writer'}</span>
                                     <span>{article.published_at ? new Date(article.published_at).toLocaleDateString('en-US', {
                                         month: 'short',
@@ -931,7 +933,7 @@ export default function Welcome({ auth, recentArticles = [], landingStats = {} }
                     </div>
 
                     {/* Secondary Articles */}
-                    <div className="grid md:grid-cols-3 gap-6 pt-8 border-t" style={{ borderColor: colors.border }}>
+                    <div className="grid md:grid-cols-2 gap-6 pt-8 border-t" style={{ borderColor: colors.border }}>
                         {secondaryArticles.map((article, index) => (
                             <motion.a
                                 key={article.id ?? index}
@@ -1456,9 +1458,6 @@ export default function Welcome({ auth, recentArticles = [], landingStats = {} }
         </>
     );
 }
-
-
-
 
 
 

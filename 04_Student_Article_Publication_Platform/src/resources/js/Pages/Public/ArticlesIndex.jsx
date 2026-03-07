@@ -133,7 +133,7 @@ export default function ArticlesIndex({
                     whileHover={{ scale: 1.08 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setShowThemePicker(!showThemePicker)}
-                    className="w-12 h-12 rounded-full shadow-lg flex items-center justify-center text-xl"
+                    className="w-12 h-12 shadow-lg flex items-center justify-center text-xl"
                     style={{ backgroundColor: colors.accent, color: colors.paper }}
                 >
                     Theme
@@ -145,7 +145,7 @@ export default function ArticlesIndex({
                             initial={{ opacity: 0, y: 12, scale: 0.9 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 12, scale: 0.9 }}
-                            className="absolute bottom-14 right-0 p-3 rounded-lg shadow-xl min-w-[200px]"
+                            className="absolute bottom-14 right-0 p-3 shadow-xl min-w-[200px] fyi-surface"
                             style={{ backgroundColor: colors.paper, border: `1px solid ${colors.border}` }}
                         >
                             <div className="font-serif text-sm font-bold mb-2" style={{ color: colors.newsprint }}>Newspaper Themes</div>
@@ -158,7 +158,7 @@ export default function ArticlesIndex({
                                             setCurrentTheme(key);
                                             setShowThemePicker(false);
                                         }}
-                                        className="flex w-full items-center gap-2 px-2 py-2 rounded text-left"
+                                        className="flex w-full items-center gap-2 px-2 py-2 text-left"
                                         style={{
                                             backgroundColor: currentTheme === key ? `${colors.accent}22` : 'transparent',
                                             color: colors.newsprint,
@@ -214,7 +214,7 @@ export default function ArticlesIndex({
                                     }
                                 }}
                                 placeholder="Type article title..."
-                                className="mt-1 w-full border rounded px-3 py-2 text-sm font-serif"
+                                className="mt-1 w-full border px-3 py-2 text-sm font-serif"
                                 style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
                             />
                         </label>
@@ -228,7 +228,7 @@ export default function ArticlesIndex({
                                     setSort(nextSort);
                                     applyFilters({ sort: nextSort });
                                 }}
-                                className="mt-1 w-full border rounded px-3 py-2 text-sm font-serif"
+                                className="mt-1 w-full border px-3 py-2 text-sm font-serif"
                                 style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
                             >
                                 <option value="title_asc">A to Z</option>
@@ -247,7 +247,7 @@ export default function ArticlesIndex({
                                     setCategory(nextCategory);
                                     applyFilters({ category: nextCategory });
                                 }}
-                                className="mt-1 w-full border rounded px-3 py-2 text-sm font-serif"
+                                className="mt-1 w-full border px-3 py-2 text-sm font-serif"
                                 style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
                             >
                                 <option value="">All Categories</option>
@@ -267,7 +267,7 @@ export default function ArticlesIndex({
                                     applyFilters({ visibility: nextVisibility });
                                 }}
                                 disabled={visibilityScope !== 'published_all'}
-                                className="mt-1 w-full border rounded px-3 py-2 text-sm font-serif"
+                                className="mt-1 w-full border px-3 py-2 text-sm font-serif"
                                 style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
                             >
                                 <option value="all">All</option>
@@ -285,7 +285,7 @@ export default function ArticlesIndex({
                                     setYear(nextYear);
                                     applyFilters({ year: nextYear });
                                 }}
-                                className="mt-1 w-full border rounded px-3 py-2 text-sm font-serif"
+                                className="mt-1 w-full border px-3 py-2 text-sm font-serif"
                                 style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
                             >
                                 <option value="">All Years</option>
@@ -316,7 +316,7 @@ export default function ArticlesIndex({
                             const latestComment = Array.isArray(article.comments) ? article.comments[0] : null;
 
                             return (
-                                <article key={article.id} className="border p-5" style={{ borderColor: colors.border, backgroundColor: colors.aged }}>
+                                <article key={article.id} className="border p-5 fyi-surface fyi-surface-hover fyi-fade-up" style={{ borderColor: colors.border, backgroundColor: colors.aged }}>
                                     <Link href={route('public.articles.show', article.id)} className="block">
                                         <div className="font-mono text-xs uppercase tracking-wider mb-2" style={{ color: colors.byline }}>
                                             {article.category?.name ?? 'General'}
@@ -360,7 +360,7 @@ export default function ArticlesIndex({
                                         <div className="flex gap-2">
                                             <input
                                                 type="text"
-                                                className="w-full border rounded px-3 py-2 text-sm font-serif"
+                                                className="w-full border px-3 py-2 text-sm font-serif"
                                                 style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
                                                 placeholder="Add a comment..."
                                                 value={commentDrafts[article.id] || ''}
@@ -371,7 +371,7 @@ export default function ArticlesIndex({
                                             />
                                             <button
                                                 type="button"
-                                                className="px-4 py-2 rounded font-serif text-sm"
+                                                className="px-4 py-2 font-serif text-sm"
                                                 style={{ backgroundColor: colors.newsprint, color: colors.paper }}
                                                 onClick={() => handleCommentSubmit(article.id)}
                                                 disabled={commentForm.processing}
@@ -385,7 +385,7 @@ export default function ArticlesIndex({
                                         )}
 
                                         {!auth.user && showRegisterPrompt[article.id] && (
-                                            <div className="mt-2 p-2 rounded border font-serif text-sm" style={{ borderColor: '#f9a8d4', backgroundColor: '#fdf2f8', color: '#be185d' }}>
+                                            <div className="mt-2 p-2 border font-serif text-sm" style={{ borderColor: '#f9a8d4', backgroundColor: '#fdf2f8', color: '#be185d' }}>
                                                 Register an account to comment.
                                             </div>
                                         )}

@@ -1,4 +1,4 @@
-import InputError from '@/Components/InputError';
+﻿import InputError from '@/Components/InputError';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { getThemeColors, useThemeContext } from '@/Components/ThemeContext';
 import { Head, Link, useForm } from '@inertiajs/react';
@@ -21,7 +21,7 @@ export default function ForgotPassword({ status }) {
             <Head title="Forgot Password" />
 
             <div className="space-y-5">
-                <div className="rounded-lg border p-4" style={{ borderColor: colors.border, backgroundColor: `${colors.aged}66` }}>
+                <div className="border p-4" style={{ borderColor: colors.border, backgroundColor: `${colors.aged}66` }}>
                     <p className="text-[11px] font-mono uppercase tracking-[0.22em]" style={{ color: colors.byline }}>
                         Recovery Center
                     </p>
@@ -34,7 +34,7 @@ export default function ForgotPassword({ status }) {
                 </div>
 
                 {status && (
-                    <div className="rounded-md border p-3 text-sm font-medium" style={{ borderColor: '#bbf7d0', backgroundColor: '#f0fdf4', color: '#166534' }}>
+                    <div className="border p-3 text-sm font-medium" style={{ borderColor: '#bbf7d0', backgroundColor: '#f0fdf4', color: '#166534' }}>
                         {status}
                     </div>
                 )}
@@ -50,7 +50,7 @@ export default function ForgotPassword({ status }) {
                             name="email"
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
-                            className="block w-full rounded-lg border px-3 py-2.5 text-sm"
+                            className="block w-full border px-3 py-2.5 text-sm"
                             style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
                             placeholder="you@school.edu"
                             required
@@ -61,7 +61,7 @@ export default function ForgotPassword({ status }) {
                     <button
                         type="submit"
                         disabled={processing}
-                        className="w-full rounded-lg border px-4 py-2.5 text-sm font-serif font-bold"
+                        className="w-full border px-4 py-2.5 text-sm font-serif font-bold"
                         style={{ borderColor: colors.newsprint, backgroundColor: colors.newsprint, color: colors.paper }}
                     >
                         {processing ? 'Sending link...' : 'Email Reset Link'}
@@ -77,3 +77,4 @@ export default function ForgotPassword({ status }) {
         </GuestLayout>
     );
 }
+

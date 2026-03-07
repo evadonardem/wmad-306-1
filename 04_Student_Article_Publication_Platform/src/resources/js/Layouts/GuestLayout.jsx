@@ -36,7 +36,7 @@ export default function GuestLayout({ children }) {
 
                         <button
                             type="button"
-                            className="rounded border px-3 py-2 text-xs font-mono tracking-wider"
+                            className="border px-3 py-2 text-xs font-mono tracking-wider transition-colors"
                             style={{ borderColor: colors.border, color: colors.newsprint, backgroundColor: colors.paper }}
                             onClick={() => setShowThemePicker((value) => !value)}
                         >
@@ -46,7 +46,7 @@ export default function GuestLayout({ children }) {
 
                     {showThemePicker && (
                         <div
-                            className="mt-3 w-full rounded border p-3 sm:ml-auto sm:w-64"
+                            className="mt-3 w-full border p-3 sm:ml-auto sm:w-64 fyi-surface fyi-fade-up"
                             style={{ backgroundColor: colors.paper, borderColor: colors.border }}
                         >
                             <div className="mb-2 font-serif text-sm font-bold" style={{ color: colors.newsprint }}>
@@ -60,7 +60,7 @@ export default function GuestLayout({ children }) {
                                     <button
                                         key={key}
                                         type="button"
-                                        className="flex w-full items-center gap-2 rounded px-2 py-2 text-left"
+                                        className="flex w-full items-center gap-2 px-2 py-2 text-left transition-colors"
                                         style={{
                                             backgroundColor: currentTheme === key ? `${colors.accent}22` : 'transparent',
                                             color: colors.newsprint,
@@ -72,15 +72,15 @@ export default function GuestLayout({ children }) {
                                     >
                                         <span className="flex items-center gap-1">
                                             <span
-                                                className="h-3 w-3 rounded-full border"
+                                                className="h-3 w-3 border"
                                                 style={{ backgroundColor: themeColors.accent, borderColor: themeColors.border }}
                                             />
                                             <span
-                                                className="h-3 w-3 rounded-full border"
+                                                className="h-3 w-3 border"
                                                 style={{ backgroundColor: themeColors.newsprint, borderColor: themeColors.border }}
                                             />
                                             <span
-                                                className="h-3 w-3 rounded-full border"
+                                                className="h-3 w-3 border"
                                                 style={{ backgroundColor: themeColors.paper, borderColor: themeColors.border }}
                                             />
                                         </span>
@@ -97,7 +97,7 @@ export default function GuestLayout({ children }) {
 
                 <div className="mx-auto w-full max-w-md">
                     <div
-                        className="auth-card rounded border p-6 shadow-sm"
+                        className="auth-card border p-6 shadow-sm fyi-surface fyi-fade-up"
                         style={{
                             backgroundColor: colors.paper,
                             borderColor: colors.border,

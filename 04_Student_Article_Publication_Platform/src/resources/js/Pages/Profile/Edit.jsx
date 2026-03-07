@@ -43,10 +43,10 @@ export default function Edit({ mustVerifyEmail, status }) {
             <div className="py-10 sm:py-12">
                 <div className="mx-auto max-w-6xl space-y-6 px-4 sm:px-6 lg:px-8">
                     <section
-                        className="rounded-2xl border shadow-sm"
+                        className="border shadow-sm fyi-surface fyi-fade-up"
                         style={{ backgroundColor: colors.paper, borderColor: colors.border }}
                     >
-                        <div className="h-1.5 rounded-t-2xl" style={{ backgroundColor: colors.accent }} />
+                        <div className="h-1.5" style={{ backgroundColor: colors.accent }} />
                         <div className="p-6 sm:p-8">
                             <UpdateProfileInformationForm
                                 mustVerifyEmail={mustVerifyEmail}
@@ -57,20 +57,20 @@ export default function Edit({ mustVerifyEmail, status }) {
                     </section>
 
                     <section
-                        className="rounded-2xl border shadow-sm"
+                        className="border shadow-sm fyi-surface fyi-fade-up fyi-stagger-1"
                         style={{ backgroundColor: colors.paper, borderColor: colors.border }}
                     >
-                        <div className="h-1.5 rounded-t-2xl" style={{ backgroundColor: colors.newsprint }} />
+                        <div className="h-1.5" style={{ backgroundColor: colors.newsprint }} />
                         <div className="p-6 sm:p-8">
                             <UpdatePasswordForm className="max-w-3xl" />
                         </div>
                     </section>
 
                     <section
-                        className="rounded-2xl border shadow-sm"
+                        className="border shadow-sm fyi-surface fyi-fade-up fyi-stagger-2"
                         style={{ backgroundColor: colors.paper, borderColor: '#fecaca' }}
                     >
-                        <div className="h-1.5 rounded-t-2xl" style={{ backgroundColor: '#b91c1c' }} />
+                        <div className="h-1.5" style={{ backgroundColor: '#b91c1c' }} />
                         <div className="p-6 sm:p-8">
                             <DeleteUserForm className="max-w-3xl" />
                         </div>

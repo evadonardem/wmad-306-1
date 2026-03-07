@@ -75,8 +75,8 @@ class ArticlePolicy
     /** Determine whether the user can comment on the article. */
     public function comment(User $user, Article $article): bool
     {
-        return ($user->hasRole('student') || $user->hasRole('writer') || $user->hasRole('editor'))
-            && $article->published_at !== null;
+        // Any authenticated account can comment, as long as the article is published.
+        return $article->published_at !== null;
     }
 
     /** Determine whether the user can star the article. */

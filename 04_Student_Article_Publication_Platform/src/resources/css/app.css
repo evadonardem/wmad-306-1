@@ -45,3 +45,60 @@ body *:not(svg):not(path):not(circle):not(rect):not(polygon):not(line):not(polyl
 .MuiAvatar-root {
     border-radius: 8px !important;
 }
+
+.fyi-page-shell {
+    max-width: 1500px;
+    margin-inline: auto;
+    padding-inline: clamp(16px, 2vw, 28px);
+}
+
+.fyi-surface {
+    border: 1px solid var(--fyi-border);
+    background: color-mix(in srgb, var(--fyi-surface) 92%, transparent);
+    box-shadow: 0 8px 20px -18px color-mix(in srgb, var(--fyi-primary) 65%, transparent);
+    transition: border-color 220ms ease, box-shadow 220ms ease, background-color 220ms ease;
+}
+
+.fyi-surface-hover:hover {
+    box-shadow: 0 12px 28px -18px color-mix(in srgb, var(--fyi-primary) 90%, transparent);
+    transform: translateY(-2px);
+}
+
+.fyi-fade-up {
+    animation: fyiFadeUp 380ms ease both;
+}
+
+.fyi-stagger-1 {
+    animation-delay: 60ms;
+}
+
+.fyi-stagger-2 {
+    animation-delay: 120ms;
+}
+
+.fyi-stagger-3 {
+    animation-delay: 180ms;
+}
+
+.fyi-subtle-divider {
+    border: 0;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        color-mix(in srgb, var(--fyi-border) 70%, transparent) 15%,
+        color-mix(in srgb, var(--fyi-border) 70%, transparent) 85%,
+        transparent 100%
+    );
+}
+
+@keyframes fyiFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

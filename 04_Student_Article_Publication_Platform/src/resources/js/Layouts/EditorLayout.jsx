@@ -36,7 +36,7 @@ export default function EditorLayout({ children, active = 'queue', availableRole
                     transition: 'background-color 220ms ease, color 220ms ease',
                 }}
             >
-                <Container maxWidth="xl" sx={{ py: 2 }}>
+                <Container maxWidth="xl" className="fyi-page-shell" sx={{ py: 2 }}>
                     <EditorTopBar active={active} availableRoles={availableRoles} />
                     {children}
                 </Container>

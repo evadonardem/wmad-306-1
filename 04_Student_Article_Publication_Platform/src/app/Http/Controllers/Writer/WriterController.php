@@ -23,9 +23,17 @@ class WriterController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string'],
             'category_id' => ['nullable', 'exists:categories,id'],
+            'submit_for_review' => ['nullable', 'boolean'],
         ]);
 
         $article = $this->articleService->createDraft($request->user(), $validated);
+
+        if (!empty($validated['submit_for_review'])) {
+            $this->authorize('submit', $article);
+            $this->articleService->submit($article);
+
+            return redirect()->route('writer.dashboard')->with('success', 'Article submitted for review.');
+        }
 
         return redirect()->route('writer.articles.edit', $article)->with('success', 'Draft created successfully.');
     }

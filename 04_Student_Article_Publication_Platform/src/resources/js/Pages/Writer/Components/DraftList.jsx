@@ -1,4 +1,16 @@
 import { Link } from '@inertiajs/react';
+import {
+    Box,
+    Chip,
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Typography,
+} from '@mui/material';
 import { useTheme } from '@/Contexts/ThemeContext';
 
 export default function DraftList({ articles = [] }) {
@@ -6,49 +18,70 @@ export default function DraftList({ articles = [] }) {
     const drafts = articles.filter((article) => {
         const slug = article?.status?.slug ?? null;
         if (slug) return slug === 'draft';
-        // Fallback for legacy records with missing status relation.
         return !article.submitted_at && !article.published_at;
     });
 
     return (
-        <section className="space-y-2">
-            <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold" style={{ color: colors.text }}>
+        <Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                <Typography variant="h6" fontWeight={800} sx={{ color: colors.text }}>
                     Drafts
-                </h3>
-                <span className="text-sm" style={{ color: colors.textSecondary }}>
-                    {drafts.length}
-                </span>
-            </div>
+                </Typography>
+                <Chip
+                    size="small"
+                    label={`${drafts.length} item${drafts.length === 1 ? '' : 's'}`}
+                    sx={{
+                        bgcolor: `${colors.primary}18`,
+                        color: colors.primary,
+                        border: `1px solid ${colors.border}`,
+                    }}
+                />
+            </Box>
 
-            {drafts.length === 0 ? (
-                <p className="text-sm" style={{ color: colors.textSecondary }}>
-                    No drafts yet.
-                </p>
-            ) : (
-                <ul className="text-sm" style={{ color: colors.text }}>
-                    {drafts.map((article) => (
-                        <li
-                            key={article.id}
-                            className="py-2"
-                            style={{ borderBottom: `1px solid ${colors.border}` }}
-                        >
-                            <div className="flex items-baseline gap-3">
-                                <Link
-                                    href={route('writer.articles.edit', article.id)}
-                                    className="font-medium hover:underline"
-                                    style={{ color: colors.primary }}
-                                >
-                                    {article.title}
-                                </Link>
-                            </div>
-                            <div className="text-xs" style={{ color: colors.textSecondary }}>
-                                Updated: {article.updated_at ? new Date(article.updated_at).toLocaleString() : 'N/A'}
-                            </div>
-                        </li>
-                    ))}
-                </ul>
-            )}
-        </section>
+            <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: colors.border }}>
+                <Table size="small">
+                    <TableHead>
+                        <TableRow sx={{ backgroundColor: `${colors.hover}80` }}>
+                            <TableCell sx={{ color: colors.textSecondary, fontWeight: 700 }}>Title</TableCell>
+                            <TableCell sx={{ color: colors.textSecondary, fontWeight: 700 }}>Last Updated</TableCell>
+                            <TableCell align="right" sx={{ color: colors.textSecondary, fontWeight: 700 }}>Action</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {drafts.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={3}>
+                                    <Typography variant="body2" sx={{ color: colors.textSecondary }}>
+                                        No drafts yet.
+                                    </Typography>
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            drafts.map((article) => (
+                                <TableRow key={article.id} hover>
+                                    <TableCell sx={{ color: colors.text, fontWeight: 700 }}>{article.title}</TableCell>
+                                    <TableCell sx={{ color: colors.textSecondary }}>
+                                        {article.updated_at ? new Date(article.updated_at).toLocaleString() : 'N/A'}
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        <Link
+                                            href={route('writer.articles.edit', article.id)}
+                                            className="inline-flex items-center border px-3 py-1 text-xs font-semibold"
+                                            style={{
+                                                color: colors.primary,
+                                                borderColor: colors.primary,
+                                                backgroundColor: 'transparent',
+                                            }}
+                                        >
+                                            Open
+                                        </Link>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+        </Box>
     );
 }

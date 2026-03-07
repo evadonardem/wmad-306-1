@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+﻿import { Head, router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 import {
     alpha,
@@ -36,6 +36,16 @@ import {
     VisibilityRounded,
     WarningAmberRounded,
 } from '@mui/icons-material';
+import {
+    Area,
+    AreaChart,
+    CartesianGrid,
+    Legend,
+    ResponsiveContainer,
+    Tooltip as RechartsTooltip,
+    XAxis,
+    YAxis,
+} from 'recharts';
 import { getThemeColors, useThemeContext } from '@/Components/ThemeContext';
 import AdminTopBar from './Components/AdminTopBar';
 
@@ -141,7 +151,7 @@ export default function Dashboard({ stats = {}, activity = [], recentUsers = [],
             key: 'health',
             title: 'Platform Health',
             value: `${Math.round((activeRate + publishRate) / 2)}%`,
-            helper: `${activeRate}% active users • ${publishRate}% publish rate`,
+            helper: `${activeRate}% active users â€¢ ${publishRate}% publish rate`,
             icon: <BarChartRounded fontSize="small" />,
             tone: '#2e7d32',
             progress: Math.round((activeRate + publishRate) / 2),
@@ -377,30 +387,52 @@ export default function Dashboard({ stats = {}, activity = [], recentUsers = [],
                                 <Chip label={`Peak day: ${activitySummary.peak ? activitySummary.peak.label : '-'}`} variant="outlined" />
                             </Stack>
 
-                            <Stack spacing={1}>
-                                {activity.map((row) => {
-                                    const users = number(row.newUsers);
-                                    const published = number(row.publishedArticles);
-                                    const comments = number(row.newComments);
-                                    const total = users + published + comments;
-                                    const totalPct = Math.min(100, Math.round((total / activitySummary.maxValue) * 100));
-
-                                    return (
-                                        <Box key={row.date}>
-                                            <Stack direction="row" justifyContent="space-between" mb={0.5}>
-                                                <Typography variant="caption" sx={{ color: colors.newsprint, fontWeight: 700 }}>{row.label}</Typography>
-                                                <Typography variant="caption" sx={{ color: colors.byline }}>{`U ${users} • A ${published} • C ${comments}`}</Typography>
-                                            </Stack>
-                                            <LinearProgress
-                                                variant="determinate"
-                                                value={totalPct}
-                                                sx={{ height: 9, borderRadius: 999, bgcolor: alpha(colors.border, 0.35), '& .MuiLinearProgress-bar': { bgcolor: colors.accent } }}
+                            {activity.length > 0 ? (
+                                <Box sx={{ height: 280 }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart
+                                            data={activity.map((row) => ({
+                                                label: row.label,
+                                                newUsers: number(row.newUsers),
+                                                publishedArticles: number(row.publishedArticles),
+                                                newComments: number(row.newComments),
+                                            }))}
+                                            margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+                                        >
+                                            <defs>
+                                                <linearGradient id="usersGradient" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor={colors.newsprint} stopOpacity={0.28} />
+                                                    <stop offset="95%" stopColor={colors.newsprint} stopOpacity={0} />
+                                                </linearGradient>
+                                                <linearGradient id="articlesGradient" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor={colors.accent} stopOpacity={0.28} />
+                                                    <stop offset="95%" stopColor={colors.accent} stopOpacity={0} />
+                                                </linearGradient>
+                                                <linearGradient id="commentsGradient" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor={colors.accent2 || colors.byline} stopOpacity={0.24} />
+                                                    <stop offset="95%" stopColor={colors.accent2 || colors.byline} stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid stroke={alpha(colors.border, 0.55)} strokeDasharray="3 3" />
+                                            <XAxis dataKey="label" tick={{ fill: colors.byline, fontSize: 11 }} axisLine={{ stroke: alpha(colors.border, 0.75) }} tickLine={{ stroke: alpha(colors.border, 0.75) }} />
+                                            <YAxis allowDecimals={false} tick={{ fill: colors.byline, fontSize: 11 }} axisLine={{ stroke: alpha(colors.border, 0.75) }} tickLine={{ stroke: alpha(colors.border, 0.75) }} />
+                                            <RechartsTooltip
+                                                contentStyle={{
+                                                    border: `1px solid ${colors.border}`,
+                                                    background: colors.paper,
+                                                    color: colors.newsprint,
+                                                }}
                                             />
-                                        </Box>
-                                    );
-                                })}
-                                {activity.length === 0 && <Typography variant="body2">No activity data available.</Typography>}
-                            </Stack>
+                                            <Legend wrapperStyle={{ fontSize: 12 }} />
+                                            <Area type="monotone" dataKey="newUsers" name="New Users" stroke={colors.newsprint} fill="url(#usersGradient)" strokeWidth={2} />
+                                            <Area type="monotone" dataKey="publishedArticles" name="Published" stroke={colors.accent} fill="url(#articlesGradient)" strokeWidth={2} />
+                                            <Area type="monotone" dataKey="newComments" name="Comments" stroke={colors.accent2 || colors.byline} fill="url(#commentsGradient)" strokeWidth={2} />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </Box>
+                            ) : (
+                                <Typography variant="body2">No activity data available.</Typography>
+                            )}
                         </CardContent>
                     </Card>
 
