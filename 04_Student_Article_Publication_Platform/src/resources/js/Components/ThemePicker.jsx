@@ -26,7 +26,20 @@ export default function ThemePicker({ position = 'bottom-right' }) {
                     color: colors.background
                 }}
             >
-                🎨
+                <span className="flex items-center -space-x-1">
+                    <span
+                        className="w-4 h-4 rounded-full border"
+                        style={{ backgroundColor: colors.primary, borderColor: colors.background }}
+                    />
+                    <span
+                        className="w-4 h-4 rounded-full border"
+                        style={{ backgroundColor: colors.secondary, borderColor: colors.background }}
+                    />
+                    <span
+                        className="w-4 h-4 rounded-full border"
+                        style={{ backgroundColor: colors.background, borderColor: colors.surface }}
+                    />
+                </span>
             </motion.button>
 
             {/* Theme Picker Panel */}
@@ -59,7 +72,13 @@ export default function ThemePicker({ position = 'bottom-right' }) {
                                 }}
                             >
                                 <span className="flex items-center gap-2">
-                                    {isDarkMode ? '🌙' : '☀️'}
+                                    <span
+                                        className="w-3.5 h-3.5 rounded-full border"
+                                        style={{
+                                            backgroundColor: isDarkMode ? colors.surface : colors.background,
+                                            borderColor: colors.border,
+                                        }}
+                                    />
                                     <span className="font-serif text-sm">Dark Mode</span>
                                 </span>
                                 <span className="text-xs opacity-70">
@@ -71,6 +90,9 @@ export default function ThemePicker({ position = 'bottom-right' }) {
                         {/* Theme Grid */}
                         <div className="grid grid-cols-2 gap-2">
                             {Object.entries(availableThemes).map(([key, themeData]) => (
+                                (() => {
+                                    const previewColors = themeData[isDarkMode ? 'dark' : 'light'];
+                                    return (
                                 <motion.button
                                     key={key}
                                     whileHover={{ scale: 1.02 }}
@@ -84,12 +106,27 @@ export default function ThemePicker({ position = 'bottom-right' }) {
                                         color: colors.text
                                     }}
                                 >
-                                    <span className="text-2xl mb-1">{themeData.icon}</span>
+                                    <span className="flex items-center gap-1 mb-2">
+                                        <span
+                                            className="w-4 h-4 rounded-full border"
+                                            style={{ backgroundColor: previewColors.primary, borderColor: previewColors.border }}
+                                        />
+                                        <span
+                                            className="w-4 h-4 rounded-full border"
+                                            style={{ backgroundColor: previewColors.secondary, borderColor: previewColors.border }}
+                                        />
+                                        <span
+                                            className="w-4 h-4 rounded-full border"
+                                            style={{ backgroundColor: previewColors.accent, borderColor: previewColors.border }}
+                                        />
+                                    </span>
                                     <span className="font-serif text-xs text-center">{themeData.name}</span>
                                     {theme === key && (
                                         <span className="text-xs mt-1" style={{ color: colors.accent }}>✓</span>
                                     )}
                                 </motion.button>
+                                    );
+                                })()
                             ))}
                         </div>
 

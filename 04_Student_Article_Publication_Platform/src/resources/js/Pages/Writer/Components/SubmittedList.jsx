@@ -1,6 +1,8 @@
 import { Link } from '@inertiajs/react';
+import { useTheme } from '@/Contexts/ThemeContext';
 
 export default function SubmittedList({ articles = [] }) {
+    const { colors } = useTheme();
     const submitted = articles.filter((article) => {
         const slug = article?.status?.slug ?? null;
         if (slug) return slug !== 'draft';
@@ -11,26 +13,36 @@ export default function SubmittedList({ articles = [] }) {
     return (
         <section className="space-y-2">
             <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Submitted</h3>
-                <span className="text-sm text-gray-600">{submitted.length}</span>
+                <h3 className="text-lg font-semibold" style={{ color: colors.text }}>
+                    Submitted
+                </h3>
+                <span className="text-sm" style={{ color: colors.textSecondary }}>
+                    {submitted.length}
+                </span>
             </div>
 
             {submitted.length === 0 ? (
-                <p className="text-sm text-gray-600">No submissions yet.</p>
+                <p className="text-sm" style={{ color: colors.textSecondary }}>
+                    No submissions yet.
+                </p>
             ) : (
-                <ul className="divide-y divide-gray-100 text-sm text-gray-800">
+                <ul className="text-sm" style={{ color: colors.text }}>
                     {submitted.map((article) => (
-                        <li key={article.id} className="py-2">
-                            <div className="flex items-baseline justify-between gap-3">
+                        <li
+                            key={article.id}
+                            className="py-2"
+                            style={{ borderBottom: `1px solid ${colors.border}` }}
+                        >
+                            <div className="flex items-baseline gap-3">
                                 <Link
                                     href={route('writer.articles.edit', article.id)}
                                     className="font-medium hover:underline"
+                                    style={{ color: colors.primary }}
                                 >
                                     {article.title}
                                 </Link>
-                                <span className="text-xs text-gray-500">ID: {article.id}</span>
                             </div>
-                            <div className="text-xs text-gray-600">
+                            <div className="text-xs" style={{ color: colors.textSecondary }}>
                                 Status: {article?.status?.name ?? article?.status?.slug ?? 'N/A'}
                                 {article.submitted_at ? (
                                     <span> — Submitted: {new Date(article.submitted_at).toLocaleString()}</span>
