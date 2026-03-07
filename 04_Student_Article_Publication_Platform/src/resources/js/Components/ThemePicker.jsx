@@ -20,7 +20,6 @@ export default function ThemePicker({ position = 'inline' }) {
 
     return (
         <div ref={pickerRef} className="relative flex items-center justify-center">
-            {/* Clean Icon Button - No box styling */}
             <motion.button
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 whileTap={{ scale: 0.9 }}
@@ -28,13 +27,12 @@ export default function ThemePicker({ position = 'inline' }) {
                 className="w-8 h-8 flex items-center justify-center cursor-pointer select-none transition-colors"
                 style={{
                     color: isOpen ? colors.accent : colors.textSecondary,
-                    WebkitTapHighlightColor: 'transparent'
+                    WebkitTapHighlightColor: 'transparent',
                 }}
             >
                 <ColorLensIcon sx={{ fontSize: 20 }} />
             </motion.button>
 
-            {/* Professional Grid Panel */}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -52,10 +50,9 @@ export default function ThemePicker({ position = 'inline' }) {
                             boxShadow: isDarkMode
                                 ? '0 20px 40px rgba(0,0,0,0.5)'
                                 : '0 20px 40px rgba(0,0,0,0.15)',
-                            backdropFilter: 'blur(10px)'
+                            backdropFilter: 'blur(10px)',
                         }}
                     >
-                        {/* Theme Grid */}
                         <div className="grid grid-cols-3 gap-1">
                             {Object.entries(availableThemes).map(([key, themeData]) => {
                                 const isSelected = theme === key;
@@ -82,7 +79,6 @@ export default function ThemePicker({ position = 'inline' }) {
                                             {themeData.name}
                                         </span>
 
-                                        {/* Mini color preview dots */}
                                         <div className="flex gap-0.5 mt-1">
                                             <div
                                                 className="w-1.5 h-1.5 rounded-full"
@@ -103,7 +99,7 @@ export default function ThemePicker({ position = 'inline' }) {
                                                 layoutId="active-frame"
                                                 className="absolute inset-0 border-2 rounded-[18px]"
                                                 style={{ borderColor: colors.accent }}
-                                                transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+                                                transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
                                             />
                                         )}
                                     </button>
@@ -111,7 +107,6 @@ export default function ThemePicker({ position = 'inline' }) {
                             })}
                         </div>
 
-                        {/* Integrated Mode Toggle */}
                         <div className="mt-2 pt-2 border-t" style={{ borderColor: `${colors.border}60` }}>
                             <button
                                 onClick={() => setIsDarkMode(!isDarkMode)}
@@ -121,22 +116,18 @@ export default function ThemePicker({ position = 'inline' }) {
                                     color: colors.text,
                                 }}
                             >
-                                <span className="text-sm" style={{ color: colors.accent }}>
-                                    {isDarkMode ? '🌙' : '☀️'}
-                                </span>
                                 <span className="text-[10px] font-black uppercase tracking-[0.1em]">
                                     {isDarkMode ? 'Dark Mode' : 'Light Mode'}
                                 </span>
                             </button>
                         </div>
 
-                        {/* Current theme indicator */}
                         <div className="mt-1 text-center">
                             <span
                                 className="text-[7px] font-mono uppercase tracking-wider"
                                 style={{ color: `${colors.textSecondary}80` }}
                             >
-                                {availableThemes[theme]?.name || 'Classic'} • {isDarkMode ? 'Dark' : 'Light'}
+                                {availableThemes[theme]?.name || 'Classic'} � {isDarkMode ? 'Dark' : 'Light'}
                             </span>
                         </div>
                     </motion.div>

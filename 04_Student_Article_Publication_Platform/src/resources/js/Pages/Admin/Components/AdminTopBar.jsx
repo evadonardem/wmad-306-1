@@ -122,6 +122,9 @@ export default function AdminTopBar({ active = 'dashboard' }) {
 
             <Menu anchorEl={themeAnchor} open={Boolean(themeAnchor)} onClose={() => setThemeAnchor(null)}>
                 {Object.entries(NEWSPAPER_THEMES).map(([key, theme]) => (
+                    (() => {
+                        const themeColors = getThemeColors(key);
+                        return (
                     <MenuItem
                         key={key}
                         selected={currentTheme === key}
@@ -131,11 +134,44 @@ export default function AdminTopBar({ active = 'dashboard' }) {
                         }}
                     >
                         <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 180 }}>
-                            <Typography component="span">{theme.icon}</Typography>
+                            <Stack direction="row" alignItems="center" spacing={0.5}>
+                                <Box
+                                    sx={{
+                                        width: 12,
+                                        height: 12,
+                                        borderRadius: 99,
+                                        bgcolor: themeColors.accent,
+                                        border: '1px solid',
+                                        borderColor: themeColors.border,
+                                    }}
+                                />
+                                <Box
+                                    sx={{
+                                        width: 12,
+                                        height: 12,
+                                        borderRadius: 99,
+                                        bgcolor: themeColors.newsprint,
+                                        border: '1px solid',
+                                        borderColor: themeColors.border,
+                                    }}
+                                />
+                                <Box
+                                    sx={{
+                                        width: 12,
+                                        height: 12,
+                                        borderRadius: 99,
+                                        bgcolor: themeColors.paper,
+                                        border: '1px solid',
+                                        borderColor: themeColors.border,
+                                    }}
+                                />
+                            </Stack>
                             <Typography>{theme.name}</Typography>
                             {currentTheme === key && <Typography sx={{ ml: 'auto' }}>OK</Typography>}
                         </Stack>
                     </MenuItem>
+                        );
+                    })()
                 ))}
             </Menu>
 

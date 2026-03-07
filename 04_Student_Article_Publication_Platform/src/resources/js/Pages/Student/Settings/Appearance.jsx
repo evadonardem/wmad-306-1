@@ -73,7 +73,10 @@ export default function AppearanceSettings() {
                         >
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <span className="text-xl">✨</span>
+                                    <span
+                                        className="h-3 w-3 rounded-full"
+                                        style={{ backgroundColor: previewColors.background }}
+                                    />
                                     <span className="font-serif">You have unsaved changes</span>
                                 </div>
                                 <div className="flex gap-3">
@@ -149,7 +152,7 @@ export default function AppearanceSettings() {
                                     ringColor: previewColors.accent
                                 }}
                             >
-                                ☀️ Light
+                                Light
                             </button>
                             <button
                                 onClick={() => setPreviewMode(true)}
@@ -162,7 +165,7 @@ export default function AppearanceSettings() {
                                     ringColor: previewColors.accent
                                 }}
                             >
-                                🌙 Dark
+                                Dark
                             </button>
                         </div>
                     </div>
@@ -242,7 +245,20 @@ export default function AppearanceSettings() {
                             }}
                         >
                             <div className="flex items-center gap-3 mb-3">
-                                <span className="text-3xl">{themeData.icon}</span>
+                                <span className="flex items-center gap-1">
+                                    <span
+                                        className="w-5 h-5 rounded-full border"
+                                        style={{ backgroundColor: themeData.light.primary, borderColor: colors.border }}
+                                    />
+                                    <span
+                                        className="w-5 h-5 rounded-full border"
+                                        style={{ backgroundColor: themeData.light.secondary, borderColor: colors.border }}
+                                    />
+                                    <span
+                                        className="w-5 h-5 rounded-full border"
+                                        style={{ backgroundColor: themeData.light.accent, borderColor: colors.border }}
+                                    />
+                                </span>
                                 <div>
                                     <h3 className="font-serif font-semibold" style={{ color: colors.text }}>
                                         {themeData.name}
@@ -334,3 +350,4 @@ export default function AppearanceSettings() {
         </StudentLayout>
     );
 }
+
