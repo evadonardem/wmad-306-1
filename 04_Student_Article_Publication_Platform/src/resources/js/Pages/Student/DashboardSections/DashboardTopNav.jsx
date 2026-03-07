@@ -1,3 +1,4 @@
+// DashboardTopNav.jsx (updated with ThemePicker beside notifications)
 import { useMemo, useState, useEffect } from 'react';
 import {
     Avatar,
@@ -17,8 +18,6 @@ import {
     useScrollTrigger,
 } from '@mui/material';
 import {
-    DarkModeRounded,
-    LightModeRounded,
     SearchRounded,
     NotificationsNoneRounded,
     ManageAccountsRounded,
@@ -27,9 +26,14 @@ import {
     ChevronRight,
     NotificationsActiveRounded,
     MarkEmailReadRounded,
+    BookmarkBorder,
+    AutoStories,
+    History,
+    Menu as MenuIcon,
 } from '@mui/icons-material';
 import { router } from '@inertiajs/react';
-import { COLORS, DARK_COLORS } from './dashboardTheme';
+import { useTheme } from '@/Contexts/ThemeContext';
+import ThemePicker from '@/Components/ThemePicker';
 import { initEcho } from '../../../notifications/NotificationListener';
 
 export const CATEGORIES = [
@@ -41,6 +45,12 @@ export const CATEGORIES = [
     { id: 'sports', label: 'Sports' },
     { id: 'academics', label: 'Academics' },
     { id: 'events', label: 'Events' },
+];
+
+const NAV_ITEMS = [
+    { key: 'feed', label: 'Home', icon: <AutoStories fontSize="small" /> },
+    { key: 'saved', label: 'Saved', icon: <BookmarkBorder fontSize="small" /> },
+    { key: 'history', label: 'History', icon: <History fontSize="small" /> },
 ];
 
 export default function DashboardTopNav({
@@ -56,30 +66,32 @@ export default function DashboardTopNav({
     userId,
     userEmail,
     notificationCount = 0,
+    onOpenMobileWidgets,
 }) {
-    const isDark = mode === 'dark';
+    const { colors, isDarkMode } = useTheme();
     const [menuAnchor, setMenuAnchor] = useState(null);
+    const [notifAnchor, setNotifAnchor] = useState(null);
     const [searchFocused, setSearchFocused] = useState(false);
     const [categoryIndex, setCategoryIndex] = useState(0);
     const [localCategory, setLocalCategory] = useState(activeCategory || CATEGORIES[0].id);
+    const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
+
     const open = Boolean(menuAnchor);
     const avatarLetter = useMemo(() => (userName ? userName[0]?.toUpperCase() : 'U'), [userName]);
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(notificationCount);
-    const [popup, setPopup] = useState(null);
-    const [notifAnchor, setNotifAnchor] = useState(null);
 
     const trigger = useScrollTrigger({
         disableHysteresis: true,
         threshold: 0,
     });
 
-    const visibleCategories = CATEGORIES.slice(categoryIndex, categoryIndex + 3);
+    const visibleCategories = CATEGORIES.slice(categoryIndex, categoryIndex + 4);
     const showLeftArrow = categoryIndex > 0;
-    const showRightArrow = categoryIndex < CATEGORIES.length - 3;
+    const showRightArrow = categoryIndex < CATEGORIES.length - 4;
 
     const handleNextCategories = () => {
-        if (categoryIndex < CATEGORIES.length - 3) setCategoryIndex(categoryIndex + 1);
+        if (categoryIndex < CATEGORIES.length - 4) setCategoryIndex(categoryIndex + 1);
     };
 
     const handlePrevCategories = () => {
@@ -97,29 +109,21 @@ export default function DashboardTopNav({
         onCategoryChange?.(categoryId);
     };
 
+    // Notification listeners
     useEffect(() => {
         if (!userId) return;
         initEcho(userId);
         const handleNewArticle = (e) => {
             setNotifications((prev) => [{ type: 'article', ...e.detail }, ...prev]);
             setUnreadCount((c) => c + 1);
-            setPopup({
-                message: `New article published: ${e.detail.title}`,
-                type: 'article',
-            });
         };
         const handleReply = (e) => {
-            console.log('Received reply notification:', e.detail);
             setNotifications((prev) => [{
                 type: 'reply',
                 ...e.detail,
                 reply: e.detail.reply || (e.detail.body ? { body: e.detail.body } : undefined)
             }, ...prev]);
             setUnreadCount((c) => c + 1);
-            setPopup({
-                message: `Your comment received a reply!`,
-                type: 'reply',
-            });
         };
         window.addEventListener('notify:new-article', handleNewArticle);
         window.addEventListener('notify:comment-reply', handleReply);
@@ -140,141 +144,272 @@ export default function DashboardTopNav({
         setUnreadCount(0);
     };
 
-    // Shared styles for nav buttons
-    const navBtnStyle = (isActive) => ({
-        fontWeight: 600,
-        textTransform: 'none',
-        fontSize: '0.875rem',
-        letterSpacing: '0.01em',
-        transition: 'all 0.25s ease-in-out',
-        color: isActive
-            ? (isDark ? DARK_COLORS.softPink : COLORS.deepPurple)
-            : (isDark ? alpha('#FFF', 0.6) : alpha(COLORS.royalPurple, 0.7)),
-        px: 1.6,
-        py: 0.6,
-        borderRadius: '999px',
-        border: '1px solid',
-        borderColor: isActive
-            ? (isDark ? alpha(DARK_COLORS.softPink, 0.28) : alpha(COLORS.softPink, 0.25))
-            : 'transparent',
-        bgcolor: isActive
-            ? (isDark ? alpha(DARK_COLORS.softPink, 0.12) : alpha(COLORS.softPink, 0.12))
-            : 'transparent',
+    // Styles
+    const navButtonStyle = (isActive) => ({
+        color: isActive ? colors.accent : colors.textSecondary,
+        fontWeight: isActive ? 700 : 500,
+        fontFamily: '"Times New Roman", Times, serif',
+        textTransform: 'uppercase',
+        fontSize: '0.85rem',
+        letterSpacing: '0.05em',
+        position: 'relative',
+        '&:after': isActive ? {
+            content: '""',
+            position: 'absolute',
+            bottom: 0,
+            left: 8,
+            right: 8,
+            height: 2,
+            backgroundColor: colors.accent,
+        } : {},
         '&:hover': {
-            bgcolor: isDark ? alpha('#FFF', 0.06) : alpha(COLORS.softPink, 0.09),
-            color: isDark ? '#FFF' : COLORS.deepPurple,
-            borderColor: isDark ? alpha(DARK_COLORS.softPink, 0.2) : alpha(COLORS.softPink, 0.2),
+            color: colors.accent,
+            backgroundColor: 'transparent',
+        },
+    });
+
+    const categoryButtonStyle = (isActive) => ({
+        color: isActive ? colors.accent : colors.textSecondary,
+        fontFamily: '"Times New Roman", Times, serif',
+        fontSize: '0.8rem',
+        fontWeight: isActive ? 700 : 400,
+        textTransform: 'uppercase',
+        minWidth: 'auto',
+        px: 1.5,
+        py: 0.5,
+        border: isActive ? `1px solid ${colors.accent}` : `1px solid transparent`,
+        borderRadius: 0,
+        '&:hover': {
+            color: colors.accent,
+            backgroundColor: alpha(colors.accent, 0.05),
+            borderColor: colors.accent,
         },
     });
 
     return (
-        <Paper
-            elevation={0}
-            sx={{
-                position: 'sticky',
-                top: 8,
-                zIndex: 1200,
-                px: { xs: 1.5, md: 2.5 },
-                py: 1,
-                borderRadius: 3,
-                border: '1px solid',
-                borderColor: isDark ? alpha(DARK_COLORS.border, 0.75) : alpha(COLORS.mediumPurple, 0.16),
-                bgcolor: isDark ? alpha(DARK_COLORS.cardBg, 0.82) : alpha('#FFFFFF', 0.86),
-                backdropFilter: 'blur(16px)',
-                boxShadow: trigger
-                    ? (isDark ? '0 12px 32px -18px rgba(0,0,0,0.9)' : '0 12px 32px -18px rgba(84, 58, 120, 0.35)')
-                    : 'none',
-                transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
-                minHeight: 74,
-                display: 'flex',
-                alignItems: 'center',
-            }}
-        >
-            <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="space-between"
-                spacing={1.5}
-                sx={{ width: '100%' }}
+        <>
+            {/* Main Navigation Bar */}
+            <Paper
+                elevation={0}
+                sx={{
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 1200,
+                    border: `1px solid ${colors.border}`,
+                    bgcolor: alpha(colors.background, 0.95),
+                    backdropFilter: 'blur(8px)',
+                    boxShadow: trigger ? `0 4px 20px ${alpha(colors.border, 0.2)}` : 'none',
+                    transition: 'all 0.3s ease',
+                }}
             >
+                {/* Top Row - Logo, Search, Theme Picker, Notifications, User */}
+                <Box sx={{ p: 1.5, borderBottom: `1px solid ${colors.border}` }}>
+                    <Stack direction="row" alignItems="center" justifyContent="space-between">
+                        {/* Left - Newspaper Name and Mobile Menu */}
+                        <Stack direction="row" alignItems="center" spacing={2}>
+                            <Typography
+                                variant="h5"
+                                sx={{
+                                    fontFamily: '"Times New Roman", Times, serif',
+                                    fontWeight: 900,
+                                    color: colors.text,
+                                    letterSpacing: '-0.02em',
+                                    borderRight: `2px solid ${colors.accent}`,
+                                    pr: 2,
+                                    mr: 1,
+                                }}
+                            >
+                                FYI
+                            </Typography>
 
-                {/* Brand Logo */}
-                <Stack
-                    direction="row"
-                    alignItems="center"
-                    spacing={1}
-                    sx={{
-                        px: 1.5,
-                        py: 0.75,
-                        borderRadius: 999,
-                        border: '1px solid',
-                        borderColor: isDark ? alpha(DARK_COLORS.softPink, 0.24) : alpha(COLORS.softPink, 0.28),
-                        bgcolor: isDark ? alpha(DARK_COLORS.softPink, 0.08) : alpha(COLORS.softPink, 0.08),
-                    }}
-                >
-                    <Typography
-                        variant="h6"
-                        sx={{
-                            fontWeight: 900,
-                            letterSpacing: '-0.04em',
-                            lineHeight: 1,
-                            background: `linear-gradient(90deg, ${COLORS.deepPurple} 0%, ${COLORS.softPink} 100%)`,
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            cursor: 'pointer',
-                            userSelect: 'none',
-                        }}
-                    >
-                        FYI
-                    </Typography>
-                </Stack>
+                            {/* Mobile Menu Button */}
+                            <IconButton
+                                onClick={(e) => setMobileMenuAnchor(e.currentTarget)}
+                                sx={{ display: { xs: 'flex', md: 'none' } }}
+                            >
+                                <MenuIcon />
+                            </IconButton>
+                        </Stack>
 
-                {/* Navigation Center */}
-                <Stack
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="center"
-                    spacing={1}
-                    sx={{
-                        flexGrow: 1,
-                        minWidth: 0,
-                        px: { xs: 1.25, md: 1.75 },
-                        py: 0.65,
-                        borderRadius: 3,
-                        border: '1px solid',
-                        borderColor: isDark ? alpha(DARK_COLORS.border, 0.7) : alpha(COLORS.mediumPurple, 0.14),
-                        bgcolor: isDark ? alpha('#000', 0.14) : alpha(COLORS.gray100, 0.45),
-                    }}
-                >
-                    <Button
-                        onClick={() => onViewChange?.('feed')}
-                        sx={navBtnStyle(activeView === 'feed')}
-                    >
-                        Feed
-                    </Button>
+                        {/* Center - Search (desktop) */}
+                        <Box sx={{ display: { xs: 'none', md: 'block' }, flex: 1, maxWidth: 500, mx: 2 }}>
+                            <TextField
+                                size="small"
+                                value={search}
+                                onChange={(e) => onSearchChange(e.target.value)}
+                                onFocus={() => setSearchFocused(true)}
+                                onBlur={() => setSearchFocused(false)}
+                                placeholder="Search the news..."
+                                fullWidth
+                                sx={{
+                                    '& .MuiOutlinedInput-root': {
+                                        fontFamily: '"Times New Roman", Times, serif',
+                                        borderRadius: 0,
+                                        color: colors.text,
+                                        backgroundColor: alpha(colors.surface, 0.3),
+                                        '& fieldset': {
+                                            borderColor: colors.border,
+                                        },
+                                        '&:hover fieldset': {
+                                            borderColor: colors.accent,
+                                        },
+                                        '&.Mui-focused fieldset': {
+                                            borderColor: colors.accent,
+                                        },
+                                    },
+                                }}
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <SearchRounded sx={{ color: colors.textSecondary, fontSize: 20 }} />
+                                        </InputAdornment>
+                                    ),
+                                }}
+                            />
+                        </Box>
 
-                    <Divider orientation="vertical" flexItem sx={{ mx: 0.5, height: 24, my: 'auto', opacity: 0.5 }} />
+                        {/* Right - Notifications, Theme Picker, User */}
+                        <Stack direction="row" spacing={1.5} alignItems="center">
+                            {/* Notifications */}
+                            <IconButton
+                                onClick={handleNotifClick}
+                                sx={{
+                                    color: colors.textSecondary,
+                                    '&:hover': { color: colors.accent }
+                                }}
+                            >
+                                <Badge
+                                    badgeContent={unreadCount}
+                                    color="error"
+                                    sx={{
+                                        '& .MuiBadge-badge': {
+                                            backgroundColor: colors.accent,
+                                            color: colors.background,
+                                        }
+                                    }}
+                                >
+                                    <NotificationsNoneRounded />
+                                </Badge>
+                            </IconButton>
 
-                    <Stack direction="row" alignItems="center" spacing={0.5} sx={{ justifyContent: 'center' }}>
+                            {/* Theme Picker - placed directly beside notifications */}
+                            <Box sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                borderRight: `1px solid ${colors.border}`,
+                                pr: 1.5,
+                            }}>
+                                <ThemePicker position="top-right" />
+                            </Box>
+
+                            {/* User Avatar */}
+                            <IconButton
+                                onClick={(e) => setMenuAnchor(e.currentTarget)}
+                                sx={{
+                                    p: 0.5,
+                                    border: `2px solid ${colors.border}`,
+                                    borderRadius: 0,
+                                    '&:hover': {
+                                        borderColor: colors.accent,
+                                    },
+                                }}
+                            >
+                                <Avatar
+                                    sx={{
+                                        width: 32,
+                                        height: 32,
+                                        bgcolor: colors.accent,
+                                        color: colors.background,
+                                        fontSize: '0.9rem',
+                                        fontWeight: 700,
+                                    }}
+                                >
+                                    {avatarLetter}
+                                </Avatar>
+                            </IconButton>
+                        </Stack>
+                    </Stack>
+
+                    {/* Mobile Search - visible only on mobile */}
+                    <Box sx={{ display: { xs: 'block', md: 'none' }, mt: 1 }}>
+                        <TextField
+                            size="small"
+                            value={search}
+                            onChange={(e) => onSearchChange(e.target.value)}
+                            placeholder="Search the news..."
+                            fullWidth
+                            sx={{
+                                '& .MuiOutlinedInput-root': {
+                                    fontFamily: '"Times New Roman", Times, serif',
+                                    borderRadius: 0,
+                                    color: colors.text,
+                                    backgroundColor: alpha(colors.surface, 0.3),
+                                    '& fieldset': {
+                                        borderColor: colors.border,
+                                    },
+                                },
+                            }}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <SearchRounded sx={{ color: colors.textSecondary, fontSize: 20 }} />
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+                    </Box>
+                </Box>
+
+                {/* Middle Row - Navigation Tabs */}
+                <Box sx={{ px: 2, py: 1, borderBottom: `1px solid ${colors.border}` }}>
+                    <Stack direction="row" spacing={3} alignItems="center">
+                        {NAV_ITEMS.map((item) => (
+                            <Button
+                                key={item.key}
+                                onClick={() => onViewChange(item.key)}
+                                startIcon={item.icon}
+                                sx={navButtonStyle(activeView === item.key)}
+                            >
+                                {item.label}
+                            </Button>
+                        ))}
+                    </Stack>
+                </Box>
+
+                {/* Bottom Row - Categories with scroll arrows */}
+                <Box sx={{ px: 2, py: 1 }}>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                        <Typography
+                            sx={{
+                                fontFamily: '"Courier New", monospace',
+                                fontSize: '0.7rem',
+                                color: colors.textSecondary,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.1em',
+                                whiteSpace: 'nowrap',
+                            }}
+                        >
+                            SECTIONS:
+                        </Typography>
+
                         <IconButton
                             onClick={handlePrevCategories}
                             disabled={!showLeftArrow}
                             size="small"
                             sx={{
                                 opacity: showLeftArrow ? 1 : 0.3,
-                                border: '1px solid',
-                                borderColor: isDark ? alpha(DARK_COLORS.border, 0.8) : alpha(COLORS.mediumPurple, 0.15),
+                                color: colors.textSecondary,
                             }}
                         >
                             <ChevronLeft fontSize="small" />
                         </IconButton>
 
-                        <Stack direction="row" spacing={0.5}>
+                        <Stack direction="row" spacing={0.5} sx={{ overflow: 'hidden' }}>
                             {visibleCategories.map((category) => (
                                 <Button
                                     key={category.id}
                                     onClick={() => handleCategorySelect(category.id)}
-                                    sx={navBtnStyle((activeCategory || localCategory) === category.id)}
+                                    sx={categoryButtonStyle((activeCategory || localCategory) === category.id)}
                                 >
                                     {category.label}
                                 </Button>
@@ -287,226 +422,203 @@ export default function DashboardTopNav({
                             size="small"
                             sx={{
                                 opacity: showRightArrow ? 1 : 0.3,
-                                border: '1px solid',
-                                borderColor: isDark ? alpha(DARK_COLORS.border, 0.8) : alpha(COLORS.mediumPurple, 0.15),
+                                color: colors.textSecondary,
                             }}
                         >
                             <ChevronRight fontSize="small" />
                         </IconButton>
                     </Stack>
-                </Stack>
+                </Box>
+            </Paper>
 
-                {/* Right Utilities */}
-                <Stack direction="row" spacing={1} alignItems="center">
-                    {/* Search Field */}
-                    <TextField
-                        size="small"
-                        value={search}
-                        onChange={(e) => onSearchChange(e.target.value)}
-                        onFocus={() => setSearchFocused(true)}
-                        onBlur={() => setSearchFocused(false)}
-                        placeholder="Search..."
+            {/* Mobile Navigation Menu */}
+            <Menu
+                anchorEl={mobileMenuAnchor}
+                open={Boolean(mobileMenuAnchor)}
+                onClose={() => setMobileMenuAnchor(null)}
+                PaperProps={{
+                    sx: {
+                        mt: 1,
+                        minWidth: 200,
+                        border: `1px solid ${colors.border}`,
+                        borderRadius: 0,
+                        bgcolor: colors.background,
+                    }
+                }}
+            >
+                {NAV_ITEMS.map((item) => (
+                    <MenuItem
+                        key={item.key}
+                        onClick={() => {
+                            onViewChange(item.key);
+                            setMobileMenuAnchor(null);
+                        }}
+                        selected={activeView === item.key}
                         sx={{
-                            width: searchFocused ? { xs: 170, md: 280 } : { xs: 130, md: 220 },
-                            transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                            '& .MuiOutlinedInput-root': {
-                                height: 38,
-                                borderRadius: '999px',
-                                bgcolor: isDark ? alpha('#000', 0.18) : alpha(COLORS.gray100, 0.7),
-                                border: '1px solid',
-                                borderColor: searchFocused
-                                    ? (isDark ? DARK_COLORS.softPink : COLORS.softPink)
-                                    : (isDark ? alpha(DARK_COLORS.border, 0.75) : alpha(COLORS.mediumPurple, 0.15)),
-                                '& fieldset': { border: 'none' },
-                                fontSize: '0.85rem',
+                            gap: 1.5,
+                            color: activeView === item.key ? colors.accent : colors.text,
+                            '&.Mui-selected': {
+                                backgroundColor: alpha(colors.accent, 0.1),
                             },
                         }}
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <SearchRounded sx={{
-                                        color: searchFocused ? COLORS.softPink : 'text.disabled',
-                                        fontSize: 20,
-                                        ml: 0.5
-                                    }} />
-                                </InputAdornment>
-                            ),
-                        }}
-                    />
-
-                    <Stack
-                        direction="row"
-                        spacing={0.5}
-                        sx={{
-                            px: 0.5,
-                            py: 0.25,
-                            borderRadius: 999,
-                            border: '1px solid',
-                            borderColor: isDark ? alpha(DARK_COLORS.border, 0.7) : alpha(COLORS.mediumPurple, 0.15),
-                            bgcolor: isDark ? alpha('#000', 0.12) : alpha('#FFF', 0.7),
-                        }}
                     >
-                        <IconButton
-                            size="small"
-                            sx={{ color: 'text.secondary' }}
-                            onClick={handleNotifClick}
-                        >
-                            <Badge
-                                badgeContent={unreadCount}
-                                color="error"
-                                sx={{ '& .MuiBadge-badge': { fontSize: 10, height: 16, minWidth: 16 } }}
-                            >
-                                <NotificationsNoneRounded />
-                            </Badge>
-                        </IconButton>
-                        <Menu
-                            anchorEl={notifAnchor}
-                            open={Boolean(notifAnchor)}
-                            onClose={handleNotifClose}
-                            PaperProps={{
-                                sx: {
-                                    minWidth: 320,
-                                    maxWidth: 380,
-                                    borderRadius: 2,
-                                    p: 0,
-                                    boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-                                }
-                            }}
-                        >
-                            <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid #eee', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                                    Notifications
-                                </Typography>
-                                <Button size="small" onClick={handleMarkAllRead} sx={{ textTransform: 'none', fontSize: 12 }}>
-                                    Mark all read
-                                </Button>
-                            </Box>
-                            <Box sx={{ maxHeight: 340, overflowY: 'auto' }}>
-                                {notifications.length === 0 && (
-                                    <Typography variant="body2" sx={{ color: 'text.secondary', px: 2, py: 3, textAlign: 'center' }}>
-                                        No notifications yet.
-                                    </Typography>
-                                )}
-                                {notifications.map((notif, idx) => (
-                                    <Box key={idx} sx={{
-                                        px: 2, py: 1.5, borderBottom: idx !== notifications.length - 1 ? '1px solid #f3f3f3' : 'none',
-                                        bgcolor: notif.read ? 'background.paper' : (isDark ? alpha(DARK_COLORS.softPink, 0.08) : alpha(COLORS.softPink, 0.08)),
-                                        display: 'flex', alignItems: 'flex-start', gap: 1.5
-                                    }}>
-                                        {notif.type === 'article' ? (
-                                            <NotificationsActiveRounded sx={{ color: COLORS.softPink, fontSize: 22, mt: 0.5 }} />
-                                        ) : (
-                                            <MarkEmailReadRounded sx={{ color: COLORS.royalPurple, fontSize: 22, mt: 0.5 }} />
-                                        )}
-                                        <Box sx={{ flex: 1 }}>
-                                            <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                                                {notif.type === 'article' ? `New article published: ${notif.title}` : 'Your comment received a reply!'}
-                                            </Typography>
-                                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                                {notif.type === 'article' && notif.category ? `Category: ${notif.category}` : ''}
-                                                {notif.type === 'reply' && notif.reply ? `Reply: ${notif.reply.body}` : ''}
-                                            </Typography>
-                                            <Typography variant="caption" sx={{ color: 'text.disabled', display: 'block', mt: 0.5 }}>
-                                                {notif.published_at ? new Date(notif.published_at).toLocaleString() : ''}
-                                            </Typography>
-                                        </Box>
-                                    </Box>
-                                ))}
-                            </Box>
-                            {notifications.length > 0 && (
-                                <Box sx={{ px: 2, py: 1, borderTop: '1px solid #eee', display: 'flex', justifyContent: 'flex-end' }}>
-                                    <Button size="small" color="error" onClick={handleClearAll} sx={{ textTransform: 'none', fontSize: 12 }}>
-                                        Clear all
-                                    </Button>
-                                </Box>
-                            )}
-                        </Menu>
-                        <IconButton
-                            onClick={onToggleMode}
-                            size="small"
-                            sx={{ color: 'text.secondary' }}
-                        >
-                            {isDark ? <LightModeRounded fontSize="small" /> : <DarkModeRounded fontSize="small" />}
-                        </IconButton>
-                    </Stack>
+                        {item.icon}
+                        {item.label}
+                    </MenuItem>
+                ))}
+                <Divider sx={{ borderColor: colors.border }} />
+                <MenuItem>
+                    <ThemePicker />
+                </MenuItem>
+            </Menu>
 
-                    <IconButton
-                        onClick={(e) => setMenuAnchor(e.currentTarget)}
-                        sx={{
-                            p: '2px',
-                            border: '2px solid',
-                            borderColor: open ? COLORS.softPink : 'transparent',
-                            transition: 'all 0.2s'
-                        }}
-                    >
-                        <Avatar
-                            sx={{
-                                width: 32,
-                                height: 32,
-                                bgcolor: isDark ? alpha(DARK_COLORS.softPink, 0.2) : COLORS.softPink,
-                                color: isDark ? DARK_COLORS.softPink : '#FFF',
-                                fontSize: '0.85rem',
-                                fontWeight: 700,
-                            }}
-                        >
-                            {avatarLetter}
-                        </Avatar>
-                    </IconButton>
-                </Stack>
-            </Stack>
-
-            {/* Menu Styling */}
+            {/* Profile Menu */}
             <Menu
                 anchorEl={menuAnchor}
                 open={open}
                 onClose={() => setMenuAnchor(null)}
-                elevation={0}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                 PaperProps={{
                     sx: {
-                        mt: 1.5,
+                        mt: 1,
                         minWidth: 220,
-                        borderRadius: '12px',
-                        border: '1px solid',
-                        borderColor: isDark ? alpha(DARK_COLORS.border, 0.8) : alpha(COLORS.mediumPurple, 0.1),
-                        boxShadow: '0 10px 40px -10px rgba(0,0,0,0.2)',
-                        overflow: 'visible',
-                        '&:before': {
-                            content: '""',
-                            display: 'block',
-                            position: 'absolute',
-                            top: 0,
-                            right: 14,
-                            width: 10,
-                            height: 10,
-                            bgcolor: 'background.paper',
-                            transform: 'translateY(-50%) rotate(45deg)',
-                            zIndex: 0,
-                            borderLeft: '1px solid',
-                            borderTop: '1px solid',
-                            borderColor: isDark ? alpha(DARK_COLORS.border, 0.8) : alpha(COLORS.mediumPurple, 0.1),
-                        },
+                        border: `1px solid ${colors.border}`,
+                        borderRadius: 0,
+                        bgcolor: colors.background,
                     }
                 }}
             >
                 <Box sx={{ px: 2, py: 1.5 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                    <Typography sx={{ fontFamily: '"Times New Roman", Times, serif', fontWeight: 700, color: colors.text }}>
                         {userName || 'Student Account'}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                        {userEmail || 'student@university.edu'}
+                    <Typography variant="caption" sx={{ fontFamily: '"Courier New", monospace', color: colors.textSecondary }}>
+                        {userEmail || 'student@fyi.edu'}
                     </Typography>
                 </Box>
-                <Divider sx={{ opacity: 0.6 }} />
-                <MenuItem onClick={() => router.visit(route('student.profile'))} sx={{ py: 1.2, gap: 1.5, fontSize: '0.875rem' }}>
-                    <ManageAccountsRounded fontSize="small" sx={{ opacity: 0.7 }} /> Profile
+                <Divider sx={{ borderColor: colors.border }} />
+                <MenuItem onClick={() => router.visit(route('student.profile'))} sx={{ gap: 1.5, color: colors.text }}>
+                    <ManageAccountsRounded fontSize="small" /> Profile
                 </MenuItem>
-                <Divider sx={{ opacity: 0.6 }} />
-                <MenuItem onClick={() => router.post(route('logout'))} sx={{ py: 1.2, gap: 1.5, fontSize: '0.875rem', color: 'error.main' }}>
+                <MenuItem onClick={() => router.visit(route('student.settings'))} sx={{ gap: 1.5, color: colors.text }}>
+                    <ManageAccountsRounded fontSize="small" /> Settings
+                </MenuItem>
+                <Divider sx={{ borderColor: colors.border }} />
+                <MenuItem onClick={() => router.post(route('logout'))} sx={{ gap: 1.5, color: colors.error }}>
                     <LogoutRounded fontSize="small" /> Sign Out
                 </MenuItem>
             </Menu>
-        </Paper>
+
+            {/* Notifications Menu */}
+            <Menu
+                anchorEl={notifAnchor}
+                open={Boolean(notifAnchor)}
+                onClose={handleNotifClose}
+                PaperProps={{
+                    sx: {
+                        mt: 1,
+                        minWidth: 320,
+                        maxWidth: 380,
+                        border: `1px solid ${colors.border}`,
+                        borderRadius: 0,
+                        bgcolor: colors.background,
+                    }
+                }}
+            >
+                <Box sx={{
+                    px: 2,
+                    py: 1.5,
+                    borderBottom: `1px solid ${colors.border}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                }}>
+                    <Typography sx={{ fontFamily: '"Times New Roman", Times, serif', fontWeight: 700, color: colors.text }}>
+                        Notifications
+                    </Typography>
+                    <Button
+                        size="small"
+                        onClick={handleMarkAllRead}
+                        sx={{
+                            color: colors.accent,
+                            textTransform: 'none',
+                            fontFamily: '"Times New Roman", Times, serif',
+                            '&:hover': { backgroundColor: 'transparent', textDecoration: 'underline' }
+                        }}
+                    >
+                        Mark all read
+                    </Button>
+                </Box>
+
+                <Box sx={{ maxHeight: 340, overflowY: 'auto' }}>
+                    {notifications.length === 0 ? (
+                        <Typography sx={{
+                            fontFamily: '"Times New Roman", Times, serif',
+                            color: colors.textSecondary,
+                            px: 2,
+                            py: 3,
+                            textAlign: 'center'
+                        }}>
+                            No notifications yet.
+                        </Typography>
+                    ) : (
+                        notifications.map((notif, idx) => (
+                            <Box key={idx} sx={{
+                                px: 2,
+                                py: 1.5,
+                                borderBottom: idx !== notifications.length - 1 ? `1px solid ${colors.border}` : 'none',
+                                bgcolor: notif.read ? 'transparent' : alpha(colors.accent, 0.05),
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: 1.5,
+                                cursor: 'pointer',
+                                '&:hover': {
+                                    bgcolor: alpha(colors.accent, 0.02),
+                                }
+                            }}>
+                                {notif.type === 'article' ? (
+                                    <NotificationsActiveRounded sx={{ color: colors.accent, fontSize: 22 }} />
+                                ) : (
+                                    <MarkEmailReadRounded sx={{ color: colors.primary, fontSize: 22 }} />
+                                )}
+                                <Box sx={{ flex: 1 }}>
+                                    <Typography variant="body2" sx={{ fontWeight: 600, color: colors.text }}>
+                                        {notif.type === 'article' ? `New: ${notif.title}` : 'New reply to your comment'}
+                                    </Typography>
+                                    <Typography variant="caption" sx={{ color: colors.textSecondary, display: 'block' }}>
+                                        {notif.type === 'reply' && notif.reply ? `"${notif.reply.body?.substring(0, 50)}..."` : ''}
+                                    </Typography>
+                                    <Typography variant="caption" sx={{ color: colors.textSecondary, display: 'block', mt: 0.5 }}>
+                                        {notif.published_at ? new Date(notif.published_at).toLocaleString() : 'Just now'}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        ))
+                    )}
+                </Box>
+
+                {notifications.length > 0 && (
+                    <Box sx={{
+                        px: 2,
+                        py: 1,
+                        borderTop: `1px solid ${colors.border}`,
+                        display: 'flex',
+                        justifyContent: 'flex-end'
+                    }}>
+                        <Button
+                            size="small"
+                            color="error"
+                            onClick={handleClearAll}
+                            sx={{
+                                textTransform: 'none',
+                                fontFamily: '"Times New Roman", Times, serif',
+                                '&:hover': { backgroundColor: 'transparent', textDecoration: 'underline' }
+                            }}
+                        >
+                            Clear all
+                        </Button>
+                    </Box>
+                )}
+            </Menu>
+        </>
     );
 }

@@ -1,3 +1,4 @@
+// ArticleView.jsx - Fixed dark mode readability
 import { useState, useEffect } from 'react';
 import {
     Box,
@@ -7,7 +8,6 @@ import {
     Divider,
     IconButton,
     Stack,
-    Paper,
     Button,
     Modal,
     Fade,
@@ -22,10 +22,10 @@ import {
     ArrowBack,
     ArrowForward,
 } from '@mui/icons-material';
+import { useTheme } from '@/Contexts/ThemeContext';
 import CommentSection from './CommentSection';
 import RecommendedList from './RecommendedList';
-import { COLORS, DARK_COLORS, estimateReadingTime } from '../DashboardSections/dashboardTheme';
-import { useTheme } from '@mui/material';
+import { estimateReadingTime } from '../DashboardSections/dashboardTheme';
 
 export default function ArticleView({
     article,
@@ -35,7 +35,6 @@ export default function ArticleView({
     isStarred = false,
     starCount = 0,
     isTogglingStar = false,
-    mode = 'light',
     onNext,
     onPrevious,
     onSubmitComment,
@@ -43,9 +42,9 @@ export default function ArticleView({
     commentError = '',
     currentUserName = 'You',
 }) {
+    const { colors, isDarkMode } = useTheme();
     const [readingProgress, setReadingProgress] = useState(0);
     const [articleScrollRef, setArticleScrollRef] = useState(null);
-    const [commentScrollRef, setCommentScrollRef] = useState(null);
 
     useEffect(() => {
         if (!open) return;
@@ -66,12 +65,15 @@ export default function ArticleView({
 
     if (!article) return null;
 
-    const theme = useTheme();
-    const isDark = mode === 'dark' || theme.palette.mode === 'dark';
-    const bgColor = theme.palette.background.paper;
-    const textColor = theme.palette.text.primary;
-    const mutedColor = theme.palette.text.secondary;
     const readingTime = article.readMins || estimateReadingTime(article.content || article.excerpt || '');
+
+    // Force high contrast colors for dark mode
+    const textColor = isDarkMode ? '#FFFFFF' : colors.text;
+    const textSecondaryColor = isDarkMode ? '#E0E0E0' : colors.textSecondary;
+    const backgroundColor = isDarkMode ? '#1A1A1A' : colors.background;
+    const paperColor = isDarkMode ? '#2A2A2A' : colors.surface;
+    const borderColor = isDarkMode ? '#444444' : colors.border;
+    const accentColor = colors.accent;
 
     return (
         <Modal
@@ -79,7 +81,12 @@ export default function ArticleView({
             onClose={onClose}
             closeAfterTransition
             BackdropComponent={Backdrop}
-            BackdropProps={{ timeout: 500, sx: { backgroundColor: 'rgba(0, 0, 0, 0.8)' } }}
+            BackdropProps={{
+                timeout: 500,
+                sx: {
+                    backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(0, 0, 0, 0.8)',
+                }
+            }}
             sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
             <Fade in={open}>
@@ -88,8 +95,8 @@ export default function ArticleView({
                         width: '95%',
                         maxWidth: 1400,
                         height: '90vh',
-                        bgcolor: bgColor,
-                        borderRadius: 2,
+                        bgcolor: backgroundColor,
+                        border: `1px solid ${borderColor}`,
                         boxShadow: 24,
                         display: 'flex',
                         flexDirection: 'column',
@@ -97,6 +104,7 @@ export default function ArticleView({
                         position: 'relative',
                     }}
                 >
+                    {/* Reading Progress Bar */}
                     <Box
                         sx={{
                             position: 'absolute',
@@ -104,7 +112,7 @@ export default function ArticleView({
                             left: 0,
                             right: 0,
                             height: 3,
-                            bgcolor: `${COLORS.mediumPurple}30`,
+                            bgcolor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
                             zIndex: 20,
                         }}
                     >
@@ -112,45 +120,76 @@ export default function ArticleView({
                             sx={{
                                 width: `${readingProgress}%`,
                                 height: '100%',
-                                bgcolor: COLORS.softPink,
+                                bgcolor: accentColor,
                                 transition: 'width 0.1s ease',
                             }}
                         />
                     </Box>
 
+                    {/* Header */}
                     <Box
                         sx={{
                             p: 2,
-                            borderBottom: `1px solid ${isDark ? DARK_COLORS.border : `${COLORS.mediumPurple}30`}`,
+                            borderBottom: `1px solid ${borderColor}`,
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
-                            bgcolor: bgColor,
+                            bgcolor: backgroundColor,
                             position: 'sticky',
                             top: 0,
                             zIndex: 15,
                         }}
                     >
-                        <Typography variant="h6" sx={{ color: textColor, fontWeight: 600, fontSize: 16 }}>
+                        <Typography
+                            variant="h6"
+                            sx={{
+                                color: textColor,
+                                fontWeight: 600,
+                                fontSize: 16,
+                                fontFamily: '"Times New Roman", Times, serif',
+                            }}
+                        >
                             {article.title.substring(0, 60)}{article.title.length > 60 ? '...' : ''}
                         </Typography>
                         <Stack direction="row" spacing={1}>
                             <IconButton
                                 onClick={() => onToggleStar?.(article.id)}
                                 disabled={isTogglingStar}
-                                sx={{ color: isStarred ? COLORS.softPink : mutedColor }}
+                                sx={{
+                                    color: isStarred ? accentColor : textSecondaryColor,
+                                    '&:hover': {
+                                        color: accentColor,
+                                    }
+                                }}
                             >
                                 {isStarred ? <Star /> : <StarBorder />}
                             </IconButton>
-                            <Typography variant="caption" sx={{ color: mutedColor, alignSelf: 'center', minWidth: 20 }}>
+                            <Typography
+                                variant="caption"
+                                sx={{
+                                    color: textSecondaryColor,
+                                    alignSelf: 'center',
+                                    minWidth: 20,
+                                    fontFamily: '"Courier New", monospace',
+                                }}
+                            >
                                 {starCount}
                             </Typography>
-                            <IconButton onClick={onClose} sx={{ color: mutedColor }}>
+                            <IconButton
+                                onClick={onClose}
+                                sx={{
+                                    color: textSecondaryColor,
+                                    '&:hover': {
+                                        color: textColor,
+                                    }
+                                }}
+                            >
                                 <Close />
                             </IconButton>
                         </Stack>
                     </Box>
 
+                    {/* Content */}
                     <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
                         <Box
                             ref={setArticleScrollRef}
@@ -158,15 +197,17 @@ export default function ArticleView({
                                 flex: '0 0 70%',
                                 overflowY: 'auto',
                                 p: 3,
-                                borderRight: `1px solid ${isDark ? DARK_COLORS.border : `${COLORS.mediumPurple}20`}`,
-                                '&::-webkit-scrollbar': { width: 8 },
+                                borderRight: `1px solid ${borderColor}`,
+                                bgcolor: backgroundColor,
+                                '&::-webkit-scrollbar': {
+                                    width: 8,
+                                },
                                 '&::-webkit-scrollbar-track': {
-                                    background: isDark ? DARK_COLORS.border : '#f1f1f1',
-                                    borderRadius: 4,
+                                    background: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
                                 },
                                 '&::-webkit-scrollbar-thumb': {
-                                    background: isDark ? DARK_COLORS.mediumPurple : COLORS.mediumPurple,
-                                    borderRadius: 4,
+                                    background: accentColor,
+                                    borderRadius: 0,
                                 },
                             }}
                         >
@@ -174,60 +215,72 @@ export default function ArticleView({
                                 article={article}
                                 readingTime={readingTime}
                                 textColor={textColor}
-                                mutedColor={mutedColor}
-                                isDark={isDark}
+                                textSecondaryColor={textSecondaryColor}
+                                accentColor={accentColor}
+                                backgroundColor={backgroundColor}
+                                borderColor={borderColor}
+                                isDarkMode={isDarkMode}
                             />
 
                             <Box sx={{ mt: 4 }}>
                                 <RecommendedList
                                     articles={article.recommendations || []}
-                                    isDark={isDark}
                                     textColor={textColor}
-                                    mutedColor={mutedColor}
+                                    textSecondaryColor={textSecondaryColor}
+                                    accentColor={accentColor}
+                                    borderColor={borderColor}
+                                    isDarkMode={isDarkMode}
+                                    onArticleClick={onNext}
                                 />
                             </Box>
                         </Box>
 
+                        {/* Comments Section */}
                         <Box
-                            ref={setCommentScrollRef}
                             sx={{
                                 flex: '0 0 30%',
                                 overflowY: 'auto',
                                 p: 2,
-                                bgcolor: isDark ? `${DARK_COLORS.cardBg}80` : '#F9F9FC',
-                                '&::-webkit-scrollbar': { width: 8 },
+                                bgcolor: isDarkMode ? '#222222' : 'rgba(0,0,0,0.02)',
+                                borderLeft: `1px solid ${borderColor}`,
+                                '&::-webkit-scrollbar': {
+                                    width: 8,
+                                },
                                 '&::-webkit-scrollbar-track': {
-                                    background: isDark ? DARK_COLORS.border : '#f1f1f1',
-                                    borderRadius: 4,
+                                    background: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
                                 },
                                 '&::-webkit-scrollbar-thumb': {
-                                    background: isDark ? DARK_COLORS.mediumPurple : COLORS.mediumPurple,
-                                    borderRadius: 4,
+                                    background: accentColor,
+                                    borderRadius: 0,
                                 },
                             }}
                         >
                             <CommentSection
                                 comments={article.comments || []}
-                                isDark={isDark}
-                                textColor={textColor}
-                                mutedColor={mutedColor}
                                 onSubmitComment={onSubmitComment}
                                 isSubmitting={isSubmittingComment}
                                 currentUserName={currentUserName}
                                 errorMessage={commentError}
+                                textColor={textColor}
+                                textSecondaryColor={textSecondaryColor}
+                                accentColor={accentColor}
+                                backgroundColor={paperColor}
+                                borderColor={borderColor}
+                                isDarkMode={isDarkMode}
                             />
                         </Box>
                     </Box>
 
+                    {/* Navigation */}
                     {(onPrevious || onNext) && (
                         <Box
                             sx={{
                                 p: 2,
-                                borderTop: `1px solid ${isDark ? DARK_COLORS.border : `${COLORS.mediumPurple}30`}`,
+                                borderTop: `1px solid ${borderColor}`,
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 alignItems: 'center',
-                                bgcolor: bgColor,
+                                bgcolor: backgroundColor,
                             }}
                         >
                             <Button
@@ -235,9 +288,15 @@ export default function ArticleView({
                                 onClick={onPrevious}
                                 disabled={!onPrevious}
                                 sx={{
-                                    color: mutedColor,
+                                    color: textSecondaryColor,
                                     textTransform: 'none',
-                                    '&:hover:not(:disabled)': { color: COLORS.softPink },
+                                    fontFamily: '"Times New Roman", Times, serif',
+                                    '&:hover:not(:disabled)': {
+                                        color: accentColor,
+                                    },
+                                    '&.Mui-disabled': {
+                                        color: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+                                    }
                                 }}
                             >
                                 Previous Article
@@ -247,9 +306,15 @@ export default function ArticleView({
                                 onClick={onNext}
                                 disabled={!onNext}
                                 sx={{
-                                    color: mutedColor,
+                                    color: textSecondaryColor,
                                     textTransform: 'none',
-                                    '&:hover:not(:disabled)': { color: COLORS.softPink },
+                                    fontFamily: '"Times New Roman", Times, serif',
+                                    '&:hover:not(:disabled)': {
+                                        color: accentColor,
+                                    },
+                                    '&.Mui-disabled': {
+                                        color: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+                                    }
                                 }}
                             >
                                 Next Article
@@ -262,8 +327,16 @@ export default function ArticleView({
     );
 }
 
-function ArticleContent({ article, readingTime, textColor, mutedColor, isDark }) {
-    const theme = useTheme();
+function ArticleContent({
+    article,
+    readingTime,
+    textColor,
+    textSecondaryColor,
+    accentColor,
+    backgroundColor,
+    borderColor,
+    isDarkMode
+}) {
     const liveViews =
         typeof article.views === 'number'
             ? article.views
@@ -274,89 +347,253 @@ function ArticleContent({ article, readingTime, textColor, mutedColor, isDark })
                 : null;
 
     return (
-        <Stack spacing={2}>
+        <Stack spacing={3}>
+            {/* Title */}
             <Typography
                 variant="h1"
-                sx={{ fontSize: { xs: 24, md: 32 }, fontWeight: 700, color: theme.palette.text.primary, lineHeight: 1.2 }}
+                sx={{
+                    fontSize: { xs: 28, md: 36 },
+                    fontWeight: 700,
+                    color: textColor,
+                    lineHeight: 1.2,
+                    fontFamily: '"Times New Roman", Times, serif',
+                    letterSpacing: '-0.02em',
+                }}
             >
                 {article.title}
             </Typography>
 
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ flexWrap: 'wrap' }}>
+            {/* Byline */}
+            <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={2}
+                alignItems={{ xs: 'flex-start', sm: 'center' }}
+                sx={{ flexWrap: 'wrap' }}
+            >
                 <Stack direction="row" spacing={1} alignItems="center">
                     <Avatar
-                        sx={{ width: 32, height: 32, bgcolor: theme.palette.primary.main, fontSize: 14, fontWeight: 600 }}
+                        sx={{
+                            width: 36,
+                            height: 36,
+                            bgcolor: accentColor,
+                            color: '#FFFFFF',
+                            fontSize: 14,
+                            fontWeight: 600,
+                            fontFamily: '"Times New Roman", Times, serif',
+                        }}
                     >
                         {article.author?.charAt(0) || 'A'}
                     </Avatar>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
+                    <Typography
+                        variant="body1"
+                        sx={{
+                            fontWeight: 600,
+                            color: textColor,
+                            fontFamily: '"Times New Roman", Times, serif',
+                        }}
+                    >
                         {article.author || 'Journal Editorial Board'}
                     </Typography>
                 </Stack>
 
-                <Stack direction="row" spacing={1.5} divider={<Divider orientation="vertical" flexItem />}>
+                <Stack
+                    direction="row"
+                    spacing={1.5}
+                    divider={<Divider orientation="vertical" flexItem sx={{ borderColor: borderColor }} />}
+                    sx={{ flexWrap: 'wrap', rowGap: 1 }}
+                >
                     <Stack direction="row" spacing={0.5} alignItems="center">
-                        <Schedule sx={{ fontSize: 16, color: theme.palette.text.secondary }} />
-                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                        <Schedule sx={{ fontSize: 16, color: textSecondaryColor }} />
+                        <Typography
+                            variant="caption"
+                            sx={{
+                                color: textSecondaryColor,
+                                fontFamily: '"Courier New", monospace',
+                                fontSize: '0.75rem',
+                            }}
+                        >
                             {article.publishedAt
-                                ? new Date(article.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                                ? new Date(article.publishedAt).toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric'
+                                })
                                 : 'Unpublished'}
                         </Typography>
                     </Stack>
+
                     {liveViews !== null && (
                         <Stack direction="row" spacing={0.5} alignItems="center">
-                            <Visibility sx={{ fontSize: 16, color: theme.palette.text.secondary }} />
-                            <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                            <Visibility sx={{ fontSize: 16, color: textSecondaryColor }} />
+                            <Typography
+                                variant="caption"
+                                sx={{
+                                    color: textSecondaryColor,
+                                    fontFamily: '"Courier New", monospace',
+                                    fontSize: '0.75rem',
+                                }}
+                            >
                                 {liveViews.toLocaleString()} views
                             </Typography>
                         </Stack>
                     )}
+
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                        <Typography
+                            variant="caption"
+                            sx={{
+                                color: textSecondaryColor,
+                                fontFamily: '"Courier New", monospace',
+                                fontSize: '0.75rem',
+                            }}
+                        >
+                            {readingTime} min read
+                        </Typography>
+                    </Stack>
                 </Stack>
             </Stack>
 
+            {/* Featured Image */}
+            {article.featured_image && (
+                <Box
+                    component="img"
+                    src={article.featured_image}
+                    alt={article.title}
+                    sx={{
+                        width: '100%',
+                        height: 'auto',
+                        maxHeight: 400,
+                        objectFit: 'cover',
+                        border: `1px solid ${borderColor}`,
+                        my: 2,
+                    }}
+                />
+            )}
+
+            {/* Content */}
             <Box
                 sx={{
-                    mt: 2,
-                    '& p': { fontSize: 16, lineHeight: 1.7, color: theme.palette.text.primary, mb: 2 },
-                    '& h2': { fontSize: 24, fontWeight: 600, color: theme.palette.text.primary, mt: 4, mb: 2 },
-                    '& h3': {
-                        fontSize: 20,
-                        fontWeight: 600,
-                        color: theme.palette.primary.main,
-                        mt: 3,
-                        mb: 1.5,
+                    '& p, & span, & div, & section': {
+                        fontSize: '1.15rem',
+                        lineHeight: 1.8,
+                        color: `${textColor} !important`,
+                        mb: 2,
+                        fontFamily: '"Times New Roman", Times, serif',
                     },
+                    // This targets EVERYTHING inside the injected HTML to ensure no hidden black text
+                    '& *': {
+                        backgroundColor: 'transparent !important',
+                        borderColor: `${borderColor} !important`,
+                    },
+                    '& h1, & h2, & h3, & h4, & h5, & h6': {
+                        color: `${textColor} !important`,
+                        fontWeight: 700,
+                        fontFamily: '"Times New Roman", Times, serif',
+                        mt: 4,
+                        mb: 2,
+                    },
+                    '& h2': { fontSize: '1.8rem' },
+                    '& h3': { fontSize: '1.4rem' },
                     '& blockquote': {
-                        borderLeft: `4px solid ${theme.palette.primary.main}`,
-                        bgcolor: theme.palette.action.selected,
-                        py: 1,
+                        borderLeft: `4px solid ${accentColor} !important`,
+                        bgcolor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+                        py: 2,
                         px: 3,
                         my: 3,
-                        borderRadius: 1,
                         fontStyle: 'italic',
-                        color: theme.palette.primary.main,
+                        '& p': { color: `${textSecondaryColor} !important` },
                     },
+                    '& strong': {
+                        color: `${textColor} !important`,
+                        fontWeight: 800,
+                    },
+                    '& a': {
+                        color: `${accentColor} !important`,
+                        textDecoration: 'underline',
+                    }
                 }}
             >
                 {article.content ? (
                     <div dangerouslySetInnerHTML={{ __html: article.content }} />
                 ) : (
-                    <p>{article.excerpt || 'No content available.'}</p>
+                    <Typography
+                        sx={{
+                            color: textSecondaryColor,
+                            fontFamily: '"Times New Roman", Times, serif',
+                            fontSize: '1.1rem',
+                            fontStyle: 'italic',
+                        }}
+                    >
+                        {article.excerpt || 'No content available.'}
+                    </Typography>
                 )}
             </Box>
 
+            {/* Tags */}
             {article.tags && article.tags.length > 0 && (
-                <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: 'wrap', gap: 1 }}>
+                <Stack direction="row" spacing={1} sx={{ mt: 3, flexWrap: 'wrap', gap: 1 }}>
+                    <Typography
+                        sx={{
+                            fontFamily: '"Courier New", monospace',
+                            fontSize: '0.8rem',
+                            color: textSecondaryColor,
+                            mr: 1,
+                            alignSelf: 'center',
+                        }}
+                    >
+                        TAGS:
+                    </Typography>
                     {article.tags.map((tag) => (
                         <Chip
                             key={tag}
                             label={tag}
                             size="small"
-                            sx={{ bgcolor: theme.palette.primary.main, color: theme.palette.primary.contrastText }}
+                            sx={{
+                                bgcolor: 'transparent',
+                                border: `1px solid ${borderColor}`,
+                                color: textSecondaryColor,
+                                fontFamily: '"Courier New", monospace',
+                                borderRadius: 0,
+                                '&:hover': {
+                                    borderColor: accentColor,
+                                    color: accentColor,
+                                },
+                            }}
                         />
                     ))}
                 </Stack>
             )}
+
+            {/* Article Footer */}
+            <Box
+                sx={{
+                    mt: 4,
+                    pt: 3,
+                    borderTop: `2px solid ${borderColor}`,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                }}
+            >
+                <Typography
+                    sx={{
+                        fontFamily: '"Courier New", monospace',
+                        fontSize: '0.7rem',
+                        color: textSecondaryColor,
+                    }}
+                >
+                    © {new Date().getFullYear()} FYI Student Journal. All rights reserved.
+                </Typography>
+                <Typography
+                    sx={{
+                        fontFamily: '"Courier New", monospace',
+                        fontSize: '0.7rem',
+                        color: accentColor,
+                    }}
+                >
+                    ARTICLE ID: {article.id ? article.id.toString().substring(0, 8) : 'N/A'}
+                </Typography>
+            </Box>
         </Stack>
     );
 }

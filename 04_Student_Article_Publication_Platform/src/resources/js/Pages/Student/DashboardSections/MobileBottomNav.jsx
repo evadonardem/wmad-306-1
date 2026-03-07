@@ -1,43 +1,54 @@
+// MobileBottomNav.jsx (updated with proper mobile-only display)
 import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
-import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
-import BookmarkBorderRoundedIcon from '@mui/icons-material/BookmarkBorderRounded';
-import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
-import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
-import { SIDEBAR_ITEMS } from './dashboardTheme';
+import { AutoStories, BookmarkBorder, History, Settings } from '@mui/icons-material';
+import { useTheme } from '@/Contexts/ThemeContext';
 
-const iconMap = {
-    feed: <AutoAwesomeRoundedIcon />,
-    saved: <BookmarkBorderRoundedIcon />,
-    history: <HistoryRoundedIcon />,
-    settings: <SettingsRoundedIcon />,
-};
+const NAV_ITEMS = [
+    { key: 'feed', label: 'Home', icon: <AutoStories /> },
+    { key: 'saved', label: 'Saved', icon: <BookmarkBorder /> },
+    { key: 'history', label: 'History', icon: <History /> },
+    { key: 'settings', label: 'Settings', icon: <Settings /> },
+];
 
 export default function MobileBottomNav({ activeNav, onSelect }) {
+    const { colors } = useTheme();
+
     return (
         <Paper
-            elevation={12}
+            elevation={0}
             sx={{
                 position: 'fixed',
                 bottom: 0,
                 left: 0,
                 right: 0,
                 zIndex: 1300,
-                borderTop: '1px solid rgba(0,0,0,0.08)',
+                borderTop: '1px solid',
+                borderColor: colors.border,
+                bgcolor: colors.background,
+                display: { xs: 'block', md: 'none' }, // Only show on mobile
             }}
         >
             <BottomNavigation
                 showLabels
                 value={activeNav}
                 onChange={(event, value) => onSelect?.(value)}
-                sx={{ height: 64 }}
+                sx={{
+                    height: 64,
+                    bgcolor: 'transparent',
+                }}
             >
-                {SIDEBAR_ITEMS.map((item) => (
+                {NAV_ITEMS.map((item) => (
                     <BottomNavigationAction
                         key={item.key}
                         value={item.key}
                         label={item.label}
-                        icon={iconMap[item.key] || <AutoAwesomeRoundedIcon />}
-                        sx={{ minWidth: 0 }}
+                        icon={item.icon}
+                        sx={{
+                            color: colors.textSecondary,
+                            '&.Mui-selected': {
+                                color: colors.accent,
+                            },
+                        }}
                     />
                 ))}
             </BottomNavigation>

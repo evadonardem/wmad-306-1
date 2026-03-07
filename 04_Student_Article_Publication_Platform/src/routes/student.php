@@ -16,11 +16,14 @@ Route::middleware(['auth', 'verified', 'role:student'])
         // Settings routes
         Route::get('/settings', [\App\Http\Controllers\Student\SettingsController::class, 'index'])->name('settings');
         Route::get('/settings/appearance', [\App\Http\Controllers\Student\SettingsController::class, 'appearance'])->name('settings.appearance');
-        Route::put('/settings', [StudentController::class, 'updateSettings'])->name('settings.update');
+        Route::put('/settings', [\App\Http\Controllers\Student\SettingsController::class, 'update'])->name('settings.update');
+        Route::put('/settings/password', [\App\Http\Controllers\Student\SettingsController::class, 'updatePassword'])->name('settings.password.update');
+        Route::delete('/settings', [\App\Http\Controllers\Student\SettingsController::class, 'destroy'])->name('settings.destroy');
         Route::get('/writer-application', [WriterApplicationController::class, 'create'])->name('writer-application.create');
         Route::post('/writer-application', [WriterApplicationController::class, 'store'])->name('writer-application.store');
         Route::post('/articles/{article}/comments', [StudentController::class, 'comment'])->middleware('permission:comment.create')->name('articles.comment');
         Route::post('/articles/{article}/views', [StudentController::class, 'recordView'])->name('articles.view');
         Route::post('/articles/{article}/stars/toggle', [StudentController::class, 'toggleStar'])->name('articles.star.toggle');
         Route::post('/articles/{article}/saves/toggle', [StudentController::class, 'toggleSave'])->name('articles.save.toggle');
+        Route::post('/profile/avatar', [StudentController::class, 'updateAvatar'])->name('profile.avatar.update');
     });

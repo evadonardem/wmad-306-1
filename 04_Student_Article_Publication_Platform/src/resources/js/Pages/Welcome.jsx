@@ -313,7 +313,7 @@ export default function Welcome({ auth, recentArticles = [], landingStats = {} }
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 1, type: "spring" }}
             >
-                <ThemePicker />
+                <ThemePicker position="floating-bottom-right" />
             </motion.div>
 
             {/* Breaking News Ticker - Enhanced */}

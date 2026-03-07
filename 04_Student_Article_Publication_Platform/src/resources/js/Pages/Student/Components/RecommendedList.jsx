@@ -1,65 +1,148 @@
-import { Box, Typography, Stack, Paper, Chip, useTheme } from '@mui/material';
-import { BookmarkBorder, Visibility, Comment } from '@mui/icons-material';
-import { COLORS, DARK_COLORS } from '../DashboardSections/dashboardTheme';
+// RecommendedList.jsx (updated with complete dark mode support)
+import {
+    Box,
+    Typography,
+    Stack,
+    Paper,
+    Chip,
+    List,
+    ListItem,
+    ListItemText,
+    Divider,
+    alpha,
+} from '@mui/material';
+import {
+    TrendingUp,
+    Visibility,
+    ChatBubbleOutline,
+    Schedule,
+} from '@mui/icons-material';
 
 export default function RecommendedList({
     articles = [],
-    isDark = false,
-    textColor,
-    mutedColor,
+    colors,
+    isDarkMode = false,
+    onArticleClick,
 }) {
-    const theme = useTheme();
-    // Use theme.palette.mode for dark mode detection, ignore isDark prop to avoid duplicate declaration
-    const primaryText = textColor || theme.palette.text.primary;
-    const secondaryText = mutedColor || theme.palette.text.secondary;
+    if (!articles || articles.length === 0) return null;
 
     return (
-        <Paper elevation={0} sx={{ p: 2, borderRadius: 2, bgcolor: theme.palette.background.paper }}>
-            <Stack spacing={1.5}>
-                {articles.map((article) => (
-                    <Box
-                        key={article.id}
-                        sx={{
-                            p: 1.5,
-                            borderRadius: 1.5,
-                            border: `1px solid ${theme.palette.divider}`,
-                            cursor: 'pointer',
-                            transition: 'all 150ms ease',
-                            '&:hover': {
-                                borderColor: theme.palette.primary.main,
-                                bgcolor: isDark ? theme.palette.action.hover : theme.palette.action.selected,
-                            },
-                        }}
-                    >
-                        <Typography sx={{ color: primaryText, fontWeight: 600, fontSize: 14, mb: 0.5 }}>
-                            {article.title}
-                        </Typography>
+        <Paper
+            elevation={0}
+            sx={{
+                p: 2,
+                borderRadius: 0,
+                border: `1px solid ${colors.border}`,
+                bgcolor: isDarkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
+            }}
+        >
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+                <TrendingUp sx={{ color: colors.accent, fontSize: 20 }} />
+                <Typography
+                    sx={{
+                        fontFamily: '"Times New Roman", Times, serif',
+                        fontWeight: 700,
+                        color: colors.text,
+                        textTransform: 'uppercase',
+                        fontSize: '0.9rem',
+                        letterSpacing: '0.05em',
+                    }}
+                >
+                    Recommended for You
+                </Typography>
+            </Stack>
 
-                        <Stack direction="row" spacing={1.5} alignItems="center">
-                            <Chip
-                                label={article.category || 'General'}
-                                size="small"
-                                sx={{
-                                    height: 20,
-                                    fontSize: 10,
-                                    bgcolor: theme.palette.primary.main,
-                                    color: theme.palette.primary.contrastText,
-                                    borderRadius: 1,
-                                }}
-                            />
-                            <Stack direction="row" spacing={0.5} alignItems="center">
-                                <Visibility sx={{ fontSize: 12, color: secondaryText }} />
-                                <Typography variant="caption" sx={{ color: primaryText }}>345</Typography>
+            <List disablePadding>
+                {articles.map((article, index) => (
+                    <Box key={article.id || index}>
+                        <ListItem
+                            button
+                            onClick={() => onArticleClick?.(article.id)}
+                            sx={{
+                                px: 0,
+                                py: 1.5,
+                                '&:hover': {
+                                    backgroundColor: isDarkMode
+                                        ? 'rgba(255,255,255,0.03)'
+                                        : 'rgba(0,0,0,0.02)',
+                                },
+                            }}
+                        >
+                            <Stack spacing={1} sx={{ width: '100%' }}>
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        fontFamily: '"Times New Roman", Times, serif',
+                                        fontWeight: 600,
+                                        color: colors.text,
+                                        lineHeight: 1.3,
+                                    }}
+                                >
+                                    {article.title}
+                                </Typography>
+
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                    <Chip
+                                        label={article.category || 'Article'}
+                                        size="small"
+                                        sx={{
+                                            height: 20,
+                                            fontSize: '0.6rem',
+                                            fontFamily: '"Courier New", monospace',
+                                            bgcolor: 'transparent',
+                                            border: `1px solid ${colors.border}`,
+                                            borderRadius: 0,
+                                            color: colors.textSecondary,
+                                        }}
+                                    />
+
+                                    <Stack direction="row" spacing={0.5} alignItems="center">
+                                        <Visibility sx={{ fontSize: 12, color: colors.textSecondary }} />
+                                        <Typography
+                                            variant="caption"
+                                            sx={{
+                                                fontFamily: '"Courier New", monospace',
+                                                color: colors.textSecondary,
+                                            }}
+                                        >
+                                            {article.viewCount?.toLocaleString() || '0'}
+                                        </Typography>
+                                    </Stack>
+
+                                    <Stack direction="row" spacing={0.5} alignItems="center">
+                                        <ChatBubbleOutline sx={{ fontSize: 12, color: colors.textSecondary }} />
+                                        <Typography
+                                            variant="caption"
+                                            sx={{
+                                                fontFamily: '"Courier New", monospace',
+                                                color: colors.textSecondary,
+                                            }}
+                                        >
+                                            {article.commentCount || '0'}
+                                        </Typography>
+                                    </Stack>
+
+                                    <Stack direction="row" spacing={0.5} alignItems="center">
+                                        <Schedule sx={{ fontSize: 12, color: colors.textSecondary }} />
+                                        <Typography
+                                            variant="caption"
+                                            sx={{
+                                                fontFamily: '"Courier New", monospace',
+                                                color: colors.textSecondary,
+                                            }}
+                                        >
+                                            {article.readMins || '5'} min
+                                        </Typography>
+                                    </Stack>
+                                </Stack>
                             </Stack>
-                            <Stack direction="row" spacing={0.5} alignItems="center">
-                                <Comment sx={{ fontSize: 12, color: secondaryText }} />
-                                <Typography variant="caption" sx={{ color: primaryText }}>{article.commentCount || 0}</Typography>
-                            </Stack>
-                            <BookmarkBorder sx={{ fontSize: 14, color: secondaryText }} />
-                        </Stack>
+                        </ListItem>
+                        {index < articles.length - 1 && (
+                            <Divider sx={{ borderColor: colors.border }} />
+                        )}
                     </Box>
                 ))}
-            </Stack>
+            </List>
         </Paper>
     );
 }

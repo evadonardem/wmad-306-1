@@ -185,7 +185,7 @@ export default function Settings({ user }) {
 
     const handlePasswordSubmit = (e) => {
         e.preventDefault();
-        passwordForm.put(route('password.update'), {
+        passwordForm.put(route('student.settings.password.update'), {
             preserveScroll: true,
             onSuccess: () => {
                 passwordForm.reset();
@@ -200,7 +200,7 @@ export default function Settings({ user }) {
     const handleDeleteAccount = (e) => {
         e.preventDefault();
 
-        deleteForm.delete(route('profile.destroy'), {
+        deleteForm.delete(route('student.settings.destroy'), {
             preserveScroll: true,
             data: {
                 password: deleteForm.data.password,

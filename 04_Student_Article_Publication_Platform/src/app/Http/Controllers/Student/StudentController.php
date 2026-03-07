@@ -32,18 +32,10 @@ class StudentController extends Controller
         $hasLocation = Schema::hasColumn('users', 'location');
         $hasPhone = Schema::hasColumn('users', 'phone');
 
+        // Get real-time stats
         $commentsMade = Comment::query()
             ->where('user_id', $user->id)
             ->count();
-
-        $favoriteCategory = Comment::query()
-            ->selectRaw('categories.name as category_name, COUNT(comments.id) as total')
-            ->join('articles', 'comments.article_id', '=', 'articles.id')
-            ->leftJoin('categories', 'articles.category_id', '=', 'categories.id')
-            ->where('comments.user_id', $user->id)
-            ->groupBy('categories.name')
-            ->orderByDesc('total')
-            ->value('category_name') ?? 'Not enough data yet';
 
         $articlesSubmitted = Article::query()
             ->where('user_id', $user->id)
@@ -55,21 +47,24 @@ class StudentController extends Controller
             ->whereNotNull('published_at')
             ->count();
 
-        $recentlyViewed = Article::query()
-            ->with('category:id,name')
-            ->whereNotNull('published_at')
-            ->latest('published_at')
-            ->limit(3)
-            ->get()
-            ->map(fn (Article $article) => [
-                'id' => $article->id,
-                'title' => $article->title,
-                'category' => $article->category?->name ?? 'General',
-            ]);
+        $totalViews = 0;
+        if (Schema::hasTable('article_views')) {
+            $totalViews = $user->viewedArticles()->count();
+        }
+
+        $totalStars = 0;
+        if (Schema::hasTable('article_stars')) {
+            $totalStars = $user->starredArticles()->count();
+        }
 
         $savedArticles = $hasSaveTable
             ? $user->savedArticles()
-                ->with('category:id,name')
+                ->with([
+                    'category:id,name',
+                    'author:id,name',
+                    'comments.user:id,name',
+                    'comments.replies.user:id,name',
+                ])
                 ->whereNotNull('published_at')
                 ->latest('article_saves.created_at')
                 ->limit(12)
@@ -79,6 +74,28 @@ class StudentController extends Controller
                     'title' => $article->title,
                     'category' => $article->category?->name ?? 'General',
                     'readMins' => max(1, (int) ceil(str_word_count(strip_tags($article->content ?? '')) / 200)),
+                    'content' => $article->content,
+                    'excerpt' => $article->excerpt,
+                    'author' => $article->author?->name ?? 'Editorial Team',
+                    'publishedAt' => optional($article->published_at)->toIso8601String(),
+                    'featured_image' => $article->featured_image,
+                    'tags' => $article->category?->name ? [$article->category->name] : [],
+                    'comments' => $article->comments->whereNull('parent_id')->map(fn ($comment) => [
+                        'id' => $comment->id,
+                        'body' => $comment->body,
+                        'author' => $comment->user?->name ?? 'Anonymous',
+                        'created_at' => optional($comment->created_at)->toIso8601String(),
+                        'replies' => $comment->replies->map(fn ($reply) => [
+                            'id' => $reply->id,
+                            'body' => $reply->body,
+                            'author' => $reply->user?->name ?? 'Anonymous',
+                            'created_at' => optional($reply->created_at)->toIso8601String(),
+                        ]),
+                    ]),
+                    'commentCount' => $article->comments->count(),
+                    'viewCount' => $article->views()->count(),
+                    'starCount' => $article->stars()->count(),
+                    'isStarred' => $article->stars()->where('user_id', $user->id)->exists(),
                 ])
             : collect();
 
@@ -86,34 +103,19 @@ class StudentController extends Controller
             'profile' => [
                 'fullName' => $user->name,
                 'email' => $user->email,
-                'courseProgram' => 'Program not set',
-                'yearLevel' => 'Year level not set',
-                'shortBio' => ($hasBio ? $user->bio : null) ?: 'Focused on academic reading and thoughtful participation in student journal discussions.',
+                'bio' => $hasBio ? $user->bio : null,
                 'location' => $hasLocation ? $user->location : null,
                 'phone' => $hasPhone ? $user->phone : null,
                 'joinedDate' => optional($user->created_at)?->toFormattedDateString(),
+                'avatar' => $user->getAvatarUrl(),
             ],
-            'readingActivity' => [
-                'totalArticlesRead' => max($commentsMade * 2, $recentlyViewed->count()),
-                'totalReadingTime' => max($commentsMade * 12, 30),
-                'favoriteCategory' => $favoriteCategory,
-                'readingStreak' => null,
-            ],
-            'activityOverview' => [
-                'savedArticlesCount' => $savedArticles->count(),
-                'savedArticlesLink' => route('student.dashboard') . '?view=saved',
-                'recentlyViewed' => $recentlyViewed,
-                'commentsMade' => $commentsMade,
-            ],
-            'academicEngagement' => [
-                'articlesSubmitted' => $articlesSubmitted,
-                'articlesPublished' => $articlesPublished,
-                'totalViews' => 0,
-            ],
-            'preferencesPreview' => [
-                'fontSize' => 'Medium (16px)',
-                'theme' => 'Light / Dark (Auto)',
-                'contentDensity' => 'Comfortable',
+            'stats' => [
+                'totalArticles' => $articlesPublished,
+                'totalComments' => $commentsMade,
+                'savedArticles' => $savedArticles->count(),
+                'totalViews' => $totalViews,
+                'totalStars' => $totalStars,
+                'readingStreak' => 0, // Could be calculated from view dates
             ],
             'savedArticles' => $savedArticles,
         ]);
@@ -308,6 +310,36 @@ class StudentController extends Controller
 
         return response()->json([
             'isSaved' => !$alreadySaved,
+        ]);
+    }
+
+    /** Update user profile avatar. */
+    public function updateAvatar(Request $request): JsonResponse
+    {
+        $request->validate([
+            'avatar' => ['required', 'image', 'max:2048'],
+        ]);
+
+        $user = $request->user();
+
+        if ($request->hasFile('avatar')) {
+            // Delete old avatar if exists
+            if ($user->avatar) {
+                $oldPath = storage_path('app/public/' . $user->avatar);
+                if (file_exists($oldPath)) {
+                    unlink($oldPath);
+                }
+            }
+
+            // Store new avatar
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar = $path;
+            $user->save();
+        }
+
+        return response()->json([
+            'success' => true,
+            'avatarUrl' => $user->getAvatarUrl(),
         ]);
     }
 }

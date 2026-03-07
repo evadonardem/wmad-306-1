@@ -30,6 +30,7 @@ class User extends Authenticatable
         'account_status',
         'suspended_at',
         'preferences',
+        'avatar',
     ];
     protected $casts = [
         'email_verified_at' => 'datetime',
@@ -108,6 +109,16 @@ class User extends Authenticatable
     {
         return $this->hasMany(WriterApplication::class);
     }
-}
 
+    public function getAvatarUrl()
+    {
+        if ($this->avatar) {
+            return asset('storage/' . $this->avatar);
+        }
+
+        // Generate initials avatar
+        $initials = strtoupper(substr($this->name, 0, 2));
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=random&size=120';
+    }
+}
 

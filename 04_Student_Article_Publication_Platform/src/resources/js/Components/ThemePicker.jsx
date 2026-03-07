@@ -1,107 +1,134 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/Contexts/ThemeContext';
+import ColorLensIcon from '@mui/icons-material/ColorLens';
 
-export default function ThemePicker({ position = 'bottom-right' }) {
+export default function ThemePicker({ position = 'inline' }) {
     const [isOpen, setIsOpen] = useState(false);
+    const pickerRef = useRef(null);
     const { theme, setTheme, isDarkMode, setIsDarkMode, availableThemes, colors } = useTheme();
 
-    const positions = {
-        'bottom-right': 'bottom-6 right-6',
-        'bottom-left': 'bottom-6 left-6',
-        'top-right': 'top-24 right-6',
-        'top-left': 'top-24 left-6',
-    };
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (pickerRef.current && !pickerRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     return (
-        <div className={`fixed ${positions[position]} z-50`}>
-            {/* Theme Picker Button */}
+        <div ref={pickerRef} className="relative flex items-center justify-center">
             <motion.button
-                whileHover={{ scale: 1.1 }}
+                whileHover={{ scale: 1.1, rotate: 5 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl"
+                className="w-8 h-8 flex items-center justify-center cursor-pointer select-none transition-colors"
                 style={{
-                    backgroundColor: colors.accent,
-                    color: colors.background
+                    color: isOpen ? colors.accent : colors.textSecondary,
+                    WebkitTapHighlightColor: 'transparent',
                 }}
             >
-                🎨
+                <ColorLensIcon sx={{ fontSize: 20 }} />
             </motion.button>
 
-            {/* Theme Picker Panel */}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, y: 20, scale: 0.8 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 20, scale: 0.8 }}
-                        className={`absolute ${position.includes('bottom') ? 'bottom-16' : 'top-16'}
-                                   right-0 p-4 rounded-lg shadow-xl min-w-[280px]`}
+                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                        className={`absolute p-2 rounded-[24px] border shadow-2xl w-56 z-[2000] ${
+                            position === 'floating-bottom-right'
+                                ? 'bottom-4 right-4'
+                                : 'top-10 right-0'
+                        }`}
                         style={{
                             backgroundColor: colors.surface,
                             borderColor: colors.border,
-                            borderWidth: '1px'
+                            boxShadow: isDarkMode
+                                ? '0 20px 40px rgba(0,0,0,0.5)'
+                                : '0 20px 40px rgba(0,0,0,0.15)',
+                            backdropFilter: 'blur(10px)',
                         }}
                     >
-                        <h3 className="font-serif text-sm font-bold mb-3" style={{ color: colors.text }}>
-                            Theme Preferences
-                        </h3>
+                        <div className="grid grid-cols-3 gap-1">
+                            {Object.entries(availableThemes).map(([key, themeData]) => {
+                                const isSelected = theme === key;
+                                const previewColors = isDarkMode ? themeData.dark : themeData.light;
 
-                        {/* Dark Mode Toggle */}
-                        <div className="mb-4 pb-4 border-b" style={{ borderColor: colors.border }}>
+                                return (
+                                    <button
+                                        key={key}
+                                        onClick={() => setTheme(key)}
+                                        className="group relative flex flex-col items-center justify-center aspect-square rounded-[18px] transition-all hover:scale-105"
+                                        style={{
+                                            backgroundColor: isSelected ? `${colors.accent}15` : 'transparent',
+                                        }}
+                                    >
+                                        <span className="text-xl mb-1 group-hover:scale-110 transition-transform">
+                                            {themeData.icon}
+                                        </span>
+                                        <span
+                                            className="text-[9px] font-bold tracking-tight"
+                                            style={{
+                                                color: isSelected ? colors.accent : colors.textSecondary,
+                                            }}
+                                        >
+                                            {themeData.name}
+                                        </span>
+
+                                        <div className="flex gap-0.5 mt-1">
+                                            <div
+                                                className="w-1.5 h-1.5 rounded-full"
+                                                style={{ backgroundColor: previewColors.primary }}
+                                            />
+                                            <div
+                                                className="w-1.5 h-1.5 rounded-full"
+                                                style={{ backgroundColor: previewColors.accent }}
+                                            />
+                                            <div
+                                                className="w-1.5 h-1.5 rounded-full"
+                                                style={{ backgroundColor: previewColors.secondary }}
+                                            />
+                                        </div>
+
+                                        {isSelected && (
+                                            <motion.div
+                                                layoutId="active-frame"
+                                                className="absolute inset-0 border-2 rounded-[18px]"
+                                                style={{ borderColor: colors.accent }}
+                                                transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
+                                            />
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <div className="mt-2 pt-2 border-t" style={{ borderColor: `${colors.border}60` }}>
                             <button
                                 onClick={() => setIsDarkMode(!isDarkMode)}
-                                className="flex items-center justify-between w-full px-3 py-2 rounded transition-colors"
+                                className="w-full flex items-center justify-center gap-3 py-2.5 rounded-xl transition-all hover:opacity-80"
                                 style={{
-                                    backgroundColor: colors.hover,
-                                    color: colors.text
+                                    backgroundColor: `${colors.accent}10`,
+                                    color: colors.text,
                                 }}
                             >
-                                <span className="flex items-center gap-2">
-                                    {isDarkMode ? '🌙' : '☀️'}
-                                    <span className="font-serif text-sm">Dark Mode</span>
-                                </span>
-                                <span className="text-xs opacity-70">
-                                    {isDarkMode ? 'On' : 'Off'}
+                                <span className="text-[10px] font-black uppercase tracking-[0.1em]">
+                                    {isDarkMode ? 'Dark Mode' : 'Light Mode'}
                                 </span>
                             </button>
                         </div>
 
-                        {/* Theme Grid */}
-                        <div className="grid grid-cols-2 gap-2">
-                            {Object.entries(availableThemes).map(([key, themeData]) => (
-                                <motion.button
-                                    key={key}
-                                    whileHover={{ scale: 1.02 }}
-                                    onClick={() => setTheme(key)}
-                                    className="flex flex-col items-center p-3 rounded transition-all"
-                                    style={{
-                                        backgroundColor: theme === key ? colors.accent + '20' : 'transparent',
-                                        borderColor: theme === key ? colors.accent : 'transparent',
-                                        borderWidth: theme === key ? '2px' : '1px',
-                                        borderStyle: 'solid',
-                                        color: colors.text
-                                    }}
-                                >
-                                    <span className="text-2xl mb-1">{themeData.icon}</span>
-                                    <span className="font-serif text-xs text-center">{themeData.name}</span>
-                                    {theme === key && (
-                                        <span className="text-xs mt-1" style={{ color: colors.accent }}>✓</span>
-                                    )}
-                                </motion.button>
-                            ))}
-                        </div>
-
-                        {/* Preview */}
-                        <div className="mt-4 pt-4 border-t" style={{ borderColor: colors.border }}>
-                            <div className="flex gap-2">
-                                <div className="w-6 h-6 rounded" style={{ backgroundColor: colors.primary }}></div>
-                                <div className="w-6 h-6 rounded" style={{ backgroundColor: colors.secondary }}></div>
-                                <div className="w-6 h-6 rounded" style={{ backgroundColor: colors.accent }}></div>
-                                <div className="w-6 h-6 rounded" style={{ backgroundColor: colors.background }}></div>
-                                <div className="w-6 h-6 rounded" style={{ backgroundColor: colors.surface }}></div>
-                            </div>
+                        <div className="mt-1 text-center">
+                            <span
+                                className="text-[7px] font-mono uppercase tracking-wider"
+                                style={{ color: `${colors.textSecondary}80` }}
+                            >
+                                {availableThemes[theme]?.name || 'Classic'} � {isDarkMode ? 'Dark' : 'Light'}
+                            </span>
                         </div>
                     </motion.div>
                 )}
