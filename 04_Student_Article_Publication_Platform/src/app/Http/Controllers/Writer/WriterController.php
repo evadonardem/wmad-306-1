@@ -5,16 +5,12 @@ namespace App\Http\Controllers\Writer;
 use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Services\ArticleService;
-use App\Services\EditorialMailService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class WriterController extends Controller
 {
-    public function __construct(
-        private readonly ArticleService $articleService,
-        private readonly EditorialMailService $mailService,
-    )
+    public function __construct(private readonly ArticleService $articleService)
     {
     }
 
@@ -38,20 +34,16 @@ class WriterController extends Controller
     public function submit(Request $request, Article $article): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $this->authorize('submit', $article);
-        $previousStatus = $article->status?->slug;
         $this->articleService->submit($article);
-        $freshArticle = $article->refresh()->load(['author:id,name,email', 'status:id,slug,name']);
-        $isResubmission = $previousStatus === 'revision-requested';
-        $this->mailService->sendArticleSubmittedToEditors($freshArticle, $isResubmission);
 
         if ($request->expectsJson()) {
             return response()->json([
                 'ok' => true,
-                'article' => $freshArticle,
+                'article' => $article->refresh()->load('status'),
             ]);
         }
 
-        return back()->with('success', $isResubmission ? 'Article resubmitted for review.' : 'Article submitted for review.');
+        return back()->with('success', 'Article submitted for review.');
     }
 
     /** Save a requested revision to the article content. */

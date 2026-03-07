@@ -54,6 +54,9 @@ export default function GuestLayout({ children }) {
                             </div>
                             <div className="space-y-1">
                                 {Object.entries(NEWSPAPER_THEMES).map(([key, theme]) => (
+                                    (() => {
+                                        const themeColors = getThemeColors(key);
+                                        return (
                                     <button
                                         key={key}
                                         type="button"
@@ -67,10 +70,25 @@ export default function GuestLayout({ children }) {
                                             setShowThemePicker(false);
                                         }}
                                     >
-                                        <span>{theme.icon}</span>
+                                        <span className="flex items-center gap-1">
+                                            <span
+                                                className="h-3 w-3 rounded-full border"
+                                                style={{ backgroundColor: themeColors.accent, borderColor: themeColors.border }}
+                                            />
+                                            <span
+                                                className="h-3 w-3 rounded-full border"
+                                                style={{ backgroundColor: themeColors.newsprint, borderColor: themeColors.border }}
+                                            />
+                                            <span
+                                                className="h-3 w-3 rounded-full border"
+                                                style={{ backgroundColor: themeColors.paper, borderColor: themeColors.border }}
+                                            />
+                                        </span>
                                         <span className="font-serif text-sm">{theme.name}</span>
                                         {currentTheme === key && <span className="ml-auto text-xs font-mono">OK</span>}
                                     </button>
+                                        );
+                                    })()
                                 ))}
                             </div>
                         </div>

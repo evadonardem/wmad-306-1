@@ -419,7 +419,7 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
     const submitDisabled = submitDisabledReason != null;
 
     return (
-        <div className="mx-auto max-w-7xl px-4 py-6">
+		<div className="w-full px-2 py-4 sm:px-3 lg:px-4">
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
                 <form
                     className="space-y-4 lg:col-span-3"
@@ -736,3 +736,6 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
         </div>
     );
 }
+
+
+
