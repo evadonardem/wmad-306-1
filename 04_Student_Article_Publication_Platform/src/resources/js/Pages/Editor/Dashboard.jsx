@@ -23,6 +23,7 @@ import {
     Typography,
 } from '@mui/material';
 import { AssignmentIndRounded, ChecklistRounded, SearchRounded } from '@mui/icons-material';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis } from 'recharts';
 import EditorLayout from '@/Layouts/EditorLayout';
 import { getThemeColors, useThemeContext } from '@/Components/ThemeContext';
 
@@ -61,6 +62,21 @@ export default function Dashboard({ queueArticles = [], myClaimedArticles = [], 
             tone: colors.accent,
         },
     ];
+
+    const workflowBars = useMemo(
+        () => [
+            { name: 'Queue', value: Number(kpis.queueCount || 0) },
+            { name: 'My Claims', value: Number(kpis.myClaimsCount || 0) },
+            {
+                name: 'Published',
+                value: Number(
+                    [...queueArticles, ...myClaimedArticles].filter((a) => String(a?.status?.slug || '').toLowerCase() === 'published')
+                        .length,
+                ),
+            },
+        ],
+        [kpis.queueCount, kpis.myClaimsCount, queueArticles, myClaimedArticles],
+    );
 
     const filteredQueue = useMemo(() => {
         const keyword = queueSearch.trim().toLowerCase();
@@ -129,6 +145,31 @@ export default function Dashboard({ queueArticles = [], myClaimedArticles = [], 
                     </Card>
                 ))}
             </Box>
+
+            <Card elevation={0} sx={{ border: '1px solid', borderColor: alpha(colors.border, 0.7), mb: 2 }}>
+                <CardContent>
+                    <Typography variant="h6" fontWeight={800} sx={{ color: colors.newsprint, mb: 1.5 }}>
+                        Editorial Throughput
+                    </Typography>
+                    <Box sx={{ height: 220 }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={workflowBars} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                                <CartesianGrid stroke={alpha(colors.border, 0.5)} strokeDasharray="3 3" />
+                                <XAxis dataKey="name" tick={{ fill: colors.byline, fontSize: 11 }} />
+                                <YAxis allowDecimals={false} tick={{ fill: colors.byline, fontSize: 11 }} />
+                                <RechartsTooltip
+                                    contentStyle={{
+                                        border: `1px solid ${colors.border}`,
+                                        background: colors.paper,
+                                        color: colors.newsprint,
+                                    }}
+                                />
+                                <Bar dataKey="value" fill={colors.accent} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </Box>
+                </CardContent>
+            </Card>
 
             <Card elevation={0} sx={{ border: '1px solid', borderColor: alpha(colors.border, 0.7), mb: 2 }}>
                 <CardContent>

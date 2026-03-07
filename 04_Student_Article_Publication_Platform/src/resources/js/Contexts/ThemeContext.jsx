@@ -167,6 +167,33 @@ export function ThemeProvider({ children, initialTheme = null, shouldSyncToServe
     const colors = currentTheme[isDarkMode ? 'dark' : 'light'];
 
     useEffect(() => {
+        const root = document.documentElement;
+        root.style.setProperty('--fyi-primary', colors.primary);
+        root.style.setProperty('--fyi-secondary', colors.secondary);
+        root.style.setProperty('--fyi-background', colors.background);
+        root.style.setProperty('--fyi-surface', colors.surface);
+        root.style.setProperty('--fyi-accent', colors.accent);
+        root.style.setProperty('--fyi-border', colors.border);
+        root.style.setProperty('--fyi-text', colors.text);
+        root.style.setProperty('--fyi-text-secondary', colors.textSecondary);
+        root.style.setProperty('--fyi-hover', colors.hover);
+        root.style.setProperty('--fyi-success', colors.success);
+        root.style.setProperty('--fyi-warning', colors.warning);
+        root.style.setProperty('--fyi-error', colors.error);
+        root.style.setProperty('--fyi-info', colors.info);
+
+        // Backward-compatible newspaper aliases used by older pages.
+        root.style.setProperty('--newspaper-newsprint', colors.primary);
+        root.style.setProperty('--newspaper-paper', colors.background);
+        root.style.setProperty('--newspaper-aged', colors.surface);
+        root.style.setProperty('--newspaper-ink', colors.text);
+        root.style.setProperty('--newspaper-accent', colors.accent);
+        root.style.setProperty('--newspaper-border', colors.border);
+        root.style.setProperty('--newspaper-byline', colors.textSecondary);
+        root.style.setProperty('--newspaper-headline', colors.primary);
+    }, [colors]);
+
+    useEffect(() => {
         localStorage.setItem('fyi-theme', theme);
     }, [theme]);
 

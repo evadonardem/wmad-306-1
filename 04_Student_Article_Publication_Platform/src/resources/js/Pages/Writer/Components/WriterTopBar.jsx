@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import {
     ArticleRounded,
+    ContactPageRounded,
     DarkModeRounded,
     LightModeRounded,
     LogoutRounded,
@@ -27,7 +28,7 @@ import { useTheme } from '@/Contexts/ThemeContext';
 
 const NAV_ITEMS = [
     { key: 'dashboard', label: 'Dashboard', action: () => router.visit(route('writer.dashboard')) },
-    { key: 'new-article', label: 'New Article', action: () => router.visit(route('writer.articles.create')) },
+    { key: 'view-articles', label: 'View Articles', action: () => router.visit('/articles') },
 ];
 
 export default function WriterTopBar({ active }) {
@@ -35,19 +36,22 @@ export default function WriterTopBar({ active }) {
     const { theme, setTheme, isDarkMode, setIsDarkMode, availableThemes, colors } = useTheme();
 
     const roles = useMemo(() => {
-        if (Array.isArray(auth?.roles)) return auth.roles;
-        return [];
-    }, [auth?.roles]);
+        const userRoles = Array.isArray(auth?.user?.roles) ? auth.user.roles : [];
+        const propRoles = Array.isArray(auth?.roles) ? auth.roles : [];
+        return [...new Set([...userRoles, ...propRoles])];
+    }, [auth?.roles, auth?.user?.roles]);
 
     const canSwitchToEditor = roles.includes('editor');
+    const canSwitchToWriter = roles.includes('writer');
+    const activeRole = auth?.active_role || 'writer';
 
     const [themeAnchor, setThemeAnchor] = useState(null);
     const [profileAnchor, setProfileAnchor] = useState(null);
+    const [roleAnchor, setRoleAnchor] = useState(null);
 
     const resolvedActive = useMemo(() => {
         if (active) return active;
-        if (route().current('writer.articles.create')) return 'new-article';
-        if (route().current('writer.articles.edit')) return 'new-article';
+        if (route().current('public.articles.index') || route().current('public.articles.show')) return 'view-articles';
         return 'dashboard';
     }, [active]);
 
@@ -94,24 +98,6 @@ export default function WriterTopBar({ active }) {
                 </Stack>
 
                 <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" useFlexGap>
-                    {canSwitchToEditor ? (
-                        <Button
-                            size="small"
-                            variant="outlined"
-                            onClick={() => router.visit(route('editor.dashboard'))}
-                            sx={{
-                                borderColor: colors.primary,
-                                color: colors.primary,
-                                '&:hover': {
-                                    bgcolor: alpha(colors.primary, 0.08),
-                                    borderColor: colors.primary,
-                                },
-                            }}
-                        >
-                            Editor
-                        </Button>
-                    ) : null}
-
                     {NAV_ITEMS.map((item) => (
                         <Button
                             key={item.key}
@@ -130,25 +116,75 @@ export default function WriterTopBar({ active }) {
                                     borderColor: colors.primary,
                                 },
                             }}
-                            startIcon={item.key === 'new-article' ? <ArticleRounded fontSize="small" /> : null}
+                            startIcon={item.key === 'view-articles' ? <ArticleRounded fontSize="small" /> : null}
                         >
                             {item.label}
                         </Button>
                     ))}
 
-                    <Tooltip title="Theme Picker">
-                        <IconButton onClick={(e) => setThemeAnchor(e.currentTarget)}>
-                            <PaletteRounded />
-                        </IconButton>
-                    </Tooltip>
+                    <Stack direction="row" alignItems="center" spacing={0.5} sx={{ ml: 0.25 }}>
+                        {(canSwitchToEditor || canSwitchToWriter) ? (
+                            <Tooltip title="Switch Role">
+                                <IconButton
+                                    onClick={(e) => setRoleAnchor(e.currentTarget)}
+                                    sx={{
+                                        color: colors.textSecondary,
+                                        borderBottom: roleAnchor ? '2px solid' : '2px solid transparent',
+                                        borderColor: roleAnchor ? colors.border : 'transparent',
+                                        borderRadius: 0,
+                                        '&:hover': { bgcolor: alpha(colors.hover, 0.8) },
+                                    }}
+                                >
+                                    <ContactPageRounded />
+                                </IconButton>
+                            </Tooltip>
+                        ) : null}
 
-                    <IconButton onClick={(e) => setProfileAnchor(e.currentTarget)}>
-                        <Avatar sx={{ width: 34, height: 34, bgcolor: colors.accent, color: colors.background }}>
-                            {auth?.user?.name?.charAt(0)?.toUpperCase() || 'W'}
-                        </Avatar>
-                    </IconButton>
+                        <Tooltip title="Theme Picker">
+                            <IconButton onClick={(e) => setThemeAnchor(e.currentTarget)}>
+                                <PaletteRounded />
+                            </IconButton>
+                        </Tooltip>
+
+                        <IconButton onClick={(e) => setProfileAnchor(e.currentTarget)}>
+                            <Avatar sx={{ width: 34, height: 34, bgcolor: colors.accent, color: colors.background }}>
+                                {auth?.user?.name?.charAt(0)?.toUpperCase() || 'W'}
+                            </Avatar>
+                        </IconButton>
+                    </Stack>
                 </Stack>
             </Stack>
+
+            <Menu
+                anchorEl={roleAnchor}
+                open={Boolean(roleAnchor)}
+                onClose={() => setRoleAnchor(null)}
+            >
+                <MenuItem
+                    selected={activeRole === 'writer'}
+                    disabled={!canSwitchToWriter}
+                    onClick={() => {
+                        setRoleAnchor(null);
+                        if (canSwitchToWriter) {
+                            router.post(route('role.switch'), { role: 'writer' });
+                        }
+                    }}
+                >
+                    Switch Role: Writer
+                </MenuItem>
+                <MenuItem
+                    selected={activeRole === 'editor'}
+                    disabled={!canSwitchToEditor}
+                    onClick={() => {
+                        setRoleAnchor(null);
+                        if (canSwitchToEditor) {
+                            router.post(route('role.switch'), { role: 'editor' });
+                        }
+                    }}
+                >
+                    Switch Role: Editor
+                </MenuItem>
+            </Menu>
 
             <Menu
                 anchorEl={themeAnchor}

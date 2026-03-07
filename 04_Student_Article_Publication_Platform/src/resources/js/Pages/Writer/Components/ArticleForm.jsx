@@ -2,6 +2,7 @@ import axios from 'axios';
 import { router } from '@inertiajs/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import JoditEditor from '@/Components/JoditEditor';
+import { useTheme } from '@/Contexts/ThemeContext';
 
 function htmlToText(html) {
     if (!html) return '';
@@ -147,6 +148,7 @@ function toComparableLines(text) {
 
 export default function ArticleForm({ article, categories = [], initialDraftVersions = [] }) {
     const isEdit = Boolean(article?.id);
+    const { colors } = useTheme();
 
     const [title, setTitle] = useState(article?.title ?? '');
     const [categoryId, setCategoryId] = useState(article?.category_id ?? article?.category?.id ?? '');
@@ -155,6 +157,8 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
     const [dirty, setDirty] = useState(false);
     const [lastSavedAt, setLastSavedAt] = useState(null);
     const [saving, setSaving] = useState(false);
+    const [creating, setCreating] = useState(false);
+    const [creatingAndSubmitting, setCreatingAndSubmitting] = useState(false);
     const [saveError, setSaveError] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState(null);
@@ -244,7 +248,28 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
     }
 
     async function submitForReview() {
-        if (!isEdit) return;
+        if (!isEdit) {
+            if (creatingAndSubmitting || creating || createInFlightRef.current) return;
+            setSubmitError(null);
+            setCreatingAndSubmitting(true);
+            createInFlightRef.current = true;
+            router.post(
+                route('writer.articles.store'),
+                { title, content, category_id: categoryId || null, submit_for_review: true },
+                {
+                    preserveScroll: true,
+                    onError: (errors) => {
+                        setSubmitError(errors?.title || errors?.content || errors?.category_id || 'Submit failed.');
+                    },
+                    onFinish: () => {
+                        setCreatingAndSubmitting(false);
+                        createInFlightRef.current = false;
+                    },
+                }
+            );
+            return;
+        }
+
         if (saving || submitting) return;
 
         setSubmitError(null);
@@ -285,6 +310,23 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
             }
             setSubmitting(false);
         }
+    }
+
+    function createDraftNow() {
+        if (isEdit || creating || submitting || createInFlightRef.current) return;
+        setCreating(true);
+        createInFlightRef.current = true;
+        router.post(
+            route('writer.articles.store'),
+            { title, content, category_id: categoryId || null },
+            {
+                preserveScroll: true,
+                onFinish: () => {
+                    setCreating(false);
+                    createInFlightRef.current = false;
+                },
+            }
+        );
     }
 
     async function saveSnapshot() {
@@ -403,7 +445,12 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
     }, [plagiarism]);
 
     const submitDisabledReason = useMemo(() => {
-        if (!isEdit) return 'Draft must be created first.';
+        if (!isEdit) {
+            if (creatingAndSubmitting) return 'Currently submitting.';
+            if (!title.trim()) return 'Add a title before submitting.';
+            if (!plainText.trim()) return 'Add some content before submitting.';
+            return null;
+        }
         if (saving) return 'Currently saving.';
         if (submitting) return 'Currently submitting.';
         if (!title.trim()) return 'Add a title before submitting.';
@@ -414,12 +461,12 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
         if (statusSlug === 'published') return 'This article is already published.';
 
         return null;
-    }, [isEdit, saving, submitting, title, plainText, article?.status?.slug]);
+    }, [isEdit, saving, submitting, creatingAndSubmitting, title, plainText, article?.status?.slug]);
 
     const submitDisabled = submitDisabledReason != null;
 
     return (
-		<div className="w-full px-2 py-4 sm:px-3 lg:px-4">
+		<div className="writer-form mx-auto w-full max-w-[1500px] px-4 py-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
                 <form
                     className="space-y-4 lg:col-span-3"
@@ -468,35 +515,55 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
                                 )}
                             </div>
 
-                            {isEdit ? (
-                                <div className="mt-3 flex flex-wrap gap-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => runAutosave()}
-                                        disabled={saving}
-                                        className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-                                    >
-                                        Save now
-                                    </button>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => (isEdit ? runAutosave() : createDraftNow())}
+                                    disabled={isEdit ? saving : creating}
+                                    className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium cursor-pointer disabled:cursor-not-allowed"
+                                    style={{
+                                        backgroundColor: colors.surface,
+                                        color: colors.text,
+                                        borderColor: colors.border,
+                                        opacity: 1,
+                                    }}
+                                >
+                                    {isEdit ? (saving ? 'Saving...' : 'Save as Draft') : (creating ? 'Creating...' : 'Save as Draft')}
+                                </button>
+
+                                {isEdit ? (
                                     <button
                                         type="button"
                                         onClick={() => saveSnapshot()}
                                         disabled={saving}
-                                        className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium cursor-pointer disabled:cursor-not-allowed"
+                                        style={{
+                                            backgroundColor: colors.surface,
+                                            color: colors.text,
+                                            borderColor: colors.border,
+                                            opacity: 1,
+                                        }}
                                     >
                                         Save version snapshot
                                     </button>
-                                    <button
-                                        type="button"
-                                        onClick={submitForReview}
-                                        disabled={submitDisabled}
-                                        title={submitDisabledReason ?? ''}
-                                        className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-                                    >
-                                        {submitting ? 'Submitting…' : 'Submit'}
-                                    </button>
-                                </div>
-                            ) : null}
+                                ) : null}
+
+                                <button
+                                    type="button"
+                                    onClick={submitForReview}
+                                    disabled={submitDisabled}
+                                    title={submitDisabledReason ?? ''}
+                                    className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium cursor-pointer disabled:cursor-not-allowed"
+                                    style={{
+                                        backgroundColor: submitDisabled ? colors.surface : colors.primary,
+                                        color: submitDisabled ? colors.text : colors.background,
+                                        borderColor: submitDisabled ? colors.border : colors.primary,
+                                        opacity: 1,
+                                    }}
+                                >
+                                    {isEdit ? (submitting ? 'Submitting...' : 'Submit for Review') : (creatingAndSubmitting ? 'Submitting...' : 'Submit for Review')}
+                                </button>
+                            </div>
 
                             {submitDisabledReason && !submitError ? (
                                 <div className="mt-2 text-xs text-gray-600">Submit disabled: {submitDisabledReason}</div>
@@ -733,9 +800,38 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
                     </section>
                 </aside>
             </div>
+            <style>{`
+                .writer-form .rounded-md,
+                .writer-form .rounded,
+                .writer-form .rounded-lg {
+                    border-radius: 0 !important;
+                }
+                .writer-form .border-gray-200,
+                .writer-form .border-gray-300 {
+                    border-color: ${colors.border} !important;
+                }
+                .writer-form .bg-white,
+                .writer-form .bg-gray-50 {
+                    background-color: ${colors.surface} !important;
+                }
+                .writer-form .text-gray-900,
+                .writer-form .text-gray-800,
+                .writer-form .text-gray-700,
+                .writer-form .font-medium,
+                .writer-form .font-semibold {
+                    color: ${colors.text} !important;
+                }
+                .writer-form .text-gray-600,
+                .writer-form .text-gray-500 {
+                    color: ${colors.textSecondary} !important;
+                }
+                .writer-form input,
+                .writer-form select,
+                .writer-form textarea,
+                .writer-form button {
+                    border-color: ${colors.border} !important;
+                }
+            `}</style>
         </div>
     );
 }
-
-
-

@@ -6,17 +6,17 @@ export default function WriterLayout({ header, children }) {
 
     return (
         <div className="min-h-screen" style={{ backgroundColor: colors.background, color: colors.text }}>
-            <div className="w-full px-2 pt-2 sm:px-3 lg:px-4">
+            <div className="fyi-page-shell w-full pt-3">
                 <WriterTopBar />
             </div>
 
             {header && (
                 <header className="border-b" style={{ backgroundColor: colors.surface, borderColor: colors.border }}>
-                    <div className="w-full px-2 py-4 sm:px-3 lg:px-4">{header}</div>
+                    <div className="fyi-page-shell w-full py-5">{header}</div>
                 </header>
             )}
 
-            <main>{children}</main>
+            <main className="pb-6">{children}</main>
         </div>
     );
 }

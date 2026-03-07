@@ -1,4 +1,4 @@
-import GuestLayout from '@/Layouts/GuestLayout';
+﻿import GuestLayout from '@/Layouts/GuestLayout';
 import { getThemeColors, useThemeContext } from '@/Components/ThemeContext';
 import { Head, Link, useForm } from '@inertiajs/react';
 
@@ -18,7 +18,7 @@ export default function VerifyEmail({ status }) {
             <Head title="Email Verification" />
 
             <div className="space-y-5">
-                <div className="rounded-lg border p-4" style={{ borderColor: colors.border, backgroundColor: `${colors.aged}66` }}>
+                <div className="border p-4" style={{ borderColor: colors.border, backgroundColor: `${colors.aged}66` }}>
                     <p className="text-[11px] font-mono uppercase tracking-[0.22em]" style={{ color: colors.byline }}>
                         Verification Required
                     </p>
@@ -31,7 +31,7 @@ export default function VerifyEmail({ status }) {
                 </div>
 
                 {status === 'verification-link-sent' && (
-                    <div className="rounded-md border p-3 text-sm font-medium" style={{ borderColor: '#bbf7d0', backgroundColor: '#f0fdf4', color: '#166534' }}>
+                    <div className="border p-3 text-sm font-medium" style={{ borderColor: '#bbf7d0', backgroundColor: '#f0fdf4', color: '#166534' }}>
                         A new verification link has been sent to your email address.
                     </div>
                 )}
@@ -40,7 +40,7 @@ export default function VerifyEmail({ status }) {
                     <button
                         type="submit"
                         disabled={processing}
-                        className="w-full rounded-lg border px-4 py-2.5 text-sm font-serif font-bold"
+                        className="w-full border px-4 py-2.5 text-sm font-serif font-bold"
                         style={{ borderColor: colors.newsprint, backgroundColor: colors.newsprint, color: colors.paper }}
                     >
                         {processing ? 'Sending...' : 'Resend Verification Email'}
@@ -62,3 +62,4 @@ export default function VerifyEmail({ status }) {
         </GuestLayout>
     );
 }
+

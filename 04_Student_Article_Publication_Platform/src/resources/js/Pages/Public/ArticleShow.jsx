@@ -78,7 +78,7 @@ export default function ArticleShow({ article }) {
                         BACK
                     </button>
 
-                    <article className="mt-6 rounded-xl border p-6" style={{ borderColor: colors.border, backgroundColor: colors.aged }}>
+                    <article className="mt-6 border p-6 fyi-surface fyi-fade-up" style={{ borderColor: colors.border, backgroundColor: colors.aged }}>
                         <p className="text-xs font-mono uppercase tracking-wider" style={{ color: colors.byline }}>
                             {article?.category?.name ?? 'General'}
                         </p>
@@ -94,14 +94,14 @@ export default function ArticleShow({ article }) {
                         </div>
                     </article>
 
-                    <section id="comments" className="mt-8 rounded-xl border p-6" style={{ borderColor: colors.border, backgroundColor: colors.paper }}>
+                    <section id="comments" className="mt-8 border p-6 fyi-surface fyi-fade-up fyi-stagger-1" style={{ borderColor: colors.border, backgroundColor: colors.paper }}>
                         <h2 className="font-serif text-2xl font-bold" style={{ color: colors.newsprint }}>Comments</h2>
 
                         <form className="mt-4" onSubmit={submitComment}>
                             <div className="flex gap-2">
                                 <input
                                     type="text"
-                                    className="w-full rounded border px-3 py-2 text-sm font-serif"
+                                    className="w-full border px-3 py-2 text-sm font-serif"
                                     style={{ borderColor: colors.border, backgroundColor: colors.paper, color: colors.newsprint }}
                                     placeholder="Leave a comment..."
                                     value={commentDraft}
@@ -116,7 +116,7 @@ export default function ArticleShow({ article }) {
                                 <button
                                     type="submit"
                                     disabled={commentForm.processing}
-                                    className="rounded px-4 py-2 text-sm font-serif"
+                                    className="px-4 py-2 text-sm font-serif"
                                     style={{ backgroundColor: colors.newsprint, color: colors.paper }}
                                 >
                                     {commentForm.processing ? 'Posting...' : 'Post'}
@@ -124,7 +124,7 @@ export default function ArticleShow({ article }) {
                             </div>
                             {commentError && <div className="mt-2 text-sm text-red-700">{commentError}</div>}
                             {!auth.user && showRegisterPrompt && (
-                                <div className="mt-2 p-2 rounded border font-serif text-sm" style={{ borderColor: '#f9a8d4', backgroundColor: '#fdf2f8', color: '#be185d' }}>
+                                <div className="mt-2 p-2 border font-serif text-sm" style={{ borderColor: '#f9a8d4', backgroundColor: '#fdf2f8', color: '#be185d' }}>
                                     Register an account to comment.
                                 </div>
                             )}

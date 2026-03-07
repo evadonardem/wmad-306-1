@@ -401,7 +401,7 @@ export default function Dashboard({ articles = [] }) {
                         pb: { xs: 8, md: 0 },
                     }}
                 >
-                    <Container maxWidth="xl" sx={{ py: 4 }}>
+                    <Container maxWidth="xl" className="fyi-page-shell" sx={{ py: 4 }}>
                         {/* Date Header */}
                         <DateHeader date={currentDate} />
 
@@ -423,7 +423,7 @@ export default function Dashboard({ articles = [] }) {
 
                         {/* Main Content Grid */}
                         <Fade in timeout={600}>
-                            <Box sx={{ mt: 4 }}>
+                            <Box sx={{ mt: 4 }} className="fyi-fade-up">
                                 <Box
                                     sx={{
                                         display: 'grid',

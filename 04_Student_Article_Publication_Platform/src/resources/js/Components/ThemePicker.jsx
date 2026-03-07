@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/Contexts/ThemeContext';
 import ColorLensIcon from '@mui/icons-material/ColorLens';
@@ -24,13 +24,13 @@ export default function ThemePicker({ position = 'inline' }) {
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-8 h-8 flex items-center justify-center cursor-pointer select-none transition-colors"
+                className={`flex items-center justify-center cursor-pointer select-none transition-colors ${position === 'floating-bottom-right' ? 'w-12 h-12' : 'w-8 h-8'}` }
                 style={{
                     color: isOpen ? colors.accent : colors.textSecondary,
                     WebkitTapHighlightColor: 'transparent',
                 }}
             >
-                <ColorLensIcon sx={{ fontSize: 20 }} />
+                <ColorLensIcon sx={{ fontSize: position === 'floating-bottom-right' ? 26 : 20 }} />
             </motion.button>
 
             <AnimatePresence>
@@ -127,7 +127,7 @@ export default function ThemePicker({ position = 'inline' }) {
                                 className="text-[7px] font-mono uppercase tracking-wider"
                                 style={{ color: `${colors.textSecondary}80` }}
                             >
-                                {availableThemes[theme]?.name || 'Classic'} � {isDarkMode ? 'Dark' : 'Light'}
+                                {availableThemes[theme]?.name || 'Classic'} • {isDarkMode ? 'Dark' : 'Light'}
                             </span>
                         </div>
                     </motion.div>
@@ -136,3 +136,4 @@ export default function ThemePicker({ position = 'inline' }) {
         </div>
     );
 }
+
