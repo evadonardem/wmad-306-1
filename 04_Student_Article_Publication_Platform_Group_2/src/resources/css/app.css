@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeUp {
+  animation: fadeUp 0.8s ease forwards;
+}
+
+
+.prose div,
+.prose section,
+.prose article {
+    max-width: 100%;
+}
+
+.prose img,
+.prose table {
+    max-width: 100%;
+}
+
+@layer components {
+  /* Global app button style requested by user: dark navy background + white text */
+  /* All native <button> and .btn elements should use the primary color defined below */
+  button, .btn {
+    /* "Start Publishing" style from screenshot */
+    background-color: #0F172A; /* dark navy */
+    color: #fff;
+    @apply rounded-md px-4 py-2;
+  }
+
+  /* Hover state for buttons: slightly lighter navy */
+  button:hover, .btn:hover {
+    background-color: #1E293B;
+  }
+
+  /* Make anchor links that behave like buttons consistent when using .btn */
+  a.btn {
+    @apply inline-flex items-center justify-center;
+  }
+
+  /* Force global text to a consistent dark color, including headings */
+  html, body, .min-h-screen, .prose, .prose *,
+  h1, h2, h3, h4, h5, h6 {
+    color: #000 !important;
+  }
+}
+
+@layer utilities {
+  /* override some of Tailwind's default blue utilities so existing markup automatically adopts new button color */
+  .bg-blue-600 {
+    --tw-bg-opacity: 1;
+    background-color: #0F172A !important;
+  }
+  .hover\:bg-blue-700:hover {
+    --tw-bg-opacity: 1;
+    background-color: #1E293B !important;
+  }
+}
