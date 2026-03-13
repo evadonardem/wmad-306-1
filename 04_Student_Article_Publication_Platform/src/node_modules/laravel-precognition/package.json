@@ -1,0 +1,39 @@
+{
+    "name": "laravel-precognition",
+    "version": "1.0.2",
+    "description": "Laravel Precognition.",
+    "keywords": [
+        "laravel",
+        "precognition"
+    ],
+    "homepage": "https://github.com/laravel/precognition",
+    "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/laravel/precognition"
+    },
+    "license": "MIT",
+    "author": "Laravel",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "/dist"
+    ],
+    "scripts": {
+        "watch": "rm -rf dist && tsc --watch --preserveWatchOutput",
+        "build": "rm -rf dist && tsc",
+        "typeCheck": "tsc --noEmit",
+        "prepublishOnly": "npm run build",
+        "test": "vitest run"
+    },
+    "dependencies": {
+        "axios": "^1.4.0",
+        "lodash-es": "^4.17.21"
+    },
+    "devDependencies": {
+        "@types/lodash-es": "^4.17.12",
+        "@types/node": "^22.5.0",
+        "typescript": "^5.0.0",
+        "vitest": "^2.0.5"
+    }
+}
