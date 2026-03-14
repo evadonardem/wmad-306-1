@@ -1,0 +1,86 @@
+/* Dark Mode Typography Enhancements */
+.dark-mode {
+    --text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Guardian Green Dark Mode Specific */
+.theme-guardian.dark-mode {
+    --text-shadow-light: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --text-shadow-heavy: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Heritage Vintage Dark Mode Specific */
+.theme-heritage.dark-mode {
+    background-image:
+        linear-gradient(
+            rgba(62, 51, 43, 0.3) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(62, 51, 43, 0.3) 1px,
+            transparent 1px
+        );
+    background-size: 50px 50px;
+    background-position: center center;
+}
+
+/* Improved Link Readability */
+.dark-mode a {
+    text-decoration-thickness: 2px;
+    text-underline-offset: 2px;
+    transition: all 0.2s ease;
+}
+
+.dark-mode a:hover {
+    text-decoration-thickness: 3px;
+}
+
+/* Code Block Styling */
+.dark-mode pre,
+.dark-mode code {
+    border-radius: 6px;
+    padding: 0.2em 0.4em;
+    font-size: 0.9em;
+    font-family: 'Fira Code', 'Courier New', monospace;
+}
+
+/* Selection Styling */
+.dark-mode ::selection {
+    opacity: 0.4;
+}
+
+/* Article Content Readability */
+.dark-mode .article-content {
+    line-height: 1.7;
+    letter-spacing: 0.01em;
+    max-width: 70ch;
+}
+
+.dark-mode .article-content p {
+    margin-bottom: 1.5em;
+}
+
+.dark-mode .article-content h1,
+.dark-mode .article-content h2,
+.dark-mode .article-content h3 {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+    margin-top: 2em;
+    margin-bottom: 1em;
+}
+
+/* Card and Surface Styling */
+.dark-mode .card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dark-mode .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
