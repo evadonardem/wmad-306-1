@@ -1,0 +1,124 @@
+<?php
+
+namespace App\Models;
+
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
+
+class User extends Authenticatable
+{
+    /** @use HasFactory<\Database\Factories\UserFactory> */
+    use HasFactory, HasRoles, Notifiable;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'bio',
+        'location',
+        'phone',
+        'account_status',
+        'suspended_at',
+        'preferences',
+        'avatar',
+    ];
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'preferences' => 'array',
+    ];
+
+    public function getPreference($key, $default = null)
+    {
+        return data_get($this->preferences, $key, $default);
+    }
+
+    public function setPreference($key, $value)
+    {
+        $preferences = $this->preferences ?? [];
+        data_set($preferences, $key, $value);
+        $this->preferences = $preferences;
+        $this->save();
+    }
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var list<string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+            'suspended_at' => 'datetime',
+            'preferences' => 'array',
+        ];
+    }
+
+    public function articles(): HasMany
+    {
+        return $this->hasMany(Article::class);
+    }
+
+    public function revisionsRequested(): HasMany
+    {
+        return $this->hasMany(Revision::class, 'requested_by');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function starredArticles(): BelongsToMany
+    {
+        return $this->belongsToMany(Article::class, 'article_stars')->withTimestamps();
+    }
+
+    public function viewedArticles(): BelongsToMany
+    {
+        return $this->belongsToMany(Article::class, 'article_views')->withTimestamps();
+    }
+
+    public function savedArticles(): BelongsToMany
+    {
+        return $this->belongsToMany(Article::class, 'article_saves')->withTimestamps();
+    }
+
+    public function writerApplications(): HasMany
+    {
+        return $this->hasMany(WriterApplication::class);
+    }
+
+    public function getAvatarUrl()
+    {
+        if ($this->avatar) {
+            return asset('storage/' . $this->avatar);
+        }
+
+        // Generate initials avatar
+        $initials = strtoupper(substr($this->name, 0, 2));
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=random&size=120';
+    }
+}
+
