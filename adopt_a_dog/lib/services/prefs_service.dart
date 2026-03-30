@@ -38,7 +38,7 @@ class PrefsService {
     if (raw == null) return [];
     try {
       return List<String>.from(jsonDecode(raw) as List);
-    } catch {
+    } catch (e) {
       return [];
     }
   }
@@ -76,7 +76,7 @@ class PrefsService {
       return list
           .map((item) => PhotoFavorite.fromJson(item as Map<String, dynamic>))
           .toList();
-    } catch {
+    } catch (e) {
       return [];
     }
   }
@@ -85,9 +85,13 @@ class PrefsService {
     final prefs = await SharedPreferences.getInstance();
     final current = await loadPhotoFavorites();
     if (current.any((p) => p.imageUrl == imageUrl)) return;
-    
+
     final updated = [
-      PhotoFavorite(breed: breed, imageUrl: imageUrl, addedAt: DateTime.now().millisecondsSinceEpoch),
+      PhotoFavorite(
+        breed: breed,
+        imageUrl: imageUrl,
+        addedAt: DateTime.now().millisecondsSinceEpoch,
+      ),
       ...current,
     ];
     await prefs.setString(

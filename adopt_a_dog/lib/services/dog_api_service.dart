@@ -38,7 +38,10 @@ class DogApiService {
     return data['message'] as String;
   }
 
-  Future<List<String>> fetchMultipleImages(String breedPath, {int count = 4}) async {
+  Future<List<String>> fetchMultipleImages(
+    String breedPath, {
+    int count = 4,
+  }) async {
     final uri = Uri.parse('$_base/breed/$breedPath/images/random/$count');
     final response = await http.get(uri);
 
