@@ -25,6 +25,20 @@ function Calendar({
 }) {
   const defaultClassNames = getDefaultClassNames()
 
+  const setRootRef = React.useCallback((
+    rootRef: unknown,
+    node: HTMLDivElement | null
+  ) => {
+    if (typeof rootRef === "function") {
+      ;(rootRef as (instance: HTMLDivElement | null) => void)(node)
+      return
+    }
+
+    if (rootRef && typeof rootRef === "object" && "current" in rootRef) {
+      ;(rootRef as { current: HTMLDivElement | null }).current = node
+    }
+  }, [])
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -129,7 +143,9 @@ function Calendar({
           return (
             <div
               data-slot="calendar"
-              ref={rootRef}
+              ref={(node) => {
+                setRootRef(rootRef, node)
+              }}
               className={cn(className)}
               {...props}
             />
