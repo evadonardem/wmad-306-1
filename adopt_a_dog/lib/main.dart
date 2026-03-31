@@ -23,12 +23,9 @@ class AdoptADogApp extends StatelessWidget {
         listTileTheme: const ListTileThemeData(
           iconColor: Colors.greenAccent,
           textColor: Colors.green,
-          shape: Border(
-            bottom: BorderSide(width: 1)
-          ),
-        )
+        ),
       ),
-      home: BreedListScreen(),
+      home: const BreedListScreen(),
     );
   }
 }
