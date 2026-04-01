@@ -4,5 +4,6 @@ class Breed {
 
   const Breed({required this.name, required this.subBreeds});
 
-  String displayName({String? sub}) => sub != null ? "$sub $name" : name;
+  // Display name with optional sub-breed
+  String displayName([String? sub]) => sub != null ? '$sub $name' : name;
 }
