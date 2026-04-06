@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:adopt_a_dog/models/breed.dart';
 import 'package:http/http.dart' as http;
 
@@ -23,5 +24,40 @@ class DogApiService {
         )
         .toList()
       ..sort((a, b) => a.name.compareTo(b.name));
+  }
+
+  Future<String> fetchRandomImage(String breedPath) async {
+    final uri = Uri.parse('$_base/breed/$breedPath/images/random');
+    final response = await http.get(uri);
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load image');
+    }
+
+    final Map<String, dynamic> data = jsonDecode(response.body);
+    return data['message'] as String;
+  }
+
+  Future<List<String>> fetchMultipleImages(
+    String breedPath, {
+    int count = 4,
+  }) async {
+    final uri = Uri.parse('$_base/breed/$breedPath/images/random/$count');
+    final response = await http.get(uri);
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load images');
+    }
+
+    final Map<String, dynamic> data = jsonDecode(response.body);
+    final List<dynamic> message = data['message'] as List<dynamic>;
+    return message.cast<String>();
+  }
+
+  Future<Map<String, String>> fetchRandomBreedAndImage() async {
+    final breeds = await fetchBreeds();
+    final random = breeds[Random().nextInt(breeds.length)];
+    final imageUrl = await fetchRandomImage(random.name);
+    return {'breed': random.name, 'imageUrl': imageUrl};
   }
 }
