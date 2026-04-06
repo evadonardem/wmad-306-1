@@ -2,6 +2,7 @@ import 'package:adopt_a_dog/design/design_system.dart';
 import 'package:adopt_a_dog/models/breed.dart';
 import 'package:adopt_a_dog/screens/breed_detail_screen.dart';
 import 'package:adopt_a_dog/services/dog_api_service.dart';
+import 'package:adopt_a_dog/services/likes_service.dart';
 import 'package:adopt_a_dog/services/prefs_service.dart';
 import 'package:adopt_a_dog/widgets/dog_network_image.dart';
 import 'package:adopt_a_dog/widgets/paw_pattern_layer.dart';
@@ -26,6 +27,22 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   String _capitalize(String value) {
     if (value.isEmpty) return value;
     return value[0].toUpperCase() + value.substring(1);
+  }
+
+  int _likesForBreed(String breedName) {
+    return LikesService.likesForBreed(breedName);
+  }
+
+  List<MapEntry<String, int>> get _topLikedBreeds {
+    final breedNames = {
+      ..._breedFavorites,
+      ..._photoFavorites.map((photo) => photo.breed),
+    };
+    final ranked = breedNames
+        .map((breed) => MapEntry(breed, _likesForBreed(breed)))
+        .toList();
+    ranked.sort((a, b) => b.value.compareTo(a.value));
+    return ranked;
   }
 
   @override
@@ -73,7 +90,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     await _prefs.removePhotoFavorite(imageUrl);
     if (!mounted) return;
     setState(() {
-      _photoFavorites = _photoFavorites.where((p) => p.imageUrl != imageUrl).toList();
+      _photoFavorites = _photoFavorites
+          .where((p) => p.imageUrl != imageUrl)
+          .toList();
     });
   }
 
@@ -100,6 +119,14 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   @override
   Widget build(BuildContext context) {
     final isEmpty = _breedFavorites.isEmpty && _photoFavorites.isEmpty;
+    final sortedPhotos = [..._photoFavorites]
+      ..sort(
+        (a, b) => _likesForBreed(b.breed).compareTo(_likesForBreed(a.breed)),
+      );
+    final topLikedBreeds = _topLikedBreeds;
+    final galleryWidth = DesignSystem.getResponsiveGalleryWidth(
+      MediaQuery.of(context).size.width,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -107,12 +134,14 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         toolbarHeight: 68,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        backgroundColor: DesignSystem.bgCream,
+        backgroundColor: Colors.transparent,
         title: const Text('Favorites', style: DesignSystem.titleXL),
       ),
       body: Stack(
         children: [
-          Container(decoration: const BoxDecoration(gradient: DesignSystem.bgGradient)),
+          Container(
+            decoration: const BoxDecoration(gradient: DesignSystem.bgGradient),
+          ),
           const PawPatternLayer(),
           _loading
               ? const Center(child: CircularProgressIndicator())
@@ -120,10 +149,27 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.all(DesignSystem.space32),
-                    child: Text(
-                      'No favorites yet. Save breeds or photos from the detail screen.',
-                      textAlign: TextAlign.center,
-                      style: DesignSystem.bodyLg,
+                    child: Container(
+                      padding: const EdgeInsets.all(DesignSystem.space24),
+                      decoration: DesignSystem.cardDecoration,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.inventory_2_outlined,
+                            color: DesignSystem.darkBrown,
+                            size: 36,
+                          ),
+                          const SizedBox(height: DesignSystem.space12),
+                          Text(
+                            'No saved items yet. Bookmark breeds and photos from each profile.',
+                            textAlign: TextAlign.center,
+                            style: DesignSystem.bodyLg.copyWith(
+                              color: DesignSystem.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 )
@@ -133,132 +179,341 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 1200),
                       child: ListView(
-                    padding: const EdgeInsets.only(bottom: 100),
-                    children: [
-                      if (_breedFavorites.isNotEmpty)
-                        const Padding(
-                          padding: EdgeInsets.fromLTRB(20, 16, 20, 6),
-                          child: Text(
-                            'SAVED BREEDS',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1.2,
-                              fontSize: 11,
-                              color: Color(0xFF745845),
+                        padding: const EdgeInsets.only(bottom: 100),
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(
+                              DesignSystem.space16,
+                              DesignSystem.space4,
+                              DesignSystem.space16,
+                              DesignSystem.space8,
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.all(
+                                DesignSystem.space16,
+                              ),
+                              decoration: DesignSystem.cardDecoration,
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: _FavoriteStat(
+                                      label: 'Breeds',
+                                      value: _breedFavorites.length.toString(),
+                                      color: DesignSystem.primaryBrown,
+                                    ),
+                                  ),
+                                  const SizedBox(width: DesignSystem.space12),
+                                  Expanded(
+                                    child: _FavoriteStat(
+                                      label: 'Photos',
+                                      value: _photoFavorites.length.toString(),
+                                      color: DesignSystem.accentOrange,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      ..._breedFavorites.map(
-                        (breed) => Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-                          child: Card(
-                            child: ListTile(
-                              onTap: () => _openBreed(breed),
-                              leading: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: SizedBox(
-                                  width: 56,
-                                  height: 56,
-                                  child: _breedThumbs[breed] == null
-                                      ? const ColoredBox(
-                                          color: Color(0xFFE8D5BA),
-                                          child: Icon(Icons.pets, color: Color(0xFF6D4C41)),
-                                        )
-                                      : DogNetworkImage(url: _breedThumbs[breed]!),
+                          if (topLikedBreeds.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
+                              child: Text(
+                                'Top liked dogs',
+                                style: DesignSystem.labelLg.copyWith(
+                                  color: DesignSystem.textSecondary,
                                 ),
                               ),
-                              title: Text(_capitalize(breed)),
-                              subtitle: const Text('Tap to explore'),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.delete_outline),
-                                onPressed: () => _removeBreed(breed),
+                            ),
+                          if (topLikedBreeds.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: DesignSystem.space16,
+                              ),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: DesignSystem.space4,
+                                ),
+                                decoration: DesignSystem.cardDecoration,
+                                child: Column(
+                                  children: topLikedBreeds
+                                      .take(5)
+                                      .toList()
+                                      .asMap()
+                                      .entries
+                                      .map((entry) {
+                                        final index = entry.key;
+                                        final item = entry.value;
+                                        return ListTile(
+                                          dense: true,
+                                          leading: CircleAvatar(
+                                            radius: 14,
+                                            backgroundColor: DesignSystem
+                                                .accentOrange
+                                                .withAlpha(28),
+                                            child: Text(
+                                              '${index + 1}',
+                                              style: const TextStyle(
+                                                color: DesignSystem.textPrimary,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ),
+                                          title: Text(
+                                            _capitalize(item.key),
+                                            style: DesignSystem.titleSm,
+                                          ),
+                                          trailing: SizedBox(
+                                            width: 120,
+                                            child: Text(
+                                              '${LikesService.formatLikes(item.value)} likes',
+                                              textAlign: TextAlign.right,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: DesignSystem.bodyMd
+                                                  .copyWith(
+                                                    fontWeight: FontWeight.w600,
+                                                    color: DesignSystem
+                                                        .textSecondary,
+                                                  ),
+                                            ),
+                                          ),
+                                        );
+                                      })
+                                      .toList(),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                      ),
-                      if (_photoFavorites.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                            DesignSystem.space20,
-                            DesignSystem.space20,
-                            DesignSystem.space20,
-                            DesignSystem.space12,
-                          ),
-                          child: const Text('SAVED PHOTOS', style: DesignSystem.labelLg),
-                        ),
-                      if (_photoFavorites.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: DesignSystem.space16),
-                          child: Wrap(
-                            spacing: DesignSystem.space12,
-                            runSpacing: DesignSystem.space12,
-                            children: _photoFavorites.map((photo) {
-                              return SizedBox(
-                                width: (MediaQuery.of(context).size.width - 56) / 2,
-                                child: ClipRRect(
-                                  borderRadius: DesignSystem.borderMedium,
-                                  child: Stack(
-                                    children: [
-                                      SizedBox(
-                                        height: 164,
-                                        width: double.infinity,
-                                        child: DogNetworkImage(url: photo.imageUrl),
-                                      ),
-                                      Positioned(
-                                        left: 0,
-                                        right: 0,
-                                        bottom: 0,
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            gradient: LinearGradient(
-                                              begin: Alignment.topCenter,
-                                              end: Alignment.bottomCenter,
-                                              colors: [
-                                                Colors.black.withAlpha(0),
-                                                Colors.black.withAlpha(140),
-                                              ],
-                                            ),
-                                          ),
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: DesignSystem.space12,
-                                            vertical: DesignSystem.space8,
-                                          ),
-                                          child: Text(
-                                            _capitalize(photo.breed),
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 13,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ),
-                                      Positioned(
-                                        right: DesignSystem.space8,
-                                        top: DesignSystem.space8,
-                                        child: CircleAvatar(
-                                          radius: 16,
-                                          backgroundColor: Colors.black.withAlpha(110),
-                                          child: IconButton(
-                                            padding: EdgeInsets.zero,
-                                            iconSize: 16,
-                                            onPressed: () => _removePhoto(photo.imageUrl),
-                                            icon: const Icon(Icons.favorite, color: Colors.white),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                          if (_breedFavorites.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 16, 20, 6),
+                              child: Text(
+                                'Saved breeds',
+                                style: DesignSystem.labelLg.copyWith(
+                                  color: DesignSystem.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ..._breedFavorites.map(
+                            (breed) => Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 5,
+                              ),
+                              child: Card(
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: DesignSystem.borderSmall,
+                                  side: const BorderSide(
+                                    color: DesignSystem.surfaceBorder,
+                                    width: 1,
                                   ),
                                 ),
-                              );
-                            }).toList(),
+                                child: ListTile(
+                                  onTap: () => _openBreed(breed),
+                                  leading: ClipRRect(
+                                    borderRadius: DesignSystem.borderMedium,
+                                    child: SizedBox(
+                                      width: 60,
+                                      height: 60,
+                                      child: _breedThumbs[breed] == null
+                                          ? const ColoredBox(
+                                              color:
+                                                  DesignSystem.imagePlaceholder,
+                                              child: Icon(
+                                                Icons.pets,
+                                                color:
+                                                    DesignSystem.imageErrorIcon,
+                                              ),
+                                            )
+                                          : DogNetworkImage(
+                                              url: _breedThumbs[breed]!,
+                                            ),
+                                    ),
+                                  ),
+                                  title: Text(
+                                    _capitalize(breed),
+                                    style: DesignSystem.titleSm.copyWith(
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  subtitle: const Text(
+                                    'Open breed file',
+                                    style: DesignSystem.bodyMd,
+                                  ),
+                                  trailing: IconButton(
+                                    icon: const Icon(
+                                      Icons.delete_outline,
+                                      color: DesignSystem.darkBrown,
+                                    ),
+                                    onPressed: () => _removeBreed(breed),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                    ],
-                  ),
+                          if (_photoFavorites.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                DesignSystem.space20,
+                                DesignSystem.space20,
+                                DesignSystem.space20,
+                                DesignSystem.space12,
+                              ),
+                              child: Text(
+                                'Saved photos (highest likes first)',
+                                style: DesignSystem.labelLg.copyWith(
+                                  color: DesignSystem.textSecondary,
+                                ),
+                              ),
+                            ),
+                          if (_photoFavorites.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: DesignSystem.space16,
+                              ),
+                              child: Wrap(
+                                spacing: DesignSystem.space12,
+                                runSpacing: DesignSystem.space12,
+                                children: sortedPhotos.map((photo) {
+                                  final likes = _likesForBreed(photo.breed);
+                                  return SizedBox(
+                                    width: galleryWidth,
+                                    child: ClipRRect(
+                                      borderRadius: DesignSystem.borderMedium,
+                                      child: Stack(
+                                        children: [
+                                          SizedBox(
+                                            height: 164,
+                                            width: double.infinity,
+                                            child: DogNetworkImage(
+                                              url: photo.imageUrl,
+                                            ),
+                                          ),
+                                          Positioned(
+                                            left: 0,
+                                            right: 0,
+                                            bottom: 0,
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  begin: Alignment.topCenter,
+                                                  end: Alignment.bottomCenter,
+                                                  colors: [
+                                                    Colors.black.withAlpha(0),
+                                                    DesignSystem.darkBrown
+                                                        .withAlpha(180),
+                                                  ],
+                                                ),
+                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal:
+                                                        DesignSystem.space12,
+                                                    vertical:
+                                                        DesignSystem.space8,
+                                                  ),
+                                              child: Text(
+                                                _capitalize(photo.breed),
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 12,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ),
+                                          Positioned(
+                                            left: DesignSystem.space8,
+                                            top: DesignSystem.space8,
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal:
+                                                        DesignSystem.space8,
+                                                    vertical:
+                                                        DesignSystem.space4,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.black.withAlpha(
+                                                  125,
+                                                ),
+                                                borderRadius:
+                                                    DesignSystem.borderSmall,
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  const Icon(
+                                                    Icons.favorite,
+                                                    color: Colors.white,
+                                                    size: 12,
+                                                  ),
+                                                  const SizedBox(
+                                                    width: DesignSystem.space4,
+                                                  ),
+                                                  Text(
+                                                    LikesService.formatLikes(
+                                                      likes,
+                                                    ),
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 11,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          Positioned.fill(
+                                            child: IgnorePointer(
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  border: Border.all(
+                                                    color: Colors.white
+                                                        .withAlpha(110),
+                                                    width: 1,
+                                                  ),
+                                                  borderRadius:
+                                                      DesignSystem.borderMedium,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          Positioned(
+                                            right: DesignSystem.space8,
+                                            top: DesignSystem.space8,
+                                            child: CircleAvatar(
+                                              radius: 16,
+                                              backgroundColor: DesignSystem
+                                                  .darkBrown
+                                                  .withAlpha(145),
+                                              child: IconButton(
+                                                padding: EdgeInsets.zero,
+                                                iconSize: 16,
+                                                onPressed: () => _removePhoto(
+                                                  photo.imageUrl,
+                                                ),
+                                                icon: const Icon(
+                                                  Icons.delete_outline,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -266,10 +521,50 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _breedFavorites.isEmpty ? null : _clearBreedFavorites,
-        backgroundColor: DesignSystem.primaryBrown,
-        foregroundColor: Colors.white,
-        label: const Text('Clear Breeds'),
+        label: const Text('Clear Favorites'),
         icon: const Icon(Icons.delete_outline),
+      ),
+    );
+  }
+}
+
+class _FavoriteStat extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+
+  const _FavoriteStat({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: DesignSystem.space12,
+        vertical: DesignSystem.space12,
+      ),
+      decoration: BoxDecoration(
+        color: color.withAlpha(16),
+        borderRadius: DesignSystem.borderSmall,
+        border: Border.all(color: color, width: 1.4),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: DesignSystem.labelLg.copyWith(color: color)),
+          const SizedBox(height: DesignSystem.space4),
+          Text(
+            value,
+            style: DesignSystem.titleLg.copyWith(
+              color: color,
+              fontSize: 28,
+              letterSpacing: 0.4,
+            ),
+          ),
+        ],
       ),
     );
   }
