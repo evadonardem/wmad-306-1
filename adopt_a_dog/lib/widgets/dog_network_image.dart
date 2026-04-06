@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:adopt_a_dog/design/design_system.dart';
 import 'package:flutter/material.dart';
 
 class DogNetworkImage extends StatelessWidget {
@@ -20,18 +21,44 @@ class DogNetworkImage extends StatelessWidget {
       fit: fit,
       errorWidget: (context, _, error) {
         return placeholder ??
-            const ColoredBox(
-              color: Color(0xFFE8D5BA),
-              child: Center(
-                child: Icon(Icons.broken_image, color: Color(0xFF6D4C41)),
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    DesignSystem.imagePlaceholder,
+                    DesignSystem.surfaceStrong,
+                  ],
+                ),
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.broken_image,
+                  color: DesignSystem.imageErrorIcon,
+                ),
               ),
             );
       },
       placeholder: (context, _) {
         return placeholder ??
-            const ColoredBox(
-              color: Color(0xFFE8D5BA),
-              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    DesignSystem.imagePlaceholder,
+                    DesignSystem.surfaceStrong,
+                  ],
+                ),
+              ),
+              child: const Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation(DesignSystem.darkBrown),
+                ),
+              ),
             );
       },
     );

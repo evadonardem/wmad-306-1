@@ -1,3 +1,4 @@
+import 'package:adopt_a_dog/design/design_system.dart';
 import 'package:flutter/material.dart';
 
 class PawPatternLayer extends StatelessWidget {
@@ -5,71 +6,81 @@ class PawPatternLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pawColor = const Color(0xFF8D5C2B).withAlpha(105);
-    final faintPaw = const Color(0xFF8D5C2B).withAlpha(62);
+    final primary = DesignSystem.pawBrown.withAlpha(28);
+    final secondary = DesignSystem.pawBrownFaint.withAlpha(24);
+    final highlight = Colors.white.withAlpha(95);
 
     return IgnorePointer(
       child: Stack(
         children: [
           Positioned(
-            top: 22,
-            left: 22,
-            child: Icon(Icons.pets, size: 24, color: pawColor),
+            top: 84,
+            left: 36,
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(shape: BoxShape.circle, color: primary),
+            ),
           ),
           Positioned(
-            top: 22,
+            top: 250,
+            right: 22,
+            child: Container(
+              width: 130,
+              height: 130,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: secondary,
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 110,
+            left: -24,
+            child: Container(
+              width: 110,
+              height: 110,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: secondary,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 160,
+            right: 66,
+            child: Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: highlight,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 420,
             left: 110,
-            child: Icon(Icons.pets, size: 28, color: pawColor),
+            child: Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: highlight,
+              ),
+            ),
           ),
           Positioned(
-            top: 62,
-            right: 48,
-            child: Icon(Icons.pets, size: 20, color: pawColor),
-          ),
-          Positioned(
-            top: 108,
-            left: 176,
-            child: Icon(Icons.pets, size: 22, color: pawColor),
-          ),
-          Positioned(
-            top: 202,
-            right: 18,
-            child: Icon(Icons.pets, size: 26, color: faintPaw),
-          ),
-          Positioned(
-            top: 292,
-            left: 16,
-            child: Icon(Icons.pets, size: 22, color: pawColor),
-          ),
-          Positioned(
-            top: 354,
-            right: 36,
-            child: Icon(Icons.pets, size: 20, color: pawColor),
-          ),
-          Positioned(
-            top: 388,
-            right: 118,
-            child: Icon(Icons.pets, size: 24, color: pawColor),
-          ),
-          Positioned(
-            top: 434,
-            left: 116,
-            child: Icon(Icons.pets, size: 24, color: faintPaw),
-          ),
-          Positioned(
-            top: 520,
-            right: 96,
-            child: Icon(Icons.pets, size: 20, color: faintPaw),
-          ),
-          Positioned(
-            top: 610,
-            left: 62,
-            child: Icon(Icons.pets, size: 22, color: faintPaw),
-          ),
-          Positioned(
-            bottom: 86,
-            right: 26,
-            child: Icon(Icons.pets, size: 18, color: faintPaw),
+            bottom: 72,
+            right: 46,
+            child: Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: highlight,
+              ),
+            ),
           ),
         ],
       ),

@@ -2,8 +2,10 @@ import 'dart:math';
 import 'package:adopt_a_dog/design/design_system.dart';
 import 'package:adopt_a_dog/models/breed.dart';
 import 'package:adopt_a_dog/screens/breed_detail_screen.dart';
+import 'package:adopt_a_dog/screens/explore_screen.dart';
 import 'package:adopt_a_dog/screens/favorites_screen.dart';
 import 'package:adopt_a_dog/services/dog_api_service.dart';
+import 'package:adopt_a_dog/services/likes_service.dart';
 import 'package:adopt_a_dog/services/prefs_service.dart';
 import 'package:adopt_a_dog/widgets/dog_network_image.dart';
 import 'package:adopt_a_dog/widgets/paw_pattern_layer.dart';
@@ -25,9 +27,8 @@ class _BreedListScreenState extends State<BreedListScreen> {
   final Set<String> _thumbsLoading = <String>{};
 
   List<Breed> _breeds = const [];
+  List<MapEntry<String, int>> _topLikedDogs = <MapEntry<String, int>>[];
   String? _error;
-  String? _heroBreed;
-  String? _heroImageUrl;
 
   @override
   void initState() {
@@ -47,20 +48,12 @@ class _BreedListScreenState extends State<BreedListScreen> {
     try {
       final savedSearch = await _prefs.loadLastSearch();
       final breeds = await _dogApi.fetchBreeds();
-
-      String? heroBreed;
-      String? heroImage;
-      if (breeds.isNotEmpty) {
-        final random = breeds[Random().nextInt(breeds.length)];
-        heroBreed = random.name;
-        heroImage = await _dogApi.fetchRandomImage(random.name);
-      }
+      final topLikedDogs = _buildTopLikedDogs(breeds);
 
       if (!mounted) return;
       setState(() {
         _breeds = breeds;
-        _heroBreed = heroBreed;
-        _heroImageUrl = heroImage;
+        _topLikedDogs = topLikedDogs;
         _searchController.text = savedSearch;
       });
 
@@ -76,17 +69,138 @@ class _BreedListScreenState extends State<BreedListScreen> {
     }
   }
 
-  Future<void> _refreshHero() async {
-    if (_breeds.isEmpty) return;
-    final random = _breeds[Random().nextInt(_breeds.length)];
+  List<MapEntry<String, int>> _buildTopLikedDogs(List<Breed> breeds) {
+    final ranked = breeds
+        .map(
+          (breed) =>
+              MapEntry(breed.name, LikesService.likesForBreed(breed.name)),
+        )
+        .toList();
+    ranked.sort((a, b) => b.value.compareTo(a.value));
+    return ranked;
+  }
+
+  Future<void> _refreshTopLikedDogs() async {
+    if (_breeds.isNotEmpty) {
+      setState(() {
+        _topLikedDogs = _buildTopLikedDogs(_breeds);
+      });
+      return;
+    }
+
     try {
-      final url = await _dogApi.fetchRandomImage(random.name);
+      final breeds = await _dogApi.fetchBreeds();
       if (!mounted) return;
       setState(() {
-        _heroBreed = random.name;
-        _heroImageUrl = url;
+        _breeds = breeds;
+        _topLikedDogs = _buildTopLikedDogs(breeds);
       });
-    } catch (_) {}
+    } catch (_) {
+      // Keep existing UI if fetching fresh breeds fails.
+    }
+  }
+
+  Future<void> _showTopLikedDogsSheet() async {
+    await _refreshTopLikedDogs();
+    if (!mounted) return;
+
+    final rankedDogs = _topLikedDogs;
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height * 0.72,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Top liked dogs', style: DesignSystem.titleLg),
+                  const SizedBox(height: DesignSystem.space4),
+                  Text(
+                    'Sorted from highest to lowest likes',
+                    style: DesignSystem.bodyMd.copyWith(
+                      color: DesignSystem.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: DesignSystem.space12),
+                  Expanded(
+                    child: rankedDogs.isEmpty
+                        ? Center(
+                            child: Text(
+                              'Could not build top list right now. Try again.',
+                              textAlign: TextAlign.center,
+                              style: DesignSystem.bodyMd,
+                            ),
+                          )
+                        : ListView.separated(
+                            itemCount: min(rankedDogs.length, 20),
+                            separatorBuilder: (context, index) =>
+                                const Divider(height: 1),
+                            itemBuilder: (context, index) {
+                              final item = rankedDogs[index];
+                              final breedName = item.key;
+                              final likes = item.value;
+                              final breed = _breeds
+                                  .where((b) => b.name == breedName)
+                                  .firstOrNull;
+
+                              return ListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: DesignSystem.space4,
+                                ),
+                                onTap: breed == null
+                                    ? null
+                                    : () {
+                                        Navigator.pop(context);
+                                        _openBreed(breed);
+                                      },
+                                leading: CircleAvatar(
+                                  radius: 15,
+                                  backgroundColor: DesignSystem.accentOrange
+                                      .withAlpha(28),
+                                  child: Text(
+                                    '${index + 1}',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: DesignSystem.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                                title: Text(
+                                  _capitalize(breedName),
+                                  style: DesignSystem.bodyLg,
+                                ),
+                                trailing: SizedBox(
+                                  width: 120,
+                                  child: Text(
+                                    '${LikesService.formatLikes(likes)} likes',
+                                    textAlign: TextAlign.right,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: DesignSystem.bodyMd.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _onSearchChanged(String value) async {
@@ -95,7 +209,8 @@ class _BreedListScreenState extends State<BreedListScreen> {
   }
 
   void _ensureBreedThumbnail(String breedName) {
-    if (_breedThumbs.containsKey(breedName) || _thumbsLoading.contains(breedName)) {
+    if (_breedThumbs.containsKey(breedName) ||
+        _thumbsLoading.contains(breedName)) {
       return;
     }
 
@@ -115,7 +230,10 @@ class _BreedListScreenState extends State<BreedListScreen> {
   }
 
   void _openBreed(Breed breed) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => BreedDetailScreen(breed: breed)));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => BreedDetailScreen(breed: breed)),
+    );
   }
 
   List<Breed> get _filteredBreeds {
@@ -130,12 +248,19 @@ class _BreedListScreenState extends State<BreedListScreen> {
   }
 
   void _onBottomNavTap(int index) {
-    if (index == 2) {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => const FavoritesScreen()));
+    if (index == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const ExploreScreen()),
+      );
       return;
     }
-    if (index == 1) {
-      _refreshHero();
+    if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const FavoritesScreen()),
+      );
+      return;
     }
   }
 
@@ -145,25 +270,45 @@ class _BreedListScreenState extends State<BreedListScreen> {
     required String label,
     required bool selected,
   }) {
-    final color = selected ? DesignSystem.accentOrange : DesignSystem.textMuted.withAlpha(180);
+    final color = selected
+        ? DesignSystem.primaryBrown
+        : DesignSystem.textSecondary;
     return Expanded(
       child: InkWell(
+        borderRadius: DesignSystem.borderMedium,
         onTap: () => _onBottomNavTap(index),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 22),
-            const SizedBox(height: DesignSystem.space4),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.3,
-              ),
+        child: AnimatedContainer(
+          duration: DesignSystem.durationQuick,
+          margin: const EdgeInsets.symmetric(horizontal: DesignSystem.space4),
+          padding: const EdgeInsets.symmetric(vertical: DesignSystem.space8),
+          decoration: BoxDecoration(
+            borderRadius: DesignSystem.borderMedium,
+            color: selected
+                ? DesignSystem.accentOrange.withAlpha(30)
+                : Colors.transparent,
+            border: Border.all(
+              color: selected
+                  ? DesignSystem.accentOrange.withAlpha(120)
+                  : DesignSystem.surfaceBorder,
+              width: 1,
             ),
-          ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(height: DesignSystem.space4),
+              Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -179,12 +324,22 @@ class _BreedListScreenState extends State<BreedListScreen> {
         toolbarHeight: 68,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        backgroundColor: DesignSystem.bgCream,
-        title: const Text('Adopt-a-Dog', style: DesignSystem.titleXL),
+        backgroundColor: Colors.transparent,
+        title: const Text('Dogs', style: DesignSystem.titleXL),
+        actions: [
+          IconButton(
+            onPressed: () => _onBottomNavTap(2),
+            icon: const Icon(Icons.collections_bookmark_outlined),
+            color: DesignSystem.textPrimary,
+          ),
+          const SizedBox(width: DesignSystem.space8),
+        ],
       ),
       body: Stack(
         children: [
-          Container(decoration: const BoxDecoration(gradient: DesignSystem.bgGradient)),
+          Container(
+            decoration: const BoxDecoration(gradient: DesignSystem.bgGradient),
+          ),
           const PawPatternLayer(),
           FutureBuilder<void>(
             future: _screenFuture,
@@ -198,7 +353,10 @@ class _BreedListScreenState extends State<BreedListScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(_error ?? 'Failed to load breeds. Please try again.'),
+                      Text(
+                        _error ?? 'Failed to load breeds. Please try again.',
+                        style: DesignSystem.bodyMd,
+                      ),
                       const SizedBox(height: 12),
                       FilledButton(
                         onPressed: () {
@@ -214,220 +372,125 @@ class _BreedListScreenState extends State<BreedListScreen> {
               }
 
               return RefreshIndicator(
-                onRefresh: _refreshHero,
+                onRefresh: _loadData,
                 child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 1200),
                     child: ListView(
-                      padding: const EdgeInsets.only(bottom: DesignSystem.space48),
+                      padding: const EdgeInsets.only(
+                        bottom: DesignSystem.space48,
+                      ),
                       children: [
-                    Visibility(
-                      visible: _searchController.text.trim().isEmpty && _heroBreed != null,
-                      maintainState: true,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                          DesignSystem.space16,
-                          DesignSystem.space24,
-                          DesignSystem.space16,
-                          DesignSystem.space8,
-                        ),
-                        child: GestureDetector(
-                          onTap: () {
-                            final breed = _breeds.where((b) => b.name == _heroBreed).firstOrNull;
-                            if (breed != null) _openBreed(breed);
-                          },
-                          child: ClipRRect(
-                            borderRadius: DesignSystem.borderXL,
-                            child: Stack(
-                              children: [
-                                DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    borderRadius: DesignSystem.borderXL,
-                                    boxShadow: DesignSystem.shadowXL,
-                                  ),
-                                  child: SizedBox(
-                                    height: 220,
-                                    width: double.infinity,
-                                    child: AnimatedSwitcher(
-                                      duration: const Duration(milliseconds: 420),
-                                      switchInCurve: Curves.easeOutCubic,
-                                      switchOutCurve: Curves.easeInCubic,
-                                      transitionBuilder: (child, animation) {
-                                        return FadeTransition(
-                                          opacity: animation,
-                                          child: ScaleTransition(
-                                            scale: Tween<double>(
-                                              begin: 0.98,
-                                              end: 1,
-                                            ).animate(animation),
-                                            child: child,
-                                          ),
-                                        );
-                                      },
-                                      child: _heroImageUrl == null
-                                          ? const ColoredBox(
-                                              key: ValueKey('hero-empty'),
-                                              color: Color(0xFFE8D5BA),
-                                            )
-                                          : DogNetworkImage(
-                                              key: ValueKey(_heroImageUrl),
-                                              url: _heroImageUrl!,
-                                            ),
-                                    ),
-                                  ),
-                                ),
-                                Positioned.fill(
-                                  child: DecoratedBox(
-                                    decoration: const BoxDecoration(
-                                      gradient: DesignSystem.heroOverlay,
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  left: DesignSystem.space16,
-                                  right: DesignSystem.space16,
-                                  bottom: DesignSystem.space16,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Text('DOG OF THE DAY', style: DesignSystem.labelLg),
-                                      const SizedBox(height: DesignSystem.space8),
-                                      Text(
-                                        _capitalize(_heroBreed!),
-                                        style: DesignSystem.displayLarge,
-                                      ),
-                                      const SizedBox(height: DesignSystem.space8),
-                                      const Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.arrow_forward_ios,
-                                            size: 12,
-                                            color: Colors.white,
-                                          ),
-                                          SizedBox(width: DesignSystem.space4),
-                                          Text(
-                                            'Tap to explore',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 13,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 12,
-                                  right: 12,
-                                  child: CircleAvatar(
-                                    backgroundColor: Colors.black.withAlpha(90),
-                                    child: IconButton(
-                                      icon: const Icon(Icons.refresh, color: Colors.white),
-                                      onPressed: _refreshHero,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                            DesignSystem.space16,
+                            DesignSystem.space12,
+                            DesignSystem.space16,
+                            DesignSystem.space12,
+                          ),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: DesignSystem.cardBg,
+                              borderRadius: DesignSystem.borderMedium,
+                              border: Border.all(
+                                color: DesignSystem.surfaceBorder,
+                                width: 1,
+                              ),
+                              boxShadow: DesignSystem.shadowSmall,
                             ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        DesignSystem.space16,
-                        DesignSystem.space12,
-                        DesignSystem.space16,
-                        DesignSystem.space12,
-                      ),
-                      child: TextField(
-                        controller: _searchController,
-                        onChanged: _onSearchChanged,
-                        decoration: InputDecoration(
-                          hintText: 'Search ${_breeds.length} breeds...',
-                          hintStyle: const TextStyle(color: DesignSystem.textMuted, fontSize: 15),
-                          prefixIcon: const Icon(
-                            Icons.search,
-                            color: DesignSystem.textMuted,
-                            size: 20,
-                          ),
-                          suffixIcon: _searchController.text.isEmpty
-                              ? null
-                              : IconButton(
-                                  icon: const Icon(Icons.close, size: 20),
-                                  onPressed: () {
-                                    _searchController.clear();
-                                    _onSearchChanged('');
-                                  },
+                            child: TextField(
+                              controller: _searchController,
+                              onChanged: _onSearchChanged,
+                              decoration: InputDecoration(
+                                hintText:
+                                    'Find a breed from ${_breeds.length} entries',
+                                filled: false,
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                prefixIcon: const Icon(
+                                  Icons.search,
+                                  color: DesignSystem.textMuted,
+                                  size: 20,
                                 ),
-                          filled: true,
-                          fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: DesignSystem.space12,
-                            horizontal: DesignSystem.space14,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: DesignSystem.borderMedium,
-                            borderSide: const BorderSide(color: Color(0xFFDCCDBA), width: 1.5),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: DesignSystem.borderMedium,
-                            borderSide: const BorderSide(color: Color(0xFFDCCDBA), width: 1.5),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: DesignSystem.borderMedium,
-                            borderSide: const BorderSide(
-                              color: DesignSystem.primaryBrown,
-                              width: 2,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        DesignSystem.space20,
-                        DesignSystem.space12,
-                        DesignSystem.space20,
-                        DesignSystem.space12,
-                      ),
-                      child: Text(
-                        _searchController.text.trim().isEmpty
-                            ? 'ALL BREEDS (${_breeds.length})'
-                            : '${filtered.length} RESULT${filtered.length == 1 ? '' : 'S'}',
-                        style: DesignSystem.labelLg,
-                      ),
-                    ),
-                    if (filtered.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.all(DesignSystem.space32),
-                        child: Center(child: Text('No breeds found.', style: DesignSystem.bodyMd)),
-                      )
-                    else
-                      ...filtered.map(
-                        (breed) => Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: DesignSystem.space12,
-                            vertical: DesignSystem.space6,
-                          ),
-                          child: Builder(
-                            builder: (context) {
-                              _ensureBreedThumbnail(breed.name);
-                              return _AnimatedBreedTile(
-                                breedName: _capitalize(breed.name),
-                                subtitle: breed.subBreeds.isEmpty
+                                suffixIcon: _searchController.text.isEmpty
                                     ? null
-                                    : '${breed.subBreeds.length} ${breed.subBreeds.length == 1 ? 'sub-breed' : 'sub-breeds'}',
-                                imageUrl: _breedThumbs[breed.name],
-                                onTap: () => _openBreed(breed),
-                              );
-                            },
+                                    : IconButton(
+                                        icon: const Icon(Icons.close, size: 20),
+                                        onPressed: () {
+                                          _searchController.clear();
+                                          _onSearchChanged('');
+                                        },
+                                      ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                            DesignSystem.space20,
+                            DesignSystem.space12,
+                            DesignSystem.space20,
+                            DesignSystem.space12,
+                          ),
+                          child: Text(
+                            _searchController.text.trim().isEmpty
+                                ? 'All breeds (${_breeds.length})'
+                                : '${filtered.length} result${filtered.length == 1 ? '' : 's'}',
+                            style: DesignSystem.labelLg.copyWith(
+                              color: DesignSystem.textSecondary,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                            DesignSystem.space16,
+                            DesignSystem.space4,
+                            DesignSystem.space16,
+                            DesignSystem.space12,
+                          ),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: OutlinedButton.icon(
+                              onPressed: _showTopLikedDogsSheet,
+                              icon: const Icon(Icons.leaderboard_outlined),
+                              label: const Text('Show Top Liked Dogs'),
+                            ),
+                          ),
+                        ),
+                        if (filtered.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.all(DesignSystem.space32),
+                            child: Center(
+                              child: Text(
+                                'No breeds found.',
+                                style: DesignSystem.bodyMd,
+                              ),
+                            ),
+                          )
+                        else
+                          ...filtered.map(
+                            (breed) => Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: DesignSystem.space12,
+                                vertical: DesignSystem.space6,
+                              ),
+                              child: Builder(
+                                builder: (context) {
+                                  _ensureBreedThumbnail(breed.name);
+                                  return _AnimatedBreedTile(
+                                    breedName: _capitalize(breed.name),
+                                    subtitle: breed.subBreeds.isEmpty
+                                        ? null
+                                        : '${breed.subBreeds.length} ${breed.subBreeds.length == 1 ? 'sub-breed' : 'sub-breeds'}',
+                                    imageUrl: _breedThumbs[breed.name],
+                                    onTap: () => _openBreed(breed),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -438,14 +501,22 @@ class _BreedListScreenState extends State<BreedListScreen> {
         ],
       ),
       bottomNavigationBar: Container(
-        height: 74,
-        decoration: const BoxDecoration(
-          color: DesignSystem.darkBrown,
-          boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 12, offset: Offset(0, -2))],
+        height: 84,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: DesignSystem.borderLarge,
+          border: Border.all(color: DesignSystem.surfaceBorder, width: 1),
+          boxShadow: DesignSystem.shadowSmall,
         ),
         child: Row(
           children: [
-            _buildNavItem(index: 0, icon: Icons.pets, label: 'Breeds', selected: true),
+            _buildNavItem(
+              index: 0,
+              icon: Icons.pets,
+              label: 'Breeds',
+              selected: true,
+            ),
             _buildNavItem(
               index: 1,
               icon: Icons.explore_outlined,
@@ -494,77 +565,97 @@ class _AnimatedBreedTileState extends State<_AnimatedBreedTile> {
       child: AnimatedScale(
         duration: DesignSystem.durationQuick,
         curve: DesignSystem.curveEaseOut,
-        scale: _pressed ? 0.985 : (_hovered ? 1.01 : 1),
+        scale: _pressed ? 0.985 : (_hovered ? 1.006 : 1),
         child: AnimatedContainer(
           duration: DesignSystem.durationQuick,
           curve: DesignSystem.curveEaseOut,
           decoration: BoxDecoration(
             borderRadius: DesignSystem.borderMedium,
-            boxShadow: _hovered ? DesignSystem.shadowMedium : DesignSystem.shadowSmall,
+            boxShadow: _hovered
+                ? DesignSystem.shadowMedium
+                : DesignSystem.shadowSmall,
             color: DesignSystem.cardBg,
+            border: Border.all(color: DesignSystem.surfaceBorder, width: 1),
           ),
           child: ClipRRect(
             borderRadius: DesignSystem.borderMedium,
             child: InkWell(
               onTap: widget.onTap,
               onHighlightChanged: (value) => setState(() => _pressed = value),
-              hoverColor: const Color(0x08A56932),
-              splashColor: const Color(0x18A56932),
-              child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: DesignSystem.space16,
-                  vertical: DesignSystem.space8,
-                ),
-                minVerticalPadding: DesignSystem.space12,
-                leading: AnimatedSwitcher(
-                  duration: DesignSystem.durationNormal,
-                  child: widget.imageUrl == null
-                      ? CircleAvatar(
-                          key: const ValueKey('tile-loading'),
-                          radius: 24,
-                          backgroundColor: const Color(0xFFE8D5BA),
-                          child: const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation(DesignSystem.primaryBrown),
-                            ),
-                          ),
-                        )
-                      : ClipOval(
-                          key: ValueKey('tile-image-${widget.imageUrl}'),
-                          child: SizedBox(
-                            width: 48,
-                            height: 48,
-                            child: DogNetworkImage(url: widget.imageUrl!),
-                          ),
-                        ),
-                ),
-                title: Text(
-                  widget.breedName,
-                  style: DesignSystem.titleMd,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: widget.subtitle == null
-                    ? null
-                    : Text(
-                        widget.subtitle!,
-                        style: DesignSystem.bodyMd,
+              hoverColor: Colors.black.withAlpha(8),
+              splashColor: Colors.black.withAlpha(20),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: DesignSystem.space14,
+                        vertical: DesignSystem.space8,
+                      ),
+                      minVerticalPadding: DesignSystem.space12,
+                      leading: AnimatedSwitcher(
+                        duration: DesignSystem.durationNormal,
+                        child: widget.imageUrl == null
+                            ? Container(
+                                key: const ValueKey('tile-loading'),
+                                width: 52,
+                                height: 52,
+                                decoration: BoxDecoration(
+                                  borderRadius: DesignSystem.borderSmall,
+                                  color: DesignSystem.imagePlaceholder,
+                                ),
+                                child: const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation(
+                                      DesignSystem.primaryBrown,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : ClipRRect(
+                                key: ValueKey('tile-image-${widget.imageUrl}'),
+                                borderRadius: DesignSystem.borderSmall,
+                                child: SizedBox(
+                                  width: 52,
+                                  height: 52,
+                                  child: DogNetworkImage(url: widget.imageUrl!),
+                                ),
+                              ),
+                      ),
+                      title: Text(
+                        widget.breedName,
+                        style: DesignSystem.titleSm,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                trailing: AnimatedContainer(
-                  duration: DesignSystem.durationQuick,
-                  curve: DesignSystem.curveEaseOut,
-                  transform: Matrix4.translationValues(_hovered ? DesignSystem.space4 : 0, 0, 0),
-                  child: Icon(
-                    Icons.chevron_right,
-                    color: DesignSystem.textSecondary.withAlpha(180),
-                    size: 24,
+                      subtitle: widget.subtitle == null
+                          ? null
+                          : Text(
+                              widget.subtitle!,
+                              style: DesignSystem.bodyMd.copyWith(fontSize: 13),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                      trailing: AnimatedContainer(
+                        duration: DesignSystem.durationQuick,
+                        curve: DesignSystem.curveEaseOut,
+                        transform: Matrix4.translationValues(
+                          _hovered ? DesignSystem.space4 : 0,
+                          0,
+                          0,
+                        ),
+                        child: Icon(
+                          Icons.chevron_right_rounded,
+                          color: DesignSystem.textMuted,
+                          size: 24,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
           ),

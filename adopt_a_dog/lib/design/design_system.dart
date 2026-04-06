@@ -7,20 +7,27 @@ class DesignSystem {
   // COLORS
   // ============================================================================
 
-  static const Color primaryBrown = Color(0xFF8D5C2B);
-  static const Color darkBrown = Color(0xFF2E1406);
-  static const Color accentOrange = Color(0xFFFFA33F);
+  static const Color primaryBrown = Color(0xFF1F2937);
+  static const Color darkBrown = Color(0xFF0F172A);
+  static const Color accentOrange = Color(0xFF2F80ED);
 
-  static const Color bgCream = Color(0xFFFFF8EE);
-  static const Color bgBeige = Color(0xFFF6E8D5);
-  static const Color cardBg = Colors.white;
+  static const Color bgCream = Color(0xFFF7F9FC);
+  static const Color bgBeige = Color(0xFFF0F3F8);
+  static const Color bgMist = Color(0xFFE6EBF2);
+  static const Color cardBg = Color(0xFFFFFFFF);
+  static const Color surfaceTint = Color(0xFFF8FAFC);
+  static const Color surfaceBorder = Color(0xFFD9E1EC);
+  static const Color surfaceStrong = Color(0xFFEFF4FA);
 
-  static const Color textPrimary = Color(0xFF1A1A1A);
-  static const Color textSecondary = Color(0xFF666666);
-  static const Color textMuted = Color(0xFF997755);
+  static const Color textPrimary = Color(0xFF102033);
+  static const Color textSecondary = Color(0xFF425466);
+  static const Color textMuted = Color(0xFF6E7F93);
 
-  static const Color pawBrown = Color(0xFF8D5C2B);
-  static const Color pawBrownFaint = Color(0xFF97785D);
+  static const Color pawBrown = Color(0xFF4A5D75);
+  static const Color pawBrownFaint = Color(0xFF9DAAB8);
+  static const Color imagePlaceholder = Color(0xFFE4EAF2);
+  static const Color imageErrorIcon = Color(0xFF6B778A);
+  static const Color success = Color(0xFF2E7D32);
 
   // ============================================================================
   // SPACING (8px base unit)
@@ -47,10 +54,18 @@ class DesignSystem {
   static const double radiusLarge = 16;
   static const double radiusXL = 24;
 
-  static const BorderRadius borderSmall = BorderRadius.all(Radius.circular(radiusSmall));
-  static const BorderRadius borderMedium = BorderRadius.all(Radius.circular(radiusMedium));
-  static const BorderRadius borderLarge = BorderRadius.all(Radius.circular(radiusLarge));
-  static const BorderRadius borderXL = BorderRadius.all(Radius.circular(radiusXL));
+  static const BorderRadius borderSmall = BorderRadius.all(
+    Radius.circular(radiusSmall),
+  );
+  static const BorderRadius borderMedium = BorderRadius.all(
+    Radius.circular(radiusMedium),
+  );
+  static const BorderRadius borderLarge = BorderRadius.all(
+    Radius.circular(radiusLarge),
+  );
+  static const BorderRadius borderXL = BorderRadius.all(
+    Radius.circular(radiusXL),
+  );
 
   // ============================================================================
   // TYPOGRAPHY
@@ -58,58 +73,59 @@ class DesignSystem {
 
   // Display/Hero (36-40px) - for Dog of the Day breed name
   static const TextStyle displayLarge = TextStyle(
-    fontSize: 40,
-    fontWeight: FontWeight.w900,
+    fontSize: 38,
+    fontWeight: FontWeight.w700,
     color: Colors.white,
     height: 1,
-    letterSpacing: -1,
+    letterSpacing: -0.2,
   );
 
   // Title Extra Large (32px) - main screen titles
   static const TextStyle titleXL = TextStyle(
-    fontSize: 32,
-    fontWeight: FontWeight.w800,
+    fontSize: 30,
+    fontWeight: FontWeight.w700,
     color: textPrimary,
-    letterSpacing: -0.5,
+    letterSpacing: -0.1,
   );
 
   // Title Large (28px) - breed detail title
   static const TextStyle titleLg = TextStyle(
-    fontSize: 28,
-    fontWeight: FontWeight.w800,
-    color: textPrimary,
-    letterSpacing: -0.3,
-  );
-
-  // Title Medium (20px) - section headers
-  static const TextStyle titleMd = TextStyle(
-    fontSize: 20,
+    fontSize: 26,
     fontWeight: FontWeight.w700,
     color: textPrimary,
     letterSpacing: -0.2,
   );
 
+  // Title Medium (20px) - section headers
+  static const TextStyle titleMd = TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+    color: textPrimary,
+    letterSpacing: 0,
+  );
+
   // Title Small (18px) - card titles
   static const TextStyle titleSm = TextStyle(
-    fontSize: 18,
-    fontWeight: FontWeight.w700,
+    fontSize: 17,
+    fontWeight: FontWeight.w600,
     color: textPrimary,
+    letterSpacing: 0.1,
   );
 
   // Label (12px) - sub-text, labels
   static const TextStyle labelLg = TextStyle(
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: FontWeight.w600,
     color: textMuted,
-    letterSpacing: 0.5,
+    letterSpacing: 0.4,
   );
 
   // Body Text (16px)
   static const TextStyle bodyLg = TextStyle(
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: FontWeight.w500,
     color: textPrimary,
-    height: 1.5,
+    height: 1.35,
   );
 
   // Body Text (14px)
@@ -117,7 +133,7 @@ class DesignSystem {
     fontSize: 14,
     fontWeight: FontWeight.w400,
     color: textSecondary,
-    height: 1.5,
+    height: 1.3,
   );
 
   // ============================================================================
@@ -127,19 +143,19 @@ class DesignSystem {
   static const List<BoxShadow> shadowNone = [];
 
   static const List<BoxShadow> shadowSmall = [
-    BoxShadow(color: Color(0x1A000000), blurRadius: 4, offset: Offset(0, 2)),
+    BoxShadow(color: Color(0x140B1A31), blurRadius: 10, offset: Offset(0, 3)),
   ];
 
   static const List<BoxShadow> shadowMedium = [
-    BoxShadow(color: Color(0x24000000), blurRadius: 8, offset: Offset(0, 4)),
+    BoxShadow(color: Color(0x1A0B1A31), blurRadius: 16, offset: Offset(0, 6)),
   ];
 
   static const List<BoxShadow> shadowLarge = [
-    BoxShadow(color: Color(0x33000000), blurRadius: 16, offset: Offset(0, 8)),
+    BoxShadow(color: Color(0x1F0B1A31), blurRadius: 22, offset: Offset(0, 8)),
   ];
 
   static const List<BoxShadow> shadowXL = [
-    BoxShadow(color: Color(0x40000000), blurRadius: 24, offset: Offset(0, 12)),
+    BoxShadow(color: Color(0x240B1A31), blurRadius: 30, offset: Offset(0, 12)),
   ];
 
   // ============================================================================
@@ -147,15 +163,22 @@ class DesignSystem {
   // ============================================================================
 
   static const LinearGradient bgGradient = LinearGradient(
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-    colors: [bgCream, bgBeige],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [bgCream, bgBeige, bgMist],
+    stops: [0.0, 0.65, 1.0],
+  );
+
+  static const LinearGradient navGradient = LinearGradient(
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+    colors: [Color(0xFF2C3E50), Color(0xFF1F2E40)],
   );
 
   static const LinearGradient heroOverlay = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [Color(0x0F000000), Color(0x82000000)],
+    colors: [Color(0x140F172A), Color(0xB80F172A)],
   );
 
   // ============================================================================
@@ -174,11 +197,19 @@ class DesignSystem {
   // CARD DECORATION (for reuse)
   // ============================================================================
 
-  static BoxDecoration get cardDecoration =>
-      BoxDecoration(color: cardBg, borderRadius: borderMedium, boxShadow: shadowSmall);
+  static BoxDecoration get cardDecoration => BoxDecoration(
+    color: cardBg,
+    borderRadius: borderLarge,
+    boxShadow: shadowSmall,
+    border: Border.all(color: surfaceBorder.withAlpha(230), width: 1),
+  );
 
-  static BoxDecoration get cardDecorationElevated =>
-      BoxDecoration(color: cardBg, borderRadius: borderMedium, boxShadow: shadowMedium);
+  static BoxDecoration get cardDecorationElevated => BoxDecoration(
+    color: cardBg,
+    borderRadius: borderLarge,
+    boxShadow: shadowMedium,
+    border: Border.all(color: surfaceBorder.withAlpha(230), width: 1),
+  );
 
   // ============================================================================
   // BUTTON STYLES
@@ -187,15 +218,18 @@ class DesignSystem {
   static ButtonStyle get filledButtonStyle => FilledButton.styleFrom(
     backgroundColor: primaryBrown,
     foregroundColor: Colors.white,
-    padding: const EdgeInsets.symmetric(horizontal: space24, vertical: space12),
+    elevation: 0,
+    padding: const EdgeInsets.symmetric(horizontal: space24, vertical: 14),
     shape: RoundedRectangleBorder(borderRadius: borderMedium),
+    textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
   );
 
   static ButtonStyle get outlinedButtonStyle => OutlinedButton.styleFrom(
     foregroundColor: primaryBrown,
-    side: const BorderSide(color: primaryBrown),
-    padding: const EdgeInsets.symmetric(horizontal: space24, vertical: space12),
+    side: BorderSide(color: surfaceBorder.withAlpha(255), width: 1.2),
+    padding: const EdgeInsets.symmetric(horizontal: space24, vertical: 14),
     shape: RoundedRectangleBorder(borderRadius: borderMedium),
+    textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
   );
 
   // ============================================================================
