@@ -36,10 +36,21 @@ dependencies:
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.5.4
   http: ^1.6.0
+  cached_network_image: ^3.3.0
+  intl: ^0.19.0
+  
+  # Firebase packages (stable compatible versions)
+  firebase_core: ^2.24.0
+  firebase_auth: ^4.14.0
+  cloud_firestore: ^4.13.0
+  firebase_storage: ^11.5.0
+  firebase_messaging: ^14.6.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  http: ^1.2.0
+  shared_preferences: ^2.2.3
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -59,10 +70,10 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/
+    - web/icons/
+    - assets/favicon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
