@@ -17,37 +17,33 @@ class DogProfile {
   });
 }
 
-const List<DogProfile> _profiles = [
-  DogProfile(
-    name: 'Buddy',
-    age: '1 year',
-    temperament: 'Curious, energetic, affectionate',
-    status: 'Ready for adoption',
-  ),
-  DogProfile(
-    name: 'Luna',
-    age: '2 years',
-    temperament: 'Friendly, playful, loyal',
-    status: 'Available for adoption',
-  ),
-  DogProfile(
-    name: 'Max',
-    age: '3 years',
-    temperament: 'Calm, confident, gentle',
-    status: 'Waiting for a forever home',
-  ),
-  DogProfile(
-    name: 'Daisy',
-    age: '10 months',
-    temperament: 'Sweet, social, curious',
-    status: 'Adoption interview open',
-  ),
-  DogProfile(
-    name: 'Rocky',
-    age: '4 years',
-    temperament: 'Protective, smart, devoted',
-    status: 'Great match for active families',
-  ),
+const List<String> _firstNames = [
+  'Buddy', 'Luna', 'Max', 'Daisy', 'Rocky', 'Milo', 'Bella', 'Cooper',
+  'Sadie', 'Teddy', 'Nala', 'Finn', 'Ruby', 'Leo', 'Penny', 'Zeus',
+  'Maya', 'Ollie', 'Hazel', 'Bruno', 'Willow', 'Ace', 'Rosie', 'Archie',
+  'Nova', 'Jasper', 'Skye', 'Benny', 'Zara', 'Chase',
+];
+
+const List<String> _ages = [
+  '8 months', '1 year', '2 years', '3 years', '4 years', '5 years',
+];
+
+const List<String> _temperaments = [
+  'Friendly, playful, loyal',
+  'Curious, energetic, affectionate',
+  'Calm, confident, gentle',
+  'Sweet, social, curious',
+  'Smart, alert, devoted',
+  'Easygoing, cuddly, patient',
+];
+
+const List<String> _statuses = [
+  'Available for adoption',
+  'Ready to meet families',
+  'Waiting for a forever home',
+  'Adoption interview open',
+  'Looking for an active home',
+  'Best with a fenced yard',
 ];
 
 class BreedDetailScreen extends StatefulWidget {
@@ -63,22 +59,34 @@ class BreedDetailScreenState extends State<BreedDetailScreen> {
   final _api = DogApiService();
   final prefs = PrefsService();
   bool saved = false;
-  late int _profileIndex;
+  late DogProfile _profile;
+  int _profileSeed = 0;
 
-  DogProfile get _profile => _profiles[_profileIndex % _profiles.length];
+  DogProfile _buildProfile() {
+    _profileSeed += 1;
+    final first = _firstNames[_profileSeed % _firstNames.length];
+
+    return DogProfile(
+      name: first,
+      age: _ages[_profileSeed % _ages.length],
+      temperament: _temperaments[_profileSeed % _temperaments.length],
+      status: _statuses[_profileSeed % _statuses.length],
+    );
+  }
 
   @override
   void initState() {
     super.initState();
     imageFuture = _api.fetchRandomImage(widget.breed.name);
-    _profileIndex = widget.breed.name.hashCode.abs() % _profiles.length;
+    _profileSeed = widget.breed.name.hashCode.abs();
+    _profile = _buildProfile();
   }
 
   void refresh() {
     setState(() {
       imageFuture = _api.fetchRandomImage(widget.breed.name);
       saved = false;
-      _profileIndex = (_profileIndex + 1) % _profiles.length;
+      _profile = _buildProfile();
     });
   }
 
@@ -119,20 +127,47 @@ class BreedDetailScreenState extends State<BreedDetailScreen> {
                       width: double.infinity,
                       constraints: BoxConstraints(maxHeight: maxImageHeight),
                       color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                      child: AspectRatio(
-                        aspectRatio: 4 / 3,
-                        child: Image.network(
-                          url,
-                          loadingBuilder: (ctx, child, progress) =>
-                              progress == null
-                                  ? child
-                                  : const Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                          errorBuilder: (ctx, _, __) =>
-                              const Icon(Icons.broken_image, size: 64),
-                          fit: BoxFit.contain,
-                        ),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          AspectRatio(
+                            aspectRatio: 4 / 3,
+                            child: Image.network(
+                              url,
+                              loadingBuilder: (ctx, child, progress) =>
+                                  progress == null
+                                      ? child
+                                      : const Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                              errorBuilder: (ctx, _, __) =>
+                                  const Icon(Icons.broken_image, size: 64),
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                          Positioned(
+                            left: 12,
+                            right: 12,
+                            bottom: 12,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.55),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                'Meet ${_profile.name}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     Padding(
