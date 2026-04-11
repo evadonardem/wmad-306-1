@@ -8,12 +8,14 @@ class DogProfile {
   final String age;
   final String temperament;
   final String status;
+  final String countryDescription;
 
   const DogProfile({
     required this.name,
     required this.age,
     required this.temperament,
     required this.status,
+    required this.countryDescription,
   });
 }
 
@@ -46,6 +48,15 @@ const List<String> _statuses = [
   'Best with a fenced yard',
 ];
 
+const List<String> _countryDescriptions = [
+  'Country: Germany. A versatile working-breed heritage with high intelligence and focus.',
+  'Country: Japan. Known for loyalty, alertness, and a calm confidence around family.',
+  'Country: Mexico. Historically adaptive and companion-oriented with lively personality.',
+  'Country: United Kingdom. Bred for close human partnership and dependable temperament.',
+  'Country: Switzerland. Recognized for steady behavior, strength, and outdoor stamina.',
+  'Country: France. Often affectionate, social, and comfortable in active households.',
+];
+
 class BreedDetailScreen extends StatefulWidget {
   final Breed breed;
   const BreedDetailScreen({super.key, required this.breed});
@@ -71,6 +82,8 @@ class BreedDetailScreenState extends State<BreedDetailScreen> {
       age: _ages[_profileSeed % _ages.length],
       temperament: _temperaments[_profileSeed % _temperaments.length],
       status: _statuses[_profileSeed % _statuses.length],
+      countryDescription:
+          _countryDescriptions[_profileSeed % _countryDescriptions.length],
     );
   }
 
@@ -188,7 +201,8 @@ class BreedDetailScreenState extends State<BreedDetailScreen> {
                           Text(
                             'Age: ${_profile.age}\n'
                             'Temperament: ${_profile.temperament}\n'
-                            'Status: ${_profile.status}',
+                            'Status: ${_profile.status}\n'
+                            '${_profile.countryDescription}',
                             style: Theme.of(context).textTheme.bodyLarge,
                           ),
                           const SizedBox(height: 16),

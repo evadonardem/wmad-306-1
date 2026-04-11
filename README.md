@@ -9,6 +9,7 @@ Adopt A Dog is a Flutter app that lets users browse dog breeds, view random phot
 - Open breed details with a responsive, non-cropped image view
 - Tap Next to load another photo and a refreshed dog profile
 - See an image name overlay (Meet <name>)
+- View a country description on each dog profile
 - Save and clear a favorite breed using local storage
 
 ## Tech Stack
