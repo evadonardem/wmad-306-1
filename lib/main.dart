@@ -9,10 +9,10 @@ class AdoptADogApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Adopt-a-Dog',
+      title: 'Dog Adoption Details',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorSchemeSeed: Colors.orange,
+        colorSchemeSeed: Colors.amber,
         useMaterial3: true,
       ),
       home: const BreedListScreen(),

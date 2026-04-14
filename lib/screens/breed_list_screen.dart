@@ -29,11 +29,12 @@ class BreedListScreenState extends State<BreedListScreen> {
         title: const Text('Choose a Breed'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.favorite),
+            icon: const Icon(Icons.list_alt),
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const FavoritesScreen()),
             ),
+            tooltip: 'My Adopt List',
           ),
         ],
       ),
@@ -46,7 +47,8 @@ class BreedListScreenState extends State<BreedListScreen> {
                 hintText: 'Search breeds...',
                 prefixIcon: Icon(Icons.search),
               ),
-              onChanged: (val) => setState(() => searchTerm = val.toLowerCase()),
+              onChanged: (val) =>
+                  setState(() => searchTerm = val.toLowerCase()),
             ),
           ),
           Expanded(

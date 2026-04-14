@@ -405,50 +405,60 @@ class BreedDetailScreenState extends State<BreedDetailScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              widget.breed.displayName(),
+                              'Dog Adoption Details',
                               style: Theme.of(context).textTheme.headlineMedium,
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Breed: ' + widget.breed.displayName(),
+                              'Please provide the following information about the dog available for adoption:',
                               style: Theme.of(context).textTheme.titleMedium,
                             ),
-                            const SizedBox(height: 8),
-                            Text('Name: ${_profile.name}',
-                                style: Theme.of(context).textTheme.titleMedium),
-                            const SizedBox(height: 8),
-                            Text('Age: ${_profile.age}',
-                                style: Theme.of(context).textTheme.bodyLarge),
-                            const SizedBox(height: 8),
-                            Text('Temperament: ${_profile.temperament}',
-                                style: Theme.of(context).textTheme.bodyLarge),
-                            const SizedBox(height: 8),
-                            Text(
-                                'Favorite Activities: ${_profile.favoriteActivities}',
-                                style: Theme.of(context).textTheme.bodyLarge),
-                            const SizedBox(height: 8),
-                            Text('Special Trait: ${_profile.specialTrait}',
-                                style: Theme.of(context).textTheme.bodyLarge),
-                            const SizedBox(height: 8),
-                            Text('Status: ${_profile.status}',
-                                style: Theme.of(context).textTheme.bodyLarge),
                             const SizedBox(height: 16),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.only(top: 8.0, bottom: 8.0),
-                              child: Text(
-                                uniqueMessages[_profile.name.codeUnits
-                                        .fold(0, (p, c) => p + c) %
-                                    uniqueMessages.length],
+                            Text('Basic Information',
                                 style: Theme.of(context)
                                     .textTheme
-                                    .bodyLarge
-                                    ?.copyWith(
-                                        color: Colors.deepOrange,
-                                        fontWeight: FontWeight.bold),
-                                textAlign: TextAlign.left,
-                              ),
-                            ),
+                                    .titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.bold)),
+                            Text(
+                                'Name: ${_profile.name}, Age: ${_profile.age}, Gender: Male/Female, Size: Medium, Weight: 20kg',
+                                style: Theme.of(context).textTheme.bodyLarge),
+                            const SizedBox(height: 8),
+                            Text('Health & Medical',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.bold)),
+                            Text(
+                                'Vaccination status: Up to date, Spay/Neuter: Yes, Known medical conditions: None, Recent vet check-up: Yes',
+                                style: Theme.of(context).textTheme.bodyLarge),
+                            const SizedBox(height: 8),
+                            Text('Behavior & Temperament',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.bold)),
+                            Text(
+                                'Personality traits: ${_profile.temperament}, Compatibility: Good with children and pets, Training: House-trained, leash-trained, knows basic commands',
+                                style: Theme.of(context).textTheme.bodyLarge),
+                            const SizedBox(height: 8),
+                            Text('Background',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.bold)),
+                            Text(
+                                'Reason for adoption: Rescue, Previous living environment: Foster home',
+                                style: Theme.of(context).textTheme.bodyLarge),
+                            const SizedBox(height: 8),
+                            Text('Adoption Requirements & Logistics',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.bold)),
+                            Text(
+                                'Adoption fee: Includes vaccinations and microchip, Process: Home visit/interview, Location: Local, Transport: Available, Timeline: Immediate',
+                                style: Theme.of(context).textTheme.bodyLarge),
+                            const SizedBox(height: 16),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
@@ -460,10 +470,11 @@ class BreedDetailScreenState extends State<BreedDetailScreen> {
                                 ElevatedButton.icon(
                                   onPressed: toggleFavorite,
                                   icon: Icon(saved
-                                      ? Icons.favorite
-                                      : Icons.favorite_border),
-                                  label:
-                                      Text(saved ? 'Unfavorite' : 'Favorite'),
+                                      ? Icons.list_alt
+                                      : Icons.playlist_add),
+                                  label: Text(saved
+                                      ? 'Remove from My Adopt List'
+                                      : 'Add to My Adopt List'),
                                 ),
                               ],
                             ),

@@ -52,7 +52,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('My Favorites')),
+      appBar: AppBar(title: const Text('My Adopt List')),
       body: FutureBuilder<List<_FavoriteData>>(
         future: favoritesFuture,
         builder: (context, snapshot) {
@@ -111,7 +111,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           IconButton(
                             icon: const Icon(Icons.delete_outline),
                             onPressed: () => _removeFavorite(favorite.breed),
-                            tooltip: 'Remove from favorites',
+                            tooltip: 'Remove from adopt list',
                           ),
                         ],
                       ),
@@ -131,31 +131,54 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Text('Name: $name',
-                          style: Theme.of(context).textTheme.titleMedium),
-                      Text('Age: $age',
-                          style: Theme.of(context).textTheme.bodyLarge),
-                      Text('Temperament: $temperament',
-                          style: Theme.of(context).textTheme.bodyLarge),
-                      Text('Favorite Activities: $favActs',
-                          style: Theme.of(context).textTheme.bodyLarge),
-                      Text('Special Trait: $specialTrait',
-                          style: Theme.of(context).textTheme.bodyLarge),
-                      Text('Status: $status',
-                          style: Theme.of(context).textTheme.bodyLarge),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
-                        child: Text(
-                          message,
+                      Text('Dog Adoption Details',
+                          style: Theme.of(context).textTheme.headlineSmall),
+                      const SizedBox(height: 8),
+                      Text('Basic Information',
                           style: Theme.of(context)
                               .textTheme
-                              .bodyLarge
-                              ?.copyWith(
-                                  color: Colors.deepOrange,
-                                  fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.left,
-                        ),
-                      ),
+                              .titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold)),
+                      Text(
+                          'Name: $name, Age: $age, Gender: Male/Female, Size: Medium, Weight: 20kg',
+                          style: Theme.of(context).textTheme.bodyLarge),
+                      const SizedBox(height: 8),
+                      Text('Health & Medical',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold)),
+                      Text(
+                          'Vaccination status: Up to date, Spay/Neuter: Yes, Known medical conditions: None, Recent vet check-up: Yes',
+                          style: Theme.of(context).textTheme.bodyLarge),
+                      const SizedBox(height: 8),
+                      Text('Behavior & Temperament',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold)),
+                      Text(
+                          'Personality traits: $temperament, Compatibility: Good with children and pets, Training: House-trained, leash-trained, knows basic commands',
+                          style: Theme.of(context).textTheme.bodyLarge),
+                      const SizedBox(height: 8),
+                      Text('Background',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold)),
+                      Text(
+                          'Reason for adoption: Rescue, Previous living environment: Foster home',
+                          style: Theme.of(context).textTheme.bodyLarge),
+                      const SizedBox(height: 8),
+                      Text('Adoption Requirements & Logistics',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold)),
+                      Text(
+                          'Adoption fee: Includes vaccinations and microchip, Process: Home visit/interview, Location: Local, Transport: Available, Timeline: Immediate',
+                          style: Theme.of(context).textTheme.bodyLarge),
+                      const SizedBox(height: 8),
                     ],
                   ),
                 ),
