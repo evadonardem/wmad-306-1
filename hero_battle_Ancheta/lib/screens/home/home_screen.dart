@@ -288,7 +288,11 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisCount: 2,
               childAspectRatio: 0.7,
             ),
-            itemBuilder: (context, i) => HeroCard(hero: visibleHeroes[i], index: i),
+            itemBuilder: (context, i) => HeroCard(
+              key: ValueKey(visibleHeroes[i].id),
+              hero: visibleHeroes[i],
+              index: i,
+            ),
           ),
         ),
         if (totalPages > 1)

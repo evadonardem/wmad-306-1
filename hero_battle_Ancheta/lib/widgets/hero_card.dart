@@ -18,6 +18,14 @@ class HeroCard extends StatefulWidget {
 class _HeroCardState extends State<HeroCard> {
   String? _displayedImageUrl;
 
+  @override
+  void didUpdateWidget(covariant HeroCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.hero.id != widget.hero.id) {
+      _displayedImageUrl = null;
+    }
+  }
+
   void _openDetail() {
     final initialImageUrl = _displayedImageUrl ??
         (widget.hero.imageUrlCandidates.isNotEmpty
@@ -216,6 +224,19 @@ class _HeroImageState extends State<_HeroImage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _notifyDisplayedUrl();
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant _HeroImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.hero.id != widget.hero.id ||
+        oldWidget.hero.imageUrl != widget.hero.imageUrl) {
+      _urlQueue = _buildUrlQueue();
+      _currentIndex = 0;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _notifyDisplayedUrl();
+      });
+    }
   }
 
   List<String> _buildUrlQueue() {
