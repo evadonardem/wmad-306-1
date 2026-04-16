@@ -28,7 +28,7 @@ class AdoptADogApp extends StatelessWidget {
           ),
         )
       ),
-      home: BreedListScreen(),
+      home: const BreedListScreen(),
     );
   }
 }
