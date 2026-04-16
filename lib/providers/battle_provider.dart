@@ -5,7 +5,7 @@ import 'package:hero_battle/models/hero_model.dart';
 class BattleProvider extends ChangeNotifier {
   late BattleEngine _engine;
   BattleState? _battleState;
-  final bool _isLoading = false;
+  bool _isLoading = false;
   String? _errorMessage;
 
   BattleProvider() {
@@ -26,47 +26,38 @@ class BattleProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Execute player action and then auto-execute opponent action
+  /// Execute player action
   void executePlayerAction(BattleAction action) {
     if (_battleState == null || !isBattleActive) return;
 
-    _engine.executeAction(action, true);
+    final result = _engine.executeAction(action, true);
     _battleState = _engine.state;
-    notifyListeners();
 
-    // Auto-execute opponent turn after a short delay
     if (!_battleState!.isBattleOver) {
-      Future.delayed(const Duration(milliseconds: 600), () {
-        executeOpponentAction();
+      Future.delayed(const Duration(milliseconds: 800), () {
+        if (isBattleActive) {
+          executeOpponentAction();
+        }
       });
     }
+
+    notifyListeners();
   }
 
   /// Execute opponent action
   void executeOpponentAction() {
-    if (_battleState == null || _battleState!.isBattleOver) return;
+    if (_battleState == null || !isBattleActive) return;
 
     final action = _engine.getOpponentAction();
-    _engine.executeAction(action, false);
+    final result = _engine.executeAction(action, false);
     _battleState = _engine.state;
     notifyListeners();
   }
 
-  /// Get all actions for the player (including on-cooldown ones)
-  List<BattleAction> getAllActions() {
-    if (_battleState == null) return [];
-    return _engine.getAllActions(true);
-  }
-
-  /// Get only usable (off-cooldown) actions
+  /// Get available actions for current hero
   List<BattleAction> getAvailableActions() {
     if (_battleState == null) return [];
     return _engine.getAvailableActions(true);
-  }
-
-  /// Get remaining cooldown for a specific action
-  int getCooldown(String actionName) {
-    return _engine.getCooldown(actionName, true);
   }
 
   /// Reset battle

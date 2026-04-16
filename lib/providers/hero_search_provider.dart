@@ -5,10 +5,11 @@ import 'package:hero_battle/services/superhero_api_service.dart';
 class HeroSearchProvider extends ChangeNotifier {
   final SuperheroApiService _apiService = SuperheroApiService();
 
-  final List<HeroModel> _allHeroes = [];
+  List<HeroModel> _allHeroes = [];
   List<HeroModel> _searchResults = [];
   bool _isLoading = false;
   String? _errorMessage;
+  String _lastSearchQuery = '';
 
   List<HeroModel> get allHeroes => _allHeroes;
   List<HeroModel> get searchResults => _searchResults;
@@ -26,6 +27,7 @@ class HeroSearchProvider extends ChangeNotifier {
 
     _isLoading = true;
     _errorMessage = null;
+    _lastSearchQuery = query;
     notifyListeners();
 
     try {
@@ -68,8 +70,6 @@ class HeroSearchProvider extends ChangeNotifier {
 
     try {
       final heroes = await _apiService.getRandomHeroes(count: count);
-      _allHeroes.clear();
-      _allHeroes.addAll(heroes);
       _isLoading = false;
       notifyListeners();
       return heroes;
@@ -84,6 +84,7 @@ class HeroSearchProvider extends ChangeNotifier {
   /// Clear search
   void clearSearch() {
     _searchResults = [];
+    _lastSearchQuery = '';
     _errorMessage = null;
     notifyListeners();
   }

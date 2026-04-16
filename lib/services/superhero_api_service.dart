@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:dio/dio.dart';
 import 'package:hero_battle/models/hero_model.dart';
 
@@ -7,7 +5,6 @@ class SuperheroApiService {
   final String apiKey = 'e7151626cbc9cde6e15943b0b8a414fd';
   final String baseUrl = 'https://superheroapi.com/api';
   late Dio _dio;
-  final _random = Random();
 
   SuperheroApiService() {
     _dio = Dio(BaseOptions(
@@ -29,7 +26,7 @@ class SuperheroApiService {
       }
       return null;
     } catch (e) {
-      // Error fetching hero: $e
+      print('Error fetching hero: $e');
       return null;
     }
   }
@@ -43,13 +40,12 @@ class SuperheroApiService {
         if (data['response'] == 'success' && data['results'] is List) {
           return (data['results'] as List)
               .map((hero) => HeroModel.fromJson(hero))
-              .where((hero) => hero.powerstats.totalPower > 0)
               .toList();
         }
       }
       return [];
     } catch (e) {
-      // Error searching heroes: $e
+      print('Error searching heroes: $e');
       return [];
     }
   }
@@ -57,20 +53,11 @@ class SuperheroApiService {
   /// Get random heroes for battle
   Future<List<HeroModel>> getRandomHeroes({int count = 5}) async {
     final heroes = <HeroModel>[];
-    final triedIds = <int>{};
-    int attempts = 0;
-    const maxAttempts = 50;
+    final randomIds = _generateRandomIds(count);
 
-    while (heroes.length < count && attempts < maxAttempts) {
-      attempts++;
-      int id;
-      do {
-        id = _random.nextInt(731) + 1;
-      } while (triedIds.contains(id));
-      triedIds.add(id);
-
+    for (int id in randomIds) {
       final hero = await getHeroById(id);
-      if (hero != null && hero.powerstats.totalPower > 0) {
+      if (hero != null) {
         heroes.add(hero);
       }
     }
@@ -79,4 +66,15 @@ class SuperheroApiService {
   }
 
   /// Generate random superhero IDs (API has heroes with IDs from 1-731)
+  List<int> _generateRandomIds(int count) {
+    final ids = <int>{};
+    while (ids.length < count) {
+      ids.add((_generateRandomInt(1, 731)));
+    }
+    return ids.toList();
+  }
+
+  int _generateRandomInt(int min, int max) {
+    return min + (((max - min + 1) * (DateTime.now().microsecond % 1000000)) ~/ 1000000);
+  }
 }

@@ -34,51 +34,8 @@ class HeroModel {
       appearance: Appearance.fromJson(json['appearance'] ?? {}),
       work: Work.fromJson(json['work'] ?? {}),
       connections: Connections.fromJson(json['connections'] ?? {}),
-      publisherName: json['biography']?['publisher'] ?? json['publisherName'] ?? 'Unknown',
+      publisherName: json['biography']?['publisher'] ?? 'Unknown',
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id.toString(),
-      'name': name,
-      'response': description,
-      'publisherName': publisherName,
-      'image': {'url': image.url},
-      'powerstats': {
-        'intelligence': powerstats.intelligence.toString(),
-        'strength': powerstats.strength.toString(),
-        'speed': powerstats.speed.toString(),
-        'durability': powerstats.durability.toString(),
-        'power': powerstats.power.toString(),
-        'combat': powerstats.combat.toString(),
-      },
-      'biography': {
-        'full-name': biography.fullName,
-        'alter-egos': biography.alterEgos,
-        'aliases': biography.aliases.join(', '),
-        'place-of-birth': biography.placeOfBirth,
-        'first-appearance': biography.firstAppearance,
-        'publisher': biography.publisher,
-        'alignment': biography.alignment,
-      },
-      'appearance': {
-        'gender': appearance.gender,
-        'race': appearance.race,
-        'height': appearance.height,
-        'weight': appearance.weight,
-        'eye-color': appearance.eyeColor,
-        'hair-color': appearance.hairColor,
-      },
-      'work': {
-        'occupation': work.occupation,
-        'base-of-operations': work.baseOfOperations,
-      },
-      'connections': {
-        'group-affiliation': connections.groupAffiliation,
-        'relatives': connections.relatives,
-      },
-    };
   }
 
   // Get card rarity based on power level

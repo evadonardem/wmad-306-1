@@ -8,13 +8,13 @@ class HPBar extends StatefulWidget {
   final Color? color;
 
   const HPBar({
-    super.key,
+    Key? key,
     required this.currentHP,
     required this.maxHP,
     required this.heroName,
     required this.isPlayer,
     this.color,
-  });
+  }) : super(key: key);
 
   @override
   State<HPBar> createState() => _HPBarState();
@@ -81,7 +81,7 @@ class _HPBarState extends State<HPBar> with TickerProviderStateMixin {
                     borderRadius: BorderRadius.circular(8),
                     boxShadow: [
                       BoxShadow(
-                        color: color.withValues(alpha: 0.3),
+                        color: color.withOpacity(0.3),
                         blurRadius: 10,
                         spreadRadius: 1,
                       ),
@@ -116,7 +116,7 @@ class _HPBarState extends State<HPBar> with TickerProviderStateMixin {
                           animation: _damageController,
                           builder: (context, child) {
                             return Container(
-                              color: Colors.red.withValues(alpha: (1 - _damageController.value) * 0.3),
+                              color: Colors.red.withOpacity((1 - _damageController.value) * 0.3),
                             );
                           },
                         ),

@@ -8,13 +8,13 @@ class StatRow extends StatelessWidget {
   final Color? color;
 
   const StatRow({
-    super.key,
+    Key? key,
     required this.label,
     required this.value,
     required this.maxValue,
     this.icon,
     this.color,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

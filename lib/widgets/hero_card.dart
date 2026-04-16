@@ -1,26 +1,22 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hero_battle/models/hero_model.dart';
-import 'package:hero_battle/widgets/hero_image_widget.dart';
 
 class HeroCard extends StatefulWidget {
   final HeroModel hero;
   final VoidCallback? onTap;
   final bool isSelected;
-  final bool isLocked;
-  final int unlockCost;
   final double width;
   final double height;
 
   const HeroCard({
-    super.key,
+    Key? key,
     required this.hero,
     this.onTap,
     this.isSelected = false,
-    this.isLocked = false,
-    this.unlockCost = 0,
     this.width = 200,
     this.height = 300,
-  });
+  }) : super(key: key);
 
   @override
   State<HeroCard> createState() => _HeroCardState();
@@ -61,17 +57,19 @@ class _HeroCardState extends State<HeroCard>
             return Transform.scale(
               scale: 1.0 + (_hoverController.value * 0.05),
               child: Container(
+                width: widget.width,
+                height: widget.height,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: rarityColor.withValues(alpha: 0.3 + (_hoverController.value * 0.4)),
+                      color: rarityColor.withAlpha(((0.3 + (_hoverController.value * 0.4)) * 255).toInt()),
                       blurRadius: 20 + (_hoverController.value * 10),
                       spreadRadius: 2,
                     ),
                     if (widget.isSelected)
                       BoxShadow(
-                        color: Colors.yellow.withValues(alpha: 0.6),
+                        color: Colors.yellow.withAlpha((0.6 * 255).toInt()),
                         blurRadius: 15,
                         spreadRadius: 3,
                       ),
@@ -88,7 +86,7 @@ class _HeroCardState extends State<HeroCard>
                           end: Alignment.bottomRight,
                           colors: [
                             Colors.grey[900]!,
-                            const Color(0xFF121212),
+                            Colors.grey[950]!,
                           ],
                         ),
                       ),
@@ -136,7 +134,7 @@ class _HeroCardState extends State<HeroCard>
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: rarityColor.withValues(alpha: 0.3),
+                                      color: rarityColor.withAlpha((0.3 * 255).toInt()),
                                       borderRadius: BorderRadius.circular(8),
                                       border: Border.all(
                                         color: rarityColor,
@@ -173,18 +171,24 @@ class _HeroCardState extends State<HeroCard>
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: rarityColor.withValues(alpha: 0.5),
+                                color: rarityColor.withAlpha((0.5 * 255).toInt()),
                                 width: 1,
                               ),
                             ),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(12),
-                              child: SizedBox(
-                                width: double.infinity,
-                                height: double.infinity,
-                                child: HeroImageWidget(
-                                  hero: widget.hero,
-                                  fit: BoxFit.cover,
+                              child: CachedNetworkImage(
+                                imageUrl: widget.hero.image.url,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  color: Colors.grey[800],
+                                  child: const Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  color: Colors.grey[800],
+                                  child: const Icon(Icons.image_not_supported),
                                 ),
                               ),
                             ),
@@ -204,7 +208,7 @@ class _HeroCardState extends State<HeroCard>
                               end: Alignment.bottomCenter,
                               colors: [
                                 Colors.transparent,
-                                rarityColor.withValues(alpha: 0.3),
+                                rarityColor.withAlpha((0.3 * 255).toInt()),
                               ],
                             ),
                           ),
@@ -248,52 +252,6 @@ class _HeroCardState extends State<HeroCard>
                             Icons.check,
                             color: Colors.black,
                             size: 16,
-                          ),
-                        ),
-                      ),
-
-                    // Locked overlay
-                    if (widget.isLocked)
-                      Positioned.fill(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            color: Colors.black.withValues(alpha: 0.7),
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.lock,
-                                  color: Colors.white70, size: 36),
-                              const SizedBox(height: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: Colors.amber.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: Colors.amber.withValues(alpha: 0.5),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.monetization_on,
-                                        color: Colors.amber, size: 16),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '${widget.unlockCost}',
-                                      style: const TextStyle(
-                                        color: Colors.amber,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
                           ),
                         ),
                       ),
