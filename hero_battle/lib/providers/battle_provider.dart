@@ -7,6 +7,7 @@ class BattleProvider extends ChangeNotifier {
   BattleState? _battleState;
   final bool _isLoading = false;
   String? _errorMessage;
+  bool _needsSwap = false;
 
   BattleProvider() {
     _engine = BattleEngine();
@@ -15,40 +16,73 @@ class BattleProvider extends ChangeNotifier {
   BattleState? get battleState => _battleState;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
-  bool get isBattleActive => _battleState != null && !_battleState!.isBattleOver;
-  bool get isBattleOver => _battleState != null && _battleState!.isBattleOver;
+  bool get isBattleActive => _battleState != null && !_battleState!.isBattleReallyOver;
+  bool get isBattleOver => _battleState != null && _battleState!.isBattleReallyOver;
 
-  /// Start a new battle
-  void startBattle(HeroModel playerHero, HeroModel opponentHero) {
-    _engine.initializeBattle(playerHero, opponentHero);
+  /// Whether the active hero is knocked out and a swap is required
+  bool get needsSwap => _needsSwap;
+
+  /// Start a new battle with the full deck deployed
+  void startBattle(HeroModel playerHero, HeroModel opponentHero, {List<HeroModel> playerDeck = const [], List<HeroModel> opponentDeck = const []}) {
+    _engine.initializeBattle(playerHero, opponentHero, playerDeck: playerDeck, opponentDeck: opponentDeck);
     _battleState = _engine.state;
     _errorMessage = null;
+    _needsSwap = false;
     notifyListeners();
   }
 
-  /// Execute player action and then auto-execute opponent action
+  /// Execute player action, then immediately execute opponent response.
   void executePlayerAction(BattleAction action) {
     if (_battleState == null || !isBattleActive) return;
 
+    // Player acts
     _engine.executeAction(action, true);
     _battleState = _engine.state;
-    notifyListeners();
 
-    // Auto-execute opponent turn after a short delay
-    if (!_battleState!.isBattleOver) {
-      Future.delayed(const Duration(milliseconds: 600), () {
-        executeOpponentAction();
-      });
+    // If opponent's active hero was KO'd, auto-swap to next alive hero
+    if (_battleState!.opponentHealth <= 0 && !_battleState!.isOpponentDeckWipedOut) {
+      _engine.swapOpponentHero();
+      _battleState = _engine.state;
     }
+
+    // Opponent responds immediately (if battle not over)
+    if (!_battleState!.isBattleReallyOver) {
+      final opAction = _engine.getOpponentAction();
+      _engine.executeAction(opAction, false);
+      _battleState = _engine.state;
+
+      // Check if player's active hero was knocked out
+      if (_battleState!.playerHealth <= 0 && !_battleState!.isDeckWipedOut) {
+        _needsSwap = true;
+        _battleState!.battleLog.add('💀 ${_battleState!.playerHero.name} was knocked out!');
+      }
+    }
+
+    notifyListeners();
   }
 
-  /// Execute opponent action
-  void executeOpponentAction() {
-    if (_battleState == null || _battleState!.isBattleOver) return;
+  /// Swap active hero with a bench hero (voluntary or forced).
+  /// Opponent responds immediately after the swap.
+  void swapHero(HeroModel newHero) {
+    if (_battleState == null) return;
 
-    final action = _engine.getOpponentAction();
-    _engine.executeAction(action, false);
+    _engine.swapActiveHero(newHero);
     _battleState = _engine.state;
+    _needsSwap = false;
+
+    // Opponent responds immediately after swap
+    if (!_battleState!.isBattleReallyOver) {
+      final opAction = _engine.getOpponentAction();
+      _engine.executeAction(opAction, false);
+      _battleState = _engine.state;
+
+      // Check if new hero was also knocked out
+      if (_battleState!.playerHealth <= 0 && !_battleState!.isDeckWipedOut) {
+        _needsSwap = true;
+        _battleState!.battleLog.add('💀 ${_battleState!.playerHero.name} was knocked out!');
+      }
+    }
+
     notifyListeners();
   }
 
@@ -73,6 +107,7 @@ class BattleProvider extends ChangeNotifier {
   void resetBattle() {
     _battleState = null;
     _errorMessage = null;
+    _needsSwap = false;
     notifyListeners();
   }
 }

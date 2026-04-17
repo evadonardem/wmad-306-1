@@ -20,13 +20,22 @@ class BattleAction {
 }
 
 class BattleState {
-  final HeroModel playerHero;
-  final HeroModel opponentHero;
+  HeroModel playerHero;
+  HeroModel opponentHero;
   int playerHealth;
   int opponentHealth;
   bool isPlayerTurn;
   int turnCount;
   final List<String> battleLog;
+
+  /// The full player deck deployed in battle.
+  /// Each hero's remaining HP is tracked in [deckHealthMap].
+  final List<HeroModel> playerDeck;
+  final Map<int, int> deckHealthMap; // heroId → remaining HP
+
+  /// The full opponent deck deployed in battle.
+  final List<HeroModel> opponentDeck;
+  final Map<int, int> opponentDeckHealthMap; // heroId → remaining HP
 
   BattleState({
     required this.playerHero,
@@ -36,17 +45,62 @@ class BattleState {
     required this.isPlayerTurn,
     required this.turnCount,
     this.battleLog = const [],
-  });
+    this.playerDeck = const [],
+    Map<int, int>? deckHealthMap,
+    this.opponentDeck = const [],
+    Map<int, int>? opponentDeckHealthMap,
+  })  : deckHealthMap = deckHealthMap ?? {},
+        opponentDeckHealthMap = opponentDeckHealthMap ?? {};
 
   bool get isBattleOver => playerHealth <= 0 || opponentHealth <= 0;
 
-  HeroModel get winner => playerHealth > 0 ? playerHero : opponentHero;
+  /// Check if the entire player deck is wiped out
+  bool get isDeckWipedOut {
+    if (playerDeck.isEmpty) return playerHealth <= 0;
+    return playerDeck.every((h) => (deckHealthMap[h.id] ?? 0) <= 0);
+  }
 
-  HeroModel get loser => playerHealth > 0 ? opponentHero : playerHero;
+  /// Check if the entire opponent deck is wiped out
+  bool get isOpponentDeckWipedOut {
+    if (opponentDeck.isEmpty) return opponentHealth <= 0;
+    return opponentDeck.every((h) => (opponentDeckHealthMap[h.id] ?? 0) <= 0);
+  }
 
-  bool get isPlayerWin => winner.id == playerHero.id;
+  /// Battle is over when entire opponent deck is dead OR entire player deck is dead
+  bool get isBattleReallyOver => isOpponentDeckWipedOut || isDeckWipedOut;
 
-  factory BattleState.initialize(HeroModel playerHero, HeroModel opponentHero) {
+  HeroModel get winner => isOpponentDeckWipedOut ? playerHero : opponentHero;
+
+  HeroModel get loser => isOpponentDeckWipedOut ? opponentHero : playerHero;
+
+  bool get isPlayerWin => isOpponentDeckWipedOut;
+
+  /// Get bench heroes (alive, not active) for player
+  List<HeroModel> get benchHeroes {
+    return playerDeck.where((h) => h.id != playerHero.id && (deckHealthMap[h.id] ?? 0) > 0).toList();
+  }
+
+  /// Get bench heroes (alive, not active) for opponent
+  List<HeroModel> get opponentBenchHeroes {
+    return opponentDeck.where((h) => h.id != opponentHero.id && (opponentDeckHealthMap[h.id] ?? 0) > 0).toList();
+  }
+
+  factory BattleState.initialize(
+    HeroModel playerHero,
+    HeroModel opponentHero, {
+    List<HeroModel> playerDeck = const [],
+    List<HeroModel> opponentDeck = const [],
+  }) {
+    final pDeck = playerDeck.isNotEmpty ? playerDeck : [playerHero];
+    final healthMap = <int, int>{};
+    for (final h in pDeck) {
+      healthMap[h.id] = h.powerstats.health;
+    }
+    final oDeck = opponentDeck.isNotEmpty ? opponentDeck : [opponentHero];
+    final oHealthMap = <int, int>{};
+    for (final h in oDeck) {
+      oHealthMap[h.id] = h.powerstats.health;
+    }
     return BattleState(
       playerHero: playerHero,
       opponentHero: opponentHero,
@@ -55,6 +109,10 @@ class BattleState {
       isPlayerTurn: true,
       turnCount: 0,
       battleLog: [],
+      playerDeck: pDeck,
+      deckHealthMap: healthMap,
+      opponentDeck: oDeck,
+      opponentDeckHealthMap: oHealthMap,
     );
   }
 }
@@ -71,10 +129,51 @@ class BattleEngine {
   Map<String, int> get opponentCooldowns => Map.unmodifiable(_opponentCooldowns);
 
   /// Initialize a new battle
-  void initializeBattle(HeroModel playerHero, HeroModel opponentHero) {
-    state = BattleState.initialize(playerHero, opponentHero);
+  void initializeBattle(HeroModel playerHero, HeroModel opponentHero, {List<HeroModel> playerDeck = const [], List<HeroModel> opponentDeck = const []}) {
+    state = BattleState.initialize(playerHero, opponentHero, playerDeck: playerDeck, opponentDeck: opponentDeck);
     _playerCooldowns.clear();
     _opponentCooldowns.clear();
+  }
+
+  /// Swap the active player hero with a bench hero. Costs the player's turn.
+  void swapActiveHero(HeroModel newHero) {
+    // Save current hero's HP
+    state.deckHealthMap[state.playerHero.id] = state.playerHealth;
+
+    // Switch to new hero
+    state.playerHero = newHero;
+    state.playerHealth = state.deckHealthMap[newHero.id] ?? newHero.powerstats.health;
+
+    // Reset player cooldowns for new hero
+    _playerCooldowns.clear();
+
+    state.battleLog.add('🔄 Swapped to ${newHero.name}! (HP: ${state.playerHealth})');
+
+    // Swapping costs a turn
+    state.isPlayerTurn = false;
+    state.turnCount++;
+  }
+
+  /// Auto-swap opponent's active hero when KO'd. Picks the strongest alive bench hero.
+  bool swapOpponentHero() {
+    final bench = state.opponentBenchHeroes;
+    if (bench.isEmpty) return false;
+
+    // Save current opponent HP
+    state.opponentDeckHealthMap[state.opponentHero.id] = state.opponentHealth;
+
+    // Pick strongest alive bench hero
+    bench.sort((a, b) => (state.opponentDeckHealthMap[b.id] ?? 0).compareTo(state.opponentDeckHealthMap[a.id] ?? 0));
+    final next = bench.first;
+
+    state.opponentHero = next;
+    state.opponentHealth = state.opponentDeckHealthMap[next.id] ?? next.powerstats.health;
+
+    // Reset opponent cooldowns for new hero
+    _opponentCooldowns.clear();
+
+    state.battleLog.add('🔄 Opponent sent in ${next.name}! (HP: ${state.opponentHealth})');
+    return true;
   }
 
   /// Get all actions (with cooldown info) for the current hero
@@ -99,7 +198,7 @@ class BattleEngine {
 
   /// Execute an action and return damage dealt
   BattleResult executeAction(BattleAction action, bool isPlayer) {
-    if (state.isBattleOver) {
+    if (state.isBattleReallyOver) {
       return BattleResult(
         damageDealt: 0,
         healed: 0,
@@ -131,19 +230,22 @@ class BattleEngine {
       );
     }
 
-    // Calculate damage with some variance
+    // Calculate damage with some variance (minimum 1)
     final damageVariance = (action.damage * 0.2).toInt();
+    final range = damageVariance * 2 + 1; // +1 so nextInt is never 0
     final actualDamage =
-        action.damage - damageVariance + _random.nextInt(damageVariance * 2);
+        (action.damage - damageVariance + _random.nextInt(range)).clamp(1, 999);
 
     int healed = 0;
 
     if (isPlayer) {
       state.opponentHealth = (state.opponentHealth - actualDamage).clamp(0, state.opponentHero.powerstats.health);
+      state.opponentDeckHealthMap[state.opponentHero.id] = state.opponentHealth;
 
       if (action.heal != null) {
         healed = action.heal!;
         state.playerHealth = (state.playerHealth + healed).clamp(0, state.playerHero.powerstats.health);
+        state.deckHealthMap[state.playerHero.id] = state.playerHealth;
       }
 
       state.battleLog.add(
@@ -153,10 +255,12 @@ class BattleEngine {
       );
     } else {
       state.playerHealth = (state.playerHealth - actualDamage).clamp(0, state.playerHero.powerstats.health);
+      state.deckHealthMap[state.playerHero.id] = state.playerHealth;
 
       if (action.heal != null) {
         healed = action.heal!;
         state.opponentHealth = (state.opponentHealth + healed).clamp(0, state.opponentHero.powerstats.health);
+        state.opponentDeckHealthMap[state.opponentHero.id] = state.opponentHealth;
       }
 
       state.battleLog.add(
@@ -256,7 +360,7 @@ class BattleEngine {
     final primaryAttack = BattleAction(
       name: atkName,
       description: atkDesc,
-      damage: 20 + (stats.strength ~/ 8) + (stats.combat ~/ 12),
+      damage: 6 + (stats.strength ~/ 25) + (stats.combat ~/ 35),
       accuracy: 0.85,
       cooldown: 1,
     );
@@ -283,7 +387,7 @@ class BattleEngine {
     final specialAttack = BattleAction(
       name: spcName,
       description: spcDesc,
-      damage: 30 + (stats.power ~/ 6) + (stats.intelligence ~/ 10),
+      damage: 10 + (stats.power ~/ 18) + (stats.intelligence ~/ 30),
       accuracy: 0.65 + (stats.intelligence / 1000),
       cooldown: 2,
     );
@@ -304,8 +408,9 @@ class BattleEngine {
     final quickAttack = BattleAction(
       name: qckName,
       description: qckDesc,
-      damage: 12 + (stats.speed ~/ 8) + (stats.combat ~/ 14),
+      damage: 4 + (stats.speed ~/ 25) + (stats.combat ~/ 40),
       accuracy: 0.92 + (stats.speed / 2000),
+      cooldown: 1,
     );
 
     // ─ Skill 4: Defensive / Heal (durability-based) ────────────────────
@@ -316,18 +421,18 @@ class BattleEngine {
     if (stats.durability >= 80) {
       defName = isGood ? 'Iron Will' : 'Dark Regeneration';
       defDesc = 'Endure and recover significantly';
-      defDamage = 5;
-      defHeal = 35 + (stats.durability ~/ 5);
+      defDamage = 2;
+      defHeal = 12 + (stats.durability ~/ 15);
     } else if (stats.intelligence >= 70) {
       defName = isGood ? 'Tactical Retreat' : 'Drain Life';
       defDesc = isBad ? 'Steal vitality from the foe' : 'Regroup and recover';
-      defDamage = isBad ? 15 + (stats.intelligence ~/ 10) : 8;
-      defHeal = 25 + (stats.durability ~/ 6);
+      defDamage = isBad ? 5 + (stats.intelligence ~/ 30) : 3;
+      defHeal = 8 + (stats.durability ~/ 18);
     } else {
       defName = isGood ? 'Second Wind' : 'Desperate Recovery';
       defDesc = 'Catch your breath and heal';
-      defDamage = 8;
-      defHeal = 20 + (stats.durability ~/ 7);
+      defDamage = 3;
+      defHeal = 6 + (stats.durability ~/ 20);
     }
     final defensiveHeal = BattleAction(
       name: defName,

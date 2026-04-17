@@ -10,11 +10,10 @@ import 'package:hero_battle/engine/battle_engine.dart';
 import 'package:hero_battle/widgets/hp_bar.dart';
 import 'package:hero_battle/widgets/action_button.dart';
 import 'package:hero_battle/widgets/hero_image_widget.dart';
-import 'package:hero_battle/widgets/hero_card.dart';
 import 'package:hero_battle/models/hero_model.dart';
 import 'package:hero_battle/services/database_service.dart';
 
-enum _BattlePhase { pickDeck, pickHero, pickOpponent, fighting }
+enum _BattlePhase { pickDeck, matchmaking, fighting }
 
 class BattleScreen extends StatefulWidget {
   final HeroModel? playerHero;
@@ -35,12 +34,11 @@ class _BattleScreenState extends State<BattleScreen>
   _BattlePhase _phase = _BattlePhase.pickDeck;
   HeroModel? _selectedPlayerHero;
   Deck? _selectedDeck;
-  List<HeroModel> _availableOpponents = [];
   List<HeroModel> _availablePlayerHeroes = [];
+  List<HeroModel> _opponentDeck = [];
   bool _isLoading = false;
   bool _playerAttacking = false;
   bool _opponentAttacking = false;
-  int _lastSeenTurn = 0;
 
   @override
   void initState() {
@@ -64,8 +62,8 @@ class _BattleScreenState extends State<BattleScreen>
 
     if (widget.playerHero != null) {
       _selectedPlayerHero = widget.playerHero;
-      _phase = _BattlePhase.pickOpponent;
-      WidgetsBinding.instance.addPostFrameCallback((_) => _loadOpponents());
+      _phase = _BattlePhase.matchmaking;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _autoMatchmake());
     }
     // Otherwise stay on pickDeck phase — no loading needed yet
   }
@@ -73,15 +71,39 @@ class _BattleScreenState extends State<BattleScreen>
   void _selectDeck(Deck deck) {
     _selectedDeck = deck;
     _availablePlayerHeroes = List.of(deck.heroes);
-    setState(() => _phase = _BattlePhase.pickHero);
+    // Auto-pick strongest hero as lead
+    _availablePlayerHeroes.sort((a, b) => b.powerstats.totalPower.compareTo(a.powerstats.totalPower));
+    _selectedPlayerHero = _availablePlayerHeroes.first;
+    setState(() => _phase = _BattlePhase.matchmaking);
+    _autoMatchmake();
   }
 
-  Future<void> _loadOpponents() async {
+  Future<void> _autoMatchmake() async {
     setState(() => _isLoading = true);
     if (!mounted) return;
     final heroSearch = context.read<HeroSearchProvider>();
-    _availableOpponents = await heroSearch.getRandomHeroes(count: 3);
-    if (mounted) setState(() => _isLoading = false);
+    final deckSize = _availablePlayerHeroes.isNotEmpty ? _availablePlayerHeroes.length : 1;
+    final opponents = await heroSearch.getRandomHeroes(count: deckSize);
+    if (!mounted) return;
+    if (opponents.isNotEmpty) {
+      _isLoading = false;
+      _opponentDeck = opponents;
+      // Sort opponent deck by power (strongest lead)
+      _opponentDeck.sort((a, b) => b.powerstats.totalPower.compareTo(a.powerstats.totalPower));
+      _startBattle(_opponentDeck.first);
+    } else {
+      // Retry once if no opponent found
+      final retry = await heroSearch.getRandomHeroes(count: deckSize);
+      if (!mounted) return;
+      _isLoading = false;
+      if (retry.isNotEmpty) {
+        _opponentDeck = retry;
+        _opponentDeck.sort((a, b) => b.powerstats.totalPower.compareTo(a.powerstats.totalPower));
+        _startBattle(_opponentDeck.first);
+      } else {
+        setState(() => _phase = _BattlePhase.pickDeck);
+      }
+    }
   }
 
   @override
@@ -109,19 +131,16 @@ class _BattleScreenState extends State<BattleScreen>
     });
   }
 
-  void _selectPlayerHero(HeroModel hero) {
-    _selectedPlayerHero = hero;
-    _phase = _BattlePhase.pickOpponent;
-    setState(() {});
-    _loadOpponents();
-  }
-
   void _startBattle(HeroModel opponentHero) {
     context.read<BattleProvider>().startBattle(
           _selectedPlayerHero!,
           opponentHero,
+          playerDeck: _availablePlayerHeroes,
+          opponentDeck: _opponentDeck,
         );
-    setState(() => _phase = _BattlePhase.fighting);
+    setState(() {
+      _phase = _BattlePhase.fighting;
+    });
     _animationController.forward();
   }
 
@@ -131,34 +150,93 @@ class _BattleScreenState extends State<BattleScreen>
       _selectedPlayerHero = null;
       _selectedDeck = null;
       _availablePlayerHeroes = [];
-      _availableOpponents = [];
+      _opponentDeck = [];
       _rewardGiven = false;
-      _lastSeenTurn = 0;
     });
     context.read<BattleProvider>().resetBattle();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Battle Arena'),
-        ),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
     switch (_phase) {
       case _BattlePhase.pickDeck:
         return _buildDeckSelection();
-      case _BattlePhase.pickHero:
-        return _buildHeroSelection();
-      case _BattlePhase.pickOpponent:
-        return _buildOpponentSelection();
+      case _BattlePhase.matchmaking:
+        return _buildMatchmaking();
       case _BattlePhase.fighting:
+        if (_isLoading) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Battle Arena')),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
         return _buildBattleView();
     }
+  }
+
+  // ── Matchmaking screen ───────────────────────────────────────────────
+
+  Widget _buildMatchmaking() {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Battle Arena')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(
+              width: 60,
+              height: 60,
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: AlwaysStoppedAnimation(Colors.purple),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Finding Opponent...',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _selectedDeck != null
+                  ? 'Deck: ${_selectedDeck!.name} • ${_availablePlayerHeroes.length} heroes'
+                  : 'Preparing battle...',
+              style: TextStyle(color: Colors.grey[400], fontSize: 14),
+            ),
+            if (_selectedPlayerHero != null) ...[
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: HeroImageWidget(
+                      hero: _selectedPlayerHero!,
+                      width: 60,
+                      height: 70,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  const Text('VS', style: TextStyle(color: Colors.orange, fontSize: 22, fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 16),
+                  Container(
+                    width: 60,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.grey.withValues(alpha: 0.2),
+                      border: Border.all(color: Colors.grey.withValues(alpha: 0.4)),
+                    ),
+                    child: const Icon(Icons.help_outline, color: Colors.grey, size: 30),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 
   // ── Phase 0: Pick your deck ──────────────────────────────────────────
@@ -306,272 +384,7 @@ class _BattleScreenState extends State<BattleScreen>
     );
   }
 
-  // ── Phase 1: Pick your hero from selected deck ───────────────────────
-
-  Widget _buildHeroSelection() {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Choose Your Hero'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            setState(() => _phase = _BattlePhase.pickDeck);
-          },
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (_selectedDeck != null) ...[
-              Text(
-                'From Deck: ${_selectedDeck!.name}',
-                style: const TextStyle(
-                  color: Colors.purple,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 4),
-            ],
-            const Text(
-              'Select a hero to fight with',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            if (_availablePlayerHeroes.isEmpty)
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    children: [
-                      Icon(Icons.lock, color: Colors.grey[500], size: 48),
-                      const SizedBox(height: 12),
-                      Text(
-                        'All heroes in this deck are locked!',
-                        style: TextStyle(
-                            color: Colors.grey[400], fontSize: 14),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () =>
-                            setState(() => _phase = _BattlePhase.pickDeck),
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.purple),
-                        child: const Text('Pick Another Deck'),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.7,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                ),
-                itemCount: _availablePlayerHeroes.length,
-                itemBuilder: (context, index) {
-                  final hero = _availablePlayerHeroes[index];
-                  return HeroCard(
-                    hero: hero,
-                    onTap: () => _selectPlayerHero(hero),
-                  );
-                },
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ── Phase 2: Pick opponent ───────────────────────────────────────────
-
-  Widget _buildOpponentSelection() {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Choose Opponent'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            setState(() => _phase = _BattlePhase.pickHero);
-          },
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Selected hero summary
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: Theme.of(context).cardTheme.color,
-                border: Border.all(color: Colors.green.withValues(alpha: 0.5)),
-              ),
-              child: Row(
-                children: [
-                  HeroImageWidget(
-                    hero: _selectedPlayerHero!,
-                    width: 50,
-                    height: 50,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Your Hero',
-                            style:
-                                TextStyle(color: Colors.green, fontSize: 11)),
-                        Text(
-                          _selectedPlayerHero!.name,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Text(
-                    'HP: ${_selectedPlayerHero!.powerstats.health}',
-                    style: const TextStyle(color: Colors.green, fontSize: 13),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Select your opponent',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _availableOpponents.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final hero = _availableOpponents[index];
-                return _buildOpponentCard(hero);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOpponentCard(HeroModel hero) {
-    final rarity = hero.getRarity();
-    final rarityColor = Color(int.parse('0xFF${rarity.color}'));
-
-    return GestureDetector(
-      onTap: () => _startBattle(hero),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: rarityColor.withValues(alpha: 0.5), width: 2),
-          gradient: LinearGradient(colors: [
-            rarityColor.withValues(alpha: 0.12),
-            Theme.of(context).scaffoldBackgroundColor,
-          ]),
-        ),
-        child: Row(
-          children: [
-            HeroImageWidget(
-              hero: hero,
-              width: 80,
-              height: 90,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(hero.name,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 2),
-                  Text(hero.publisherName,
-                      style: TextStyle(color: Colors.grey[400], fontSize: 12)),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 4,
-                    children: [
-                      _chip(Icons.favorite, '${hero.powerstats.health}'),
-                      _chip(Icons.flash_on, '${hero.powerstats.power}'),
-                      _chip(Icons.shield, '${hero.powerstats.durability}'),
-                      _chip(Icons.speed, '${hero.powerstats.speed}'),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: rarityColor.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(rarity.displayName,
-                  style: TextStyle(
-                      color: rarityColor,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold)),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _chip(IconData icon, String value) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: Colors.purple.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: Colors.purple.withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Colors.orange, size: 12),
-          const SizedBox(width: 4),
-          Text(value,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold)),
-        ],
-      ),
-    );
-  }
-
-  // ── Phase 3: Battle ──────────────────────────────────────────────────
+  // ── Battle ────────────────────────────────────────────────────────────
 
   Widget _buildBattleView() {
     return Consumer<BattleProvider>(
@@ -583,21 +396,6 @@ class _BattleScreenState extends State<BattleScreen>
         }
 
         final bs = bp.battleState!;
-
-        // Detect opponent turn completion and play animation
-        if (bs.turnCount > _lastSeenTurn) {
-          final delta = bs.turnCount - _lastSeenTurn;
-          _lastSeenTurn = bs.turnCount;
-          // If it's now the player's turn and delta >= 2 (opponent just acted),
-          // or if battle is over from opponent action
-          if (delta >= 2 || (bs.isPlayerTurn && delta == 1 && !_playerAttackController.isAnimating)) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                _playOpponentAttackAnim();
-              }
-            });
-          }
-        }
 
         return Scaffold(
           appBar: AppBar(
@@ -634,12 +432,24 @@ class _BattleScreenState extends State<BattleScreen>
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
+                // Opponent deck bar at top
+                if (bs.opponentDeck.length > 1) ...[
+                  _buildOpponentBenchBar(bs),
+                  const SizedBox(height: 12),
+                ],
                 _buildBattleArena(bs),
-                const SizedBox(height: 24),
-                if (!bs.isBattleOver)
+                const SizedBox(height: 16),
+                if (bp.needsSwap)
+                  _buildForceSwapPanel(bs, bp)
+                else if (!bs.isBattleReallyOver)
                   _buildActionButtons(bp)
                 else
                   _buildBattleResult(bs),
+                // Bench heroes bar at bottom — tap to swap
+                if (bs.playerDeck.length > 1) ...[
+                  const SizedBox(height: 16),
+                  _buildBenchBar(bs, bp),
+                ],
               ],
             ),
           ),
@@ -770,81 +580,348 @@ class _BattleScreenState extends State<BattleScreen>
 
   Widget _buildActionButtons(BattleProvider bp) {
     final allActions = bp.getAllActions();
-    final isPlayerTurn = bp.battleState!.isPlayerTurn;
 
-    if (!isPlayerTurn) {
-      return Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          color: Colors.orange.withValues(alpha: 0.1),
-          border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.timer, color: Colors.orange, size: 20),
-            const SizedBox(width: 8),
-            Text('Opponent is thinking...',
-                style: TextStyle(
-                    color: Colors.orange[300], fontWeight: FontWeight.bold)),
-          ],
-        ),
-      );
-    }
-
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        childAspectRatio: 2.0,
-      ),
-      itemCount: allActions.length,
-      itemBuilder: (context, index) {
-        final action = allActions[index];
-        final cd = bp.getCooldown(action.name);
-        final isOnCooldown = cd > 0;
-        return Stack(
-          children: [
-            ActionButton(
-              label: action.name,
-              description: isOnCooldown
-                  ? 'Cooldown: $cd turn${cd > 1 ? 's' : ''}'
-                  : action.description,
-              icon: _iconFor(action.name),
-              isEnabled: !isOnCooldown,
-              onPressed: () {
-                _playPlayerAttackAnim();
-                bp.executePlayerAction(action);
-              },
-            ),
-            if (isOnCooldown)
-              Positioned(
-                top: 4,
-                right: 4,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.8),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    '$cd',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
+    return Column(
+      children: [
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 2.0,
+          ),
+          itemCount: allActions.length,
+          itemBuilder: (context, index) {
+            final action = allActions[index];
+            final cd = bp.getCooldown(action.name);
+            final isOnCooldown = cd > 0;
+            return Stack(
+              children: [
+                ActionButton(
+                  label: action.name,
+                  description: isOnCooldown
+                      ? 'Cooldown: $cd turn${cd > 1 ? 's' : ''}'
+                      : action.description,
+                  icon: _iconFor(action.name),
+                  isEnabled: !isOnCooldown,
+                  onPressed: () {
+                    _playPlayerAttackAnim();
+                    bp.executePlayerAction(action);
+                    // Opponent responded instantly — play their animation
+                    Future.delayed(const Duration(milliseconds: 300), () {
+                      if (mounted) _playOpponentAttackAnim();
+                    });
+                  },
+                ),
+                if (isOnCooldown)
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.8),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '$cd',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  // ── Bench heroes bar (shows all deck heroes with HP) ──────────────
+
+  Widget _buildBenchBar(BattleState bs, BattleProvider bp) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color: Colors.purple.withValues(alpha: 0.1),
+        border: Border.all(color: Colors.purple.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Your Deck', style: TextStyle(color: Colors.purple, fontSize: 11, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 6),
+          SizedBox(
+            height: 56,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: bs.playerDeck.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 6),
+              itemBuilder: (context, i) {
+                final hero = bs.playerDeck[i];
+                final hp = bs.deckHealthMap[hero.id] ?? 0;
+                final maxHp = hero.powerstats.health;
+                final isActive = hero.id == bs.playerHero.id;
+                final isDead = hp <= 0;
+                final canSwap = !isActive && !isDead && !bs.isBattleReallyOver && !bp.needsSwap;
+                return GestureDetector(
+                  onTap: canSwap
+                      ? () {
+                          bp.swapHero(hero);
+                        }
+                      : null,
+                  child: Container(
+                  width: 46,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isActive ? Colors.green : (isDead ? Colors.red.withValues(alpha: 0.5) : (canSwap ? Colors.cyan : Colors.grey.withValues(alpha: 0.3))),
+                      width: isActive ? 2 : (canSwap ? 1.5 : 1),
+                    ),
+                  ),
+                  child: Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(7),
+                        child: Opacity(
+                          opacity: isDead ? 0.3 : 1.0,
+                          child: HeroImageWidget(hero: hero, width: 46, height: 46, borderRadius: BorderRadius.circular(7)),
+                        ),
+                      ),
+                      // HP overlay
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 1),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.7),
+                            borderRadius: const BorderRadius.only(
+                              bottomLeft: Radius.circular(7),
+                              bottomRight: Radius.circular(7),
+                            ),
+                          ),
+                          child: Text(
+                            isDead ? 'KO' : '$hp/$maxHp',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: isDead ? Colors.red : Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (isActive)
+                        Positioned(
+                          top: 1,
+                          right: 1,
+                          child: Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: const BoxDecoration(
+                              color: Colors.green,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.star, color: Colors.white, size: 8),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-          ],
-        );
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Opponent deck bar (shows opponent's deck heroes with HP) ──────
+
+  Widget _buildOpponentBenchBar(BattleState bs) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color: Colors.red.withValues(alpha: 0.08),
+        border: Border.all(color: Colors.red.withValues(alpha: 0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Enemy Deck', style: TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 6),
+          SizedBox(
+            height: 56,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: bs.opponentDeck.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 6),
+              itemBuilder: (context, i) {
+                final hero = bs.opponentDeck[i];
+                final hp = bs.opponentDeckHealthMap[hero.id] ?? 0;
+                final maxHp = hero.powerstats.health;
+                final isActive = hero.id == bs.opponentHero.id;
+                final isDead = hp <= 0;
+                return Container(
+                  width: 46,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isActive ? Colors.red : (isDead ? Colors.grey.withValues(alpha: 0.3) : Colors.orange.withValues(alpha: 0.4)),
+                      width: isActive ? 2 : 1,
+                    ),
+                  ),
+                  child: Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(7),
+                        child: Opacity(
+                          opacity: isDead ? 0.3 : 1.0,
+                          child: HeroImageWidget(hero: hero, width: 46, height: 46, borderRadius: BorderRadius.circular(7)),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 1),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.7),
+                            borderRadius: const BorderRadius.only(
+                              bottomLeft: Radius.circular(7),
+                              bottomRight: Radius.circular(7),
+                            ),
+                          ),
+                          child: Text(
+                            isDead ? 'KO' : '$hp/$maxHp',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: isDead ? Colors.red : Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (isActive)
+                        Positioned(
+                          top: 1,
+                          right: 1,
+                          child: Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.whatshot, color: Colors.white, size: 8),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Forced swap panel (when active hero is KO'd) ────────────────────
+
+  Widget _buildForceSwapPanel(BattleState bs, BattleProvider bp) {
+    final bench = bs.benchHeroes;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.red, width: 2),
+        gradient: LinearGradient(colors: [
+          Colors.red.withValues(alpha: 0.15),
+          Colors.red.withValues(alpha: 0.05),
+        ]),
+      ),
+      child: Column(
+        children: [
+          const Icon(Icons.warning_amber, color: Colors.red, size: 36),
+          const SizedBox(height: 8),
+          Text('${bs.playerHero.name} was knocked out!',
+              style: const TextStyle(color: Colors.red, fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          const Text('Choose a hero to send in!',
+              style: TextStyle(color: Colors.white70, fontSize: 13)),
+          const SizedBox(height: 16),
+          ...bench.map((hero) => _buildSwapHeroTile(hero, bs, bp)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSwapHeroTile(HeroModel hero, BattleState bs, BattleProvider bp) {
+    final hp = bs.deckHealthMap[hero.id] ?? 0;
+    final maxHp = hero.powerstats.health;
+    final hpPct = hp / maxHp;
+    final hpColor = hpPct > 0.5 ? Colors.green : (hpPct > 0.25 ? Colors.orange : Colors.red);
+
+    return GestureDetector(
+      onTap: () {
+        bp.swapHero(hero);
       },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: Theme.of(context).cardTheme.color,
+          border: Border.all(color: Colors.cyan.withValues(alpha: 0.4)),
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: HeroImageWidget(hero: hero, width: 44, height: 44, borderRadius: BorderRadius.circular(8)),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(hero.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  const SizedBox(height: 4),
+                  // Mini HP bar
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(3),
+                    child: LinearProgressIndicator(
+                      value: hpPct,
+                      backgroundColor: Colors.grey.withValues(alpha: 0.3),
+                      valueColor: AlwaysStoppedAnimation(hpColor),
+                      minHeight: 6,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text('$hp/$maxHp', style: TextStyle(color: hpColor, fontSize: 12, fontWeight: FontWeight.bold)),
+            const SizedBox(width: 8),
+            const Icon(Icons.swap_horiz, color: Colors.cyan, size: 20),
+          ],
+        ),
+      ),
     );
   }
 

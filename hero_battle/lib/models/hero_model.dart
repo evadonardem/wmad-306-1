@@ -132,7 +132,13 @@ class Powerstats {
   int get totalPower =>
       intelligence + strength + speed + durability + power + combat;
 
-  int get health => durability * 10;
+  /// HP is 100 or less, scaled by how strong the hero is overall.
+  /// Weaker heroes get less HP; the strongest get 100.
+  int get health {
+    // Average stat 0-100 → scale to 40-100 HP range
+    final avg = totalPower / 6.0;
+    return (40 + (avg / 100.0) * 60).round().clamp(1, 100);
+  }
 
   factory Powerstats.fromJson(Map<String, dynamic> json) {
     int parseInt(dynamic value) {
