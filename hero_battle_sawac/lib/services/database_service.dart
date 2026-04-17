@@ -114,4 +114,6 @@ class DatabaseService {
 		final prefs = await SharedPreferences.getInstance();
 		await prefs.setString(_webHistoryKey, jsonEncode(items));
 	}
+
+
 }

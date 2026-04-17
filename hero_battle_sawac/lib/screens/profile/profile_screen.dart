@@ -15,6 +15,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _nameController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _nameController.text = context.read<PlayerProvider>().playerName;
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     super.dispose();
@@ -25,13 +31,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final player = context.watch<PlayerProvider>();
     final stats = context.watch<BattleProvider>().playerStats;
 
-    _nameController.text = player.playerName;
-
     return Scaffold(
       appBar: AppBar(title: const Text('Profile & Settings')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          Text(
+            'Current player: ${player.playerName}',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 10),
           TextField(
             controller: _nameController,
             decoration: const InputDecoration(
@@ -41,7 +50,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 10),
           FilledButton(
-            onPressed: () => context.read<PlayerProvider>().updatePlayerName(_nameController.text),
+            onPressed: () async {
+              final value = _nameController.text.trim();
+              final messenger = ScaffoldMessenger.of(context);
+              if (value.isEmpty) {
+                if (!mounted) return;
+                messenger.showSnackBar(
+                  const SnackBar(content: Text('Player name cannot be empty.')),
+                );
+                return;
+              }
+
+              await context.read<PlayerProvider>().updatePlayerName(value);
+              if (!mounted) return;
+              messenger.showSnackBar(
+                const SnackBar(content: Text('Player name saved.')),
+              );
+            },
             child: const Text('Save Name'),
           ),
           const SizedBox(height: 16),

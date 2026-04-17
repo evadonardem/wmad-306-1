@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'hp_bar.dart';
-
 class StatRow extends StatelessWidget {
 	const StatRow({
 		super.key,
@@ -14,31 +12,58 @@ class StatRow extends StatelessWidget {
 
 	@override
 	Widget build(BuildContext context) {
+		final isDark = Theme.of(context).brightness == Brightness.dark;
+		final trackColor = isDark ? const Color(0xFF253244) : const Color(0xFFE4D9C8);
+		final fillColors = isDark
+			? const [Color(0xFF60A5FA), Color(0xFF34D399)]
+			: const [Color(0xFF7C3AED), Color(0xFFF59E0B)];
+
 		return Padding(
 			padding: const EdgeInsets.symmetric(vertical: 5),
-			child: Row(
+			child: Column(
+				crossAxisAlignment: CrossAxisAlignment.start,
 				children: [
-					SizedBox(
-						width: 96,
-						child: Text(
-							label,
-							style: Theme.of(context).textTheme.bodySmall?.copyWith(
-										fontWeight: FontWeight.w700,
-										letterSpacing: 0.2,
-									),
+					Text(
+						label,
+						style: Theme.of(context).textTheme.bodySmall?.copyWith(
+							fontWeight: FontWeight.w700,
+							letterSpacing: 0.2,
 						),
 					),
-					Expanded(child: HpBar(value: value, showLabel: false)),
-					const SizedBox(width: 10),
-					SizedBox(
-						width: 28,
-						child: Text(
-							'$value',
-							textAlign: TextAlign.right,
-							style: Theme.of(context)
-									.textTheme
-									.bodyMedium
-									?.copyWith(fontWeight: FontWeight.w700),
+					const SizedBox(height: 6),
+					ClipRRect(
+						borderRadius: BorderRadius.circular(999),
+						child: Stack(
+							children: [
+								Container(height: 10, color: trackColor),
+								FractionallySizedBox(
+									widthFactor: value.clamp(0, 100) / 100.0,
+									child: Container(
+										height: 10,
+										decoration: BoxDecoration(
+											gradient: LinearGradient(
+												begin: Alignment.centerLeft,
+												end: Alignment.centerRight,
+												colors: fillColors,
+											),
+											boxShadow: [
+												BoxShadow(color: fillColors.last.withValues(alpha: 0.24), blurRadius: 6, spreadRadius: -1),
+											],
+										),
+									),
+								),
+								Positioned.fill(
+									child: DecoratedBox(
+										decoration: BoxDecoration(
+											gradient: LinearGradient(
+												begin: Alignment.topCenter,
+												end: Alignment.bottomCenter,
+												colors: [Colors.white.withValues(alpha: 0.16), Colors.transparent],
+											),
+										),
+									),
+								),
+							],
 						),
 					),
 				],

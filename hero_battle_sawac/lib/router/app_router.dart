@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/hero_model.dart';
+import '../providers/deck_provider.dart';
 import '../screens/battle/battle_screen.dart';
 import '../screens/deck/deck_builder_screen.dart';
+import '../screens/deck_battle/deck_battle_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/history/history_screen.dart';
 import '../screens/hero_detail/hero_detail_screen.dart';
@@ -14,6 +16,7 @@ class RouteNames {
   static const String heroDetail = '/hero';
   static const String deckBuilder = '/deck';
   static const String battle = '/battle';
+  static const String deckBattle = '/deck-battle';
   static const String history = '/history';
   static const String profile = '/profile';
 }
@@ -35,6 +38,14 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const DeckBuilderScreen());
       case RouteNames.battle:
         return MaterialPageRoute(builder: (_) => const BattleScreen());
+      case RouteNames.deckBattle:
+        final deck = settings.arguments;
+        if (deck is SavedDeck) {
+          return MaterialPageRoute(
+            builder: (_) => DeckBattleScreen(playerDeck: deck),
+          );
+        }
+        return MaterialPageRoute(builder: (_) => const Placeholder());
       case RouteNames.history:
         return MaterialPageRoute(builder: (_) => const HistoryScreen());
       case RouteNames.profile:
