@@ -66,6 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
       value: _searchProvider,
       child: Scaffold(
         drawer: _buildDrawer(context),
+        floatingActionButton: _buildFightFab(context),
         body: SafeArea(
           top: false,
           child: CustomScrollView(
@@ -612,6 +613,35 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  // ── Fight FAB ──
+
+  Widget _buildFightFab(BuildContext context) {
+    final deck = context.watch<DeckProvider>().deck;
+    if (deck.isEmpty) return const SizedBox.shrink();
+
+    return FloatingActionButton.extended(
+      onPressed: () {
+        if (deck.length < 3) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Need at least 3 heroes in your deck! (${deck.length}/5)'),
+              backgroundColor: CyberColors.error,
+            ),
+          );
+          return;
+        }
+        Navigator.pushNamed(context, RouteNames.deckBattle, arguments: deck);
+      },
+      backgroundColor: CyberColors.magenta,
+      foregroundColor: Colors.white,
+      icon: const Icon(Icons.local_fire_department_rounded),
+      label: Text(
+        'FIGHT (${deck.length})',
+        style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1),
       ),
     );
   }
