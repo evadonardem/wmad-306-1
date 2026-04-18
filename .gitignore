@@ -1,0 +1,4 @@
+# Root workspace environment files
+.env
+.env.*
+!.env.example
