@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">superheroapi.com</domain>
+        <domain includeSubdomains="true">cdn.jsdelivr.net</domain>
+    </domain-config>
+</network-security-config>
