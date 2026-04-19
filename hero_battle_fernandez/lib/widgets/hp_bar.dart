@@ -34,12 +34,19 @@ class HpBar extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        LinearProgressIndicator(
-          value: value,
-          minHeight: 12,
-          borderRadius: BorderRadius.circular(8),
-          color: value > 0.35 ? scheme.primary : scheme.error,
-          backgroundColor: scheme.surfaceContainerHighest,
+        TweenAnimationBuilder<double>(
+          tween: Tween<double>(end: value),
+          duration: const Duration(milliseconds: 450),
+          curve: Curves.easeOutCubic,
+          builder: (context, animatedValue, _) {
+            return LinearProgressIndicator(
+              value: animatedValue,
+              minHeight: 12,
+              borderRadius: BorderRadius.circular(8),
+              color: animatedValue > 0.35 ? scheme.primary : scheme.error,
+              backgroundColor: scheme.surfaceContainerHighest,
+            );
+          },
         ),
       ],
     );

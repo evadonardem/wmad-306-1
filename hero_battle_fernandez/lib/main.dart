@@ -20,12 +20,13 @@ class HeroBattleApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => BattleProvider()),
         ChangeNotifierProvider(create: (_) => HeroSearchProvider()),
       ],
-      child: Consumer<PlayerProvider>(
-        builder: (context, player, _) {
+      child: Selector<PlayerProvider, bool>(
+        selector: (_, player) => player.isDarkTheme,
+        builder: (context, isDarkTheme, _) {
           return MaterialApp(
             title: 'Hero Battle',
             debugShowCheckedModeBanner: false,
-            theme: player.isDarkTheme ? _darkTheme() : _lightTheme(),
+            theme: isDarkTheme ? _darkTheme() : _lightTheme(),
             initialRoute: RouteNames.splash,
             onGenerateRoute: AppRouter.onGenerateRoute,
           );
