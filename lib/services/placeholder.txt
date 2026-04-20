@@ -1,0 +1,2 @@
+// This file was created to ensure all required files exist as per the project structure.
+// Remove this file if not needed.
