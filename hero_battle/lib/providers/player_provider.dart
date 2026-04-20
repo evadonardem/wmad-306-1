@@ -1,29 +1,22 @@
-import 'package:flutter/foundation.dart';
-import '../services/prefs_service.dart';
+import 'package:flutter/material.dart';
+import '../services/preferences_service.dart';
 
 class PlayerProvider extends ChangeNotifier {
-  final PrefsService _prefs = PrefsService();
-  String _playerName = 'Hero';
-  bool _isDarkTheme = true;
-  int _totalWins = 0;
-  String get playerName => _playerName;
-  bool get isDarkTheme => _isDarkTheme;
-  int get totalWins => _totalWins;
+  String _name = PreferencesService.playerName;
+  bool _isDarkTheme = PreferencesService.isDarkTheme;
 
-  // Call once from SplashScreen after app starts.
-  Future<void> loadFromPrefs() async {
-    _playerName = await _prefs.loadPlayerName() ?? 'Hero';
-    _isDarkTheme = await _prefs.loadThemeDark();
-    
-    // fake delay to show splash screen
-    await Future.delayed(const Duration(seconds: 5));
-    
+  String get name => _name;
+  bool get isDarkTheme => _isDarkTheme;
+
+  void setName(String name) {
+    _name = name;
+    PreferencesService.playerName = name;
     notifyListeners();
   }
 
-  void incrementWins() {
-    _totalWins++;
-
+  void toggleTheme(bool value) {
+    _isDarkTheme = value;
+    PreferencesService.isDarkTheme = _isDarkTheme;
     notifyListeners();
   }
 }

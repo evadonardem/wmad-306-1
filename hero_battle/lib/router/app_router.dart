@@ -1,9 +1,15 @@
+// ignore_for_file: unreachable_switch_case
 import 'package:flutter/material.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/splash/splash_screen.dart';
+import '../screens/hero_detail/hero_detail_screen.dart';
+import '../screens/deck_builder/deck_builder_screen.dart';
+import '../screens/battle/battle_screen.dart';
+import '../screens/history/history_screen.dart';
+import '../screens/profile/profile_screen.dart';
 
 class RouteNames {
-  static const String splash = '';
+  static const String splash = '/';
   static const String home = '/home';
   static const String heroDetail = '/hero';
   static const String deckBuilder = '/deck';
@@ -20,17 +26,34 @@ class AppRouter {
       case RouteNames.home:
         return MaterialPageRoute(builder: (_) => const HomeScreen());
       case RouteNames.heroDetail:
-        return MaterialPageRoute(builder: (_) => const Placeholder());
+      case '/hero':
+        final args = settings.arguments;
+        if (args is Map && args['hero'] != null) {
+          return MaterialPageRoute(
+            builder: (_) => HeroDetailScreen(hero: args['hero']),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) =>
+              const Scaffold(body: Center(child: Text('Hero not found'))),
+        );
       case RouteNames.deckBuilder:
-        return MaterialPageRoute(builder: (_) => const Placeholder());
+      case '/deck':
+        return MaterialPageRoute(builder: (_) => const DeckBuilderScreen());
       case RouteNames.battle:
-        return MaterialPageRoute(builder: (_) => const Placeholder());
+      case '/battle':
+        return MaterialPageRoute(builder: (_) => const BattleScreen());
       case RouteNames.history:
-        return MaterialPageRoute(builder: (_) => const Placeholder());
+      case '/history':
+        return MaterialPageRoute(builder: (_) => const HistoryScreen());
       case RouteNames.profile:
-        return MaterialPageRoute(builder: (_) => const Placeholder());
+      case '/profile':
+        return MaterialPageRoute(builder: (_) => const ProfileScreen());
       default:
-        return MaterialPageRoute(builder: (_) => const Placeholder());
+        return MaterialPageRoute(
+          builder: (_) =>
+              const Scaffold(body: Center(child: Text('Page not found'))),
+        );
     }
   }
 }

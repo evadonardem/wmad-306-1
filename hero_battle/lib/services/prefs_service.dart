@@ -1,22 +1,22 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PrefsService {
-  static const String _keyPlayerName = 'player_name';
-  static const String _keyThemeDark = 'theme_dark';
-  static const String _keyOnboarded = 'onboarded';
+  static const String keyPlayerName = 'player_name';
+  static const String keyThemeDark = 'theme_dark';
+  static const String keyOnboarded = 'onboarded';
 
   Future<String?> loadPlayerName() async {
     final p = await SharedPreferences.getInstance();
-    return p.getString(_keyPlayerName);
+    return p.getString(keyPlayerName);
   }
 
   Future<bool> loadThemeDark() async {
     final p = await SharedPreferences.getInstance();
-    return p.getBool(_keyThemeDark) ?? true;
+    return p.getBool(keyThemeDark) ?? true;
   }
 
   Future<bool> isOnboarded() async {
     final p = await SharedPreferences.getInstance();
-    return p.getBool(_keyOnboarded) ?? false;
+    return p.getBool(keyOnboarded) ?? false;
   }
 }
