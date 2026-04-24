@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import '../models/hero_model.dart';
+import '../screens/battle/battle_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/splash/splash_screen.dart';
 
@@ -24,7 +27,12 @@ class AppRouter {
       case RouteNames.deckBuilder:
         return MaterialPageRoute(builder: (_) => const Placeholder());
       case RouteNames.battle:
-        return MaterialPageRoute(builder: (_) => const Placeholder());
+        final initialHero = settings.arguments is HeroDetail
+            ? settings.arguments as HeroDetail
+            : null;
+        return MaterialPageRoute(
+          builder: (_) => BattleScreen(initialHero: initialHero),
+        );
       case RouteNames.history:
         return MaterialPageRoute(builder: (_) => const Placeholder());
       case RouteNames.profile:
