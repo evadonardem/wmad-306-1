@@ -14,21 +14,23 @@ class AdoptADogApp extends StatelessWidget {
       title: 'Adopt-a-Dog',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorSchemeSeed: Colors.green,
+        colorSchemeSeed: Colors.teal,
         useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xFFF2F7F5),
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.green,
+          backgroundColor: Color(0xFF0D634B),
           foregroundColor: Colors.white,
+          elevation: 0,
         ),
-        listTileTheme: const ListTileThemeData(
-          iconColor: Colors.greenAccent,
-          textColor: Colors.green,
-          shape: Border(
-            bottom: BorderSide(width: 1)
+        cardTheme: CardThemeData(
+          color: Colors.white,
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
-        )
+        ),
       ),
-      home: BreedListScreen(),
+      home: const BreedListScreen(),
     );
   }
 }
