@@ -1,0 +1,15 @@
+# Local editor state
+.vscode/
+
+# Laravel local runtime files
+app/.env
+app/vendor/
+app/node_modules/
+app/database/*.sqlite*
+app/storage/logs/*.log
+app/bootstrap/cache/*.php
+docker/app.env
+
+# Frontend build output
+app/public/build/
+app/public/hot
