@@ -1,0 +1,67 @@
+# IDE & Editor specific
+.idea/
+.vscode/
+.cursor/
+.zed/
+*.sublime-workspace
+*.sublime-project
+.project
+.settings/
+.phpactor.json
+_ide_helper.php
+
+# OS specific
+.DS_Store
+Thumbs.db
+desktop.ini
+.Trashes
+.AppleDouble
+.LSOverride
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Build & Compilation
+/build/
+/dist/
+*.o
+*.so
+*.dylib
+*.dll
+*.exe
+*.class
+*.jar
+
+# Node/NPM
+node_modules/
+npm-debug.log
+yarn-error.log
+.npm
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+env/
+
+# Temporary files
+.tmp/
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+
+# IDE helper files
+.editorconfig.swp
+
+# Environment
+.env
+.env.local
+.env.*.local
+**/docker/app.env

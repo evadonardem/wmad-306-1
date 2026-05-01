@@ -1,0 +1,75 @@
+# Laravel specific
+/vendor
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/storage/logs/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/bootstrap/cache/*
+
+# Environment files
+.env
+.env.backup
+.env.production
+.env.*.backup
+.env.*.local
+
+# IDE & Editor specific
+/.codex
+/.cursor/
+/.idea/
+/.nova/
+/.phpunit.cache/
+/.vscode/
+/.zed/
+.phpactor.json
+_ide_helper.php
+.project
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# Testing & Build
+.phpunit.result.cache
+/coverage/
+/.phpunit.result.cache
+
+# Dependencies
+/auth.json
+
+# OS specific
+.DS_Store
+Thumbs.db
+desktop.ini
+.Trashes
+.AppleDouble
+.LSOverride
+
+# Configuration
+Homestead.json
+Homestead.yaml
+
+# Logs
+*.log
+logs/
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# Compiled files
+*.pyc
+*.pyo
+
+# Temporary files
+*.swp
+*.swo
+*~
+.tmp/
+tmp/
