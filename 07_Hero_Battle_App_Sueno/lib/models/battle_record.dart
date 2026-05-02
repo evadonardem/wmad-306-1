@@ -20,4 +20,13 @@ class BattleRecord {
       log: map['log'] != null ? (map['log'] as String).split('|') : [],
     );
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'playerId': playerId,
+      'result': result,
+      'log': log?.join('|') ?? '',
+    };
+  }
 }

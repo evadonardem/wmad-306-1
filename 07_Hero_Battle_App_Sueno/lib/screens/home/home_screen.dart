@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../router/app_router.dart';
-import '../../models/hero_model.dart';
 import '../../providers/deck_provider.dart';
 import '../../providers/player_manager_provider.dart';
 import '../../providers/hero_search_provider.dart';
-import '../../providers/enemy_deck_provider.dart';
 import '../hero_detail_screen.dart'; // ✅ ADD THIS
 import '../../widgets/hero_card.dart';
 

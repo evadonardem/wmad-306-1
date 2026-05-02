@@ -15,13 +15,14 @@ class _SplashScreenState extends State<SplashScreen> {
     _debugBypassLoading();
   }
 
-  Future<void> _debugBypassLoading() async {
+  void _debugBypassLoading() {
     print('SplashScreen: Simulating loading...');
-    await Future.delayed(const Duration(seconds: 2));
-    if (mounted) {
-      print('SplashScreen: Forcing navigation to home for debug.');
-      Navigator.pushReplacementNamed(context, RouteNames.home);
-    }
+    Future.delayed(const Duration(seconds: 1), () {
+      if (mounted) {
+        print('SplashScreen: Forcing navigation to home for debug.');
+        Navigator.pushReplacementNamed(context, RouteNames.home);
+      }
+    });
   }
 
   @override
