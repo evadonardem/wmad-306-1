@@ -11,7 +11,6 @@ class HeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return Card(
       clipBehavior: Clip.hardEdge, // ✅ prevents overflow warnings
@@ -21,17 +20,18 @@ class HeroCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Hero image with fallback to a generic placeholder
-          Image.network(
-            hero.imageUrl,
-            height: 150,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return Image.asset(
-                'assets/images/placeholder.png',
-                height: 150,
-                fit: BoxFit.cover,
-              );
-            },
+          Expanded(
+            flex: 3, // Take more space for image
+            child: Image.network(
+              hero.imageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Image.asset(
+                  'assets/images/placeholder.png',
+                  fit: BoxFit.cover,
+                );
+              },
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

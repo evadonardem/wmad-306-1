@@ -291,8 +291,8 @@ class _HeroGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return GridView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 250,
         childAspectRatio: 0.62,
         crossAxisSpacing: 18,
         mainAxisSpacing: 0,
