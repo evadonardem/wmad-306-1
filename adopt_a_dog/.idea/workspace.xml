@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="a2a96a29-be17-4e15-a214-aa887b802993" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.metadata" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/analysis_options.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/devtools_options.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Flutter/Flutter-Debug.xcconfig" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Flutter/Flutter-Release.xcconfig" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Flutter/GeneratedPluginRegistrant.swift" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner.xcodeproj/project.pbxproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner.xcworkspace/contents.xcworkspacedata" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner/AppDelegate.swift" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner/Assets.xcassets/AppIcon.appiconset/Contents.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_1024.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_128.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_16.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_256.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_32.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_512.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_64.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner/Base.lproj/MainMenu.xib" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner/Configs/AppInfo.xcconfig" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner/Configs/Debug.xcconfig" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner/Configs/Release.xcconfig" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner/Configs/Warnings.xcconfig" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner/DebugProfile.entitlements" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner/Info.plist" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner/MainFlutterWindow.swift" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Runner/Release.entitlements" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/RunnerTests/RunnerTests.swift" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pubspec.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/favicon.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/icons/Icon-192.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/icons/Icon-512.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/icons/Icon-maskable-192.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/icons/Icon-maskable-512.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/manifest.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/windows/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/windows/CMakeLists.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/windows/flutter/CMakeLists.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/windows/flutter/generated_plugin_registrant.cc" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/windows/flutter/generated_plugin_registrant.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/windows/flutter/generated_plugins.cmake" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "customColor": "",
+  "associatedIndex": 5
+}]]></component>
+  <component name="ProjectId" id="3CL8iRgmnxyyYrL0G8KnQmhlbHL" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "06__Adopt__A__Dog__App__Ancheta",
+    "kotlin-language-version-configured": "true",
+    "settings.editor.selected.configurable": "AndroidSdkUpdater"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="a2a96a29-be17-4e15-a214-aa887b802993" name="Changes" comment="" />
+      <created>1776153618792</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1776153618792</updated>
+    </task>
+    <servers />
+  </component>
+</project>
