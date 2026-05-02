@@ -1,0 +1,77 @@
+# Build and dependency directories - NEVER commit these
+node_modules/
+vendor/
+.dart_tool/
+build/
+dist/
+.gradle/
+.next/
+__pycache__/
+*.egg-info/
+.venv/
+venv/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-workspace
+*.sublime-project
+
+# Generated files and cache
+.cache/
+.cache
+*.pyc
+*.pyo
+*.log
+.history/
+.env.local
+.env.*.local
+
+# System files
+thumbs.db
+.DS_Store
+Thumbs.db
+
+# Flutter specific
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+pubspec.lock
+coverage/
+
+# Laravel specific
+storage/logs/*
+!storage/logs/.gitkeep
+storage/framework/cache/*
+!storage/framework/cache/.gitkeep
+storage/framework/sessions/*
+!storage/framework/sessions/.gitkeep
+
+# Android
+.gradle/
+android/.gradle/
+android/local.properties
+*.jks
+*.keystore
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+
+# Environment files
+.env
+.env.*.local
+app.zip
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~

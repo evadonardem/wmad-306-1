@@ -1,0 +1,37 @@
+services:
+  app:
+    build: .
+    image: ${IMAGE_APP_NAME}
+    container_name: ${CONTAINER_APP_NAME}
+    volumes:
+      - ./:/var/www/html
+    expose:
+      - "9000"
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_DATABASE=laravel
+      - DB_USERNAME=laravel
+      - DB_PASSWORD=secret
+  db:
+    image: mysql:8.0
+    container_name: ${CONTAINER_DB_NAME}
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: laravel
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: secret
+    ports:
+      - "3306:3306"
+
+  nginx:
+    image: nginx:alpine
+    container_name: ${CONTAINER_NGINX_NAME}
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./:/var/www/html:ro

@@ -1,0 +1,6 @@
+error: collection could not be loaded
+  the file at "backend/postman/barangay_sport_league_api_bugtong.postman_collection.json" does not contain valid JSON data
+  Unexpected token '{' at 112:1
+{
+^
+
