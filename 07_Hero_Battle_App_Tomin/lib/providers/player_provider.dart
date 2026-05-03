@@ -12,8 +12,8 @@ class PlayerProvider extends ChangeNotifier {
 
   // Call once from SplashScreen after app starts.
   Future<void> loadFromPrefs() async {
-    _playerName = await _prefs.loadPlayerName() ?? 'Hero';
-    _isDarkTheme = await _prefs.loadThemeDark();
+    _playerName = await _prefs.loadAlias() ?? 'Hero';
+    _isDarkTheme = await _prefs.loadDarkMode();
     
     // fake delay to show splash screen
     await Future.delayed(const Duration(seconds: 5));
