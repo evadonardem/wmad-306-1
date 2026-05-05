@@ -1,38 +1,20 @@
 FROM php:8.3-apache
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
-    curl \
-    dos2unix \
-    git \ 
-    libfreetype6-dev \
-    libjpeg62-turbo-dev \
-    libonig-dev \
-    libpng-dev \
-    libwebp-dev \
-    libxml2-dev \
-    mariadb-client \
-    npm \
-    unzip \
-    zip \
-    && apt-get autoclean \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y zip && \
+    apt-get install -y mariadb-client && \
+    apt-get install -y npm && \
+    apt-get install -y curl && \
+    apt-get install -y dos2unix && \
+    apt-get autoclean
 
-# Configure and install PHP extensions required by Laravel
-RUN docker-php-ext-configure gd \
-    --with-freetype \
-    --with-jpeg \
-    --with-webp
-
+# Install PHP extensions
 RUN docker-php-ext-install \
     bcmath \
     ctype \
-    exif \
-    gd \
-    mbstring \
     pdo \
     pdo_mysql \
-    pcntl \
     sockets
 
 # Install Composer
@@ -40,7 +22,6 @@ COPY --from=composer/composer:latest-bin /composer /usr/bin/composer
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
-COPY ./_setup/web_scripts/apache.conf /etc/apache2/sites-available/000-default.conf
 
 # Install NVM and Node.js LTS
 ENV NVM_VERSION=master

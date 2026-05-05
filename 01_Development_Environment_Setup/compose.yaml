@@ -1,7 +1,6 @@
 services:
   web:
-    image: "evadonardem/wmad-306:latest"
-    user: "${UID}:${GID}"
+    build: .
     ports:
       - "8000:80"
       - "5173:5173"
@@ -10,14 +9,14 @@ services:
       - mailtrap_network
     volumes:
       - ./_setup/web_scripts:/scripts
-      - ./src:/var/www/html
+      - ./:/var/www/html
     depends_on:
       db:
         condition: service_healthy
       mailtrap:
         condition: service_healthy
     command: >
-      bash -c "dos2unix /scripts/* && chmod +x /scripts/* && /scripts/init.sh && apache2-foreground"
+        bash -c "dos2unix /scripts/* && /scripts/init.sh && apache2-foreground"
   db:
     image: "mysql:9.6.0"
     environment:
