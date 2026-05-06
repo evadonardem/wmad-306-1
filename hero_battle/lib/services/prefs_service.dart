@@ -10,13 +10,28 @@ class PrefsService {
     return p.getString(_keyPlayerName);
   }
 
+  Future<void> savePlayerName(String name) async {
+    final p = await SharedPreferences.getInstance();
+    await p.setString(_keyPlayerName, name);
+  }
+
   Future<bool> loadThemeDark() async {
     final p = await SharedPreferences.getInstance();
     return p.getBool(_keyThemeDark) ?? true;
   }
 
+  Future<void> saveThemeDark(bool isDark) async {
+    final p = await SharedPreferences.getInstance();
+    await p.setBool(_keyThemeDark, isDark);
+  }
+
   Future<bool> isOnboarded() async {
     final p = await SharedPreferences.getInstance();
     return p.getBool(_keyOnboarded) ?? false;
+  }
+
+  Future<void> setOnboarded(bool value) async {
+    final p = await SharedPreferences.getInstance();
+    await p.setBool(_keyOnboarded, value);
   }
 }

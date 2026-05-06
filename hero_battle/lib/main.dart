@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'router/app_router.dart';
 import 'providers/player_provider.dart';
+import 'providers/battle_provider.dart';
+import 'providers/deck_provider.dart';
+import 'providers/hero_search_provider.dart';
 
 void main() => runApp(const HeroBattleApp());
 
@@ -11,8 +14,11 @@ class HeroBattleApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers:[
+      providers: [
         ChangeNotifierProvider(create: (_) => PlayerProvider()),
+        ChangeNotifierProvider(create: (_) => BattleProvider()),
+        ChangeNotifierProvider(create: (_) => DeckProvider()),
+        ChangeNotifierProvider(create: (_) => HeroSearchProvider()),
       ],
       child: Consumer<PlayerProvider>(
         builder: (context, player, _) {
