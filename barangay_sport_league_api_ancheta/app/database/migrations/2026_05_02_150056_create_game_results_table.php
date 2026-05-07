@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('game_results', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('game_id')->constrained()->onDelete('cascade');
+            $table->foreignId('game_id');
             $table->integer('home_score');
             $table->integer('away_score');
             $table->timestamps();

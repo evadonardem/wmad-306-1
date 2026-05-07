@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('player_stats', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('game_result_id')->constrained()->onDelete('cascade');
-            $table->foreignId('player_id')->constrained()->onDelete('cascade');
+            $table->foreignId('game_result_id');
+            $table->foreignId('player_id');
             $table->integer('points')->default(0);
             $table->integer('assists')->default(0);
             $table->integer('rebounds')->default(0);

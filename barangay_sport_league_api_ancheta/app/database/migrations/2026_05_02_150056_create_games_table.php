@@ -10,9 +10,9 @@ return new class extends Migration
     {
         Schema::create('games', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('season_id')->constrained()->onDelete('cascade');
-            $table->foreignId('home_team_id')->constrained('teams')->onDelete('cascade');
-            $table->foreignId('away_team_id')->constrained('teams')->onDelete('cascade');
+            $table->foreignId('season_id');
+            $table->foreignId('home_team_id');
+            $table->foreignId('away_team_id');
             $table->dateTime('scheduled_at');
             $table->string('venue');
             $table->enum('status', ['scheduled', 'done'])->default('scheduled');
