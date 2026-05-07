@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -95,5 +95,10 @@ class StandingsController extends Controller
         ->get();
 
         return response()->json($playerStats);
+    }
+
+    public function topScorers(Request $request, Season $season)
+    {
+        return $this->playerLeaderboard($request, $season);
     }
 }

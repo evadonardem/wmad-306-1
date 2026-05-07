@@ -108,6 +108,21 @@ class GameController extends Controller
         return response()->json($game);
     }
 
+    public function getResult(Request $request, Game $game)
+    {
+        if ($game->season->league->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $game->load(['gameResult.playerStats.player']);
+
+        if (! $game->gameResult) {
+            return response()->json(['message' => 'No result found for this game'], 404);
+        }
+
+        return response()->json($game->gameResult);
+    }
+
     public function submitResult(Request $request, Game $game)
     {
         if ($game->season->league->user_id !== $request->user()->id) {
