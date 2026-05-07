@@ -42,6 +42,7 @@ php artisan test
 - Added clean `home` and `about` views with responsive layout and navigation.
 - Added automated tests for both the Home and About pages.
 - Restored the standard Laravel base `Controller` class.
+- Set app name to `first_app` for expected output.
 
 ## Notes
 

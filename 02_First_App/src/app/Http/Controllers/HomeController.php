@@ -9,7 +9,7 @@ class HomeController extends Controller
     public function index(): View
     {
         return view('home', [
-            'appName' => config('app.name', 'Laravel Student Project'),
+            'appName' => config('app.name', 'first_app'),
             'features' => [
                 'Clean MVC architecture using a dedicated controller and view',
                 'Responsive layout built with Tailwind CSS and Vite',
@@ -22,7 +22,7 @@ class HomeController extends Controller
     public function about(): View
     {
         return view('about', [
-            'appName' => config('app.name', 'Laravel Student Project'),
+            'appName' => config('app.name', 'first_app'),
         ]);
     }
 }

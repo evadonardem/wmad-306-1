@@ -12,6 +12,6 @@ class HomePageTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertViewIs('home');
-        $response->assertSee('Laravel Student Project');
+        $response->assertSee('first_app');
     }
 }
