@@ -2,11 +2,15 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-
-class HomePageTest extends TestCase
+/**
+ * Test case for the homepage functionality.
+ */
+class HomePageTest extends \Tests\TestCase
 {
-    public function test_home_page_loads_successfully(): void
+    /**
+     * Test that the home page loads successfully.
+     */
+    public function test_home_page_loads_successfully()
     {
         $response = $this->get('/');
 

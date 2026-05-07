@@ -2,11 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\View\View;
-
+/**
+ * Controller for handling homepage and about page routes.
+ */
 class HomeController extends Controller
 {
-    public function index(): View
+    /**
+     * Display the homepage.
+     *
+     * @return mixed
+     */
+    public function index()
     {
         return view('home', [
             'appName' => config('app.name', 'first_app'),
@@ -19,7 +25,12 @@ class HomeController extends Controller
         ]);
     }
 
-    public function about(): View
+    /**
+     * Display the about page.
+     *
+     * @return mixed
+     */
+    public function about()
     {
         return view('about', [
             'appName' => config('app.name', 'first_app'),

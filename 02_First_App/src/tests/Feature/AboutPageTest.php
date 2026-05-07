@@ -2,11 +2,15 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-
-class AboutPageTest extends TestCase
+/**
+ * Test case for the about page functionality.
+ */
+class AboutPageTest extends \Tests\TestCase
 {
-    public function test_about_page_loads_successfully(): void
+    /**
+     * Test that the about page loads successfully.
+     */
+    public function test_about_page_loads_successfully()
     {
         $response = $this->get('/about');
 
