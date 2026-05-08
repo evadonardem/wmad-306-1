@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barangay Sports League API Preview</title>
+  <style>
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      min-height: 100vh;
+      background: #fff;
+      color: #3d5f4e;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .manual-shell {
+      width: min(860px, calc(100% - 32px));
+      margin: 26px auto 36px;
+    }
+    .manual-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 12px;
+      padding: 0 16px;
+      background: #2f7a53;
+      color: #eff6f1;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .01em;
+    }
+    .manual-hero {
+      text-align: center;
+      padding: 58px 0 26px;
+    }
+    .manual-hero h1 {
+      margin: 0;
+      color: #2f7a53;
+      font-size: clamp(2.25rem, 5vw, 3.3rem);
+      font-weight: 800;
+      line-height: 1.05;
+    }
+    .manual-hero h2 {
+      margin: 8px 0 2px;
+      color: #5c615c;
+      font-size: clamp(1.45rem, 2.8vw, 2rem);
+      font-weight: 500;
+      line-height: 1.15;
+    }
+    .manual-hero p {
+      margin: 0;
+      color: #7d817c;
+      font-size: clamp(.95rem, 2vw, 1.15rem);
+      line-height: 1.2;
+    }
+    .manual-table-wrap {
+      margin-top: 22px;
+      border: 1px solid #d5e3d9;
+      box-shadow: 0 0 0 1px rgba(47, 122, 83, 0.02);
+    }
+    .manual-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      background: #f7fbf8;
+    }
+    .manual-table th,
+    .manual-table td {
+      padding: 7px 10px;
+      font-size: .96rem;
+      line-height: 1.15;
+      border-bottom: 1px solid #dbe8de;
+    }
+    .manual-table tr:last-child th,
+    .manual-table tr:last-child td { border-bottom: 0; }
+    .manual-table th {
+      width: 35%;
+      text-align: left;
+      color: #f3fbf5;
+      background: #2f7a53;
+      font-weight: 700;
+    }
+    .manual-table tr:first-child td {
+      color: #ecf5ee;
+      background: #3f8b60;
+    }
+    .manual-table td {
+      color: #68746b;
+      background: #edf4ef;
+    }
+    .manual-table tr:nth-child(2) th,
+    .manual-table tr:nth-child(3) th { background: #dcecdf; }
+    .manual-table tr:nth-child(2) td,
+    .manual-table tr:nth-child(3) td { background: #edf4ef; }
+    @media (max-width: 640px) {
+      .manual-shell { width: calc(100% - 20px); margin-top: 12px; }
+      .manual-topbar { padding-inline: 10px; font-size: 9px; }
+      .manual-hero { padding-top: 42px; }
+      .manual-table th,
+      .manual-table td { padding: 8px; font-size: .88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="manual-shell">
+    <div class="manual-topbar" aria-hidden="true">
+      <span>Barangay Sports League API</span>
+      <span>Laravel Sanctum REST API Exercise</span>
+    </div>
+
+    <section class="manual-hero" aria-labelledby="manual-title">
+      <h1 id="manual-title">Barangay Sports League</h1>
+      <h2>Laravel API Exercise</h2>
+      <p>Student Development Manual</p>
+    </section>
+
+    <section class="manual-table-wrap" aria-label="Project summary">
+      <table class="manual-table">
+        <tbody>
+          <tr>
+            <th scope="row">Level</th>
+            <td>Intermediate</td>
+          </tr>
+          <tr>
+            <th scope="row">Platform</th>
+            <td>Laravel 11 + Sanctum</td>
+          </tr>
+          <tr>
+            <th scope="row">Topics Covered</th>
+            <td>RESTful API • Sanctum Auth • Eloquent ORM</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>
