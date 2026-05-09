@@ -2,6 +2,10 @@
 
 A new Flutter project.
 
+## Runtime Requirements
+
+- Internet connection required: the app fetches breed data and dog images from the Dog CEO API at runtime.
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.

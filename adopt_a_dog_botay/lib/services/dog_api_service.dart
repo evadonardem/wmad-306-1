@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:adopt_a_dog/models/breed.dart';
 import 'package:http/http.dart' as http;
 
@@ -23,5 +24,24 @@ class DogApiService {
         )
         .toList()
       ..sort((a, b) => a.name.compareTo(b.name));
+  }
+
+  Future<String> fetchRandomImage(String breed, [String? subBreed]) async {
+    final path = subBreed == null
+        ? 'breed/$breed/images/random'
+        : 'breed/$breed/$subBreed/images/random';
+    final uri = Uri.parse('$_base/$path');
+    final response = await http.get(uri);
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load breed image');
+    }
+
+    final Map<String, dynamic> data = jsonDecode(response.body);
+    return data['message'] as String;
+  }
+
+  Future<String> fetchBreedImage({required String breed, String? subBreed}) {
+    return fetchRandomImage(breed, subBreed);
   }
 }
