@@ -76,6 +76,20 @@
     | Total Points: | 25 |
     | Less -40%: | 15 | 
 
----
+9. Botay
 
-*End commit reference: https://github.com/evadonardem/wmad-306-1/commit/fd5a882c8cd4411d43cf5be558643ba427063539*
+    | Action Item | Points |
+    | ----------- | ----------- |
+    | User Seeder Through Factories | 3.125 |
+    | Display Users Using InteriaJS + React Component | 3.125 |
+    | Total Points: | 6.25 |
+    | Less -40%: | 3.75 | 
+
+10. Dulnuan
+
+    | Action Item | Points |
+    | ----------- | ----------- |
+    | User Seeder Through Factories | 3.125 |
+    | Display Users Using InteriaJS + React Component | 3.125 |
+    | Total Points: | 6.25 |
+    | Less -40%: | 3.75 | 
