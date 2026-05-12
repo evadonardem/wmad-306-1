@@ -1,7 +1,5 @@
 name: adopt_a_dog
-description: "A new Flutter project."
-# The following line prevents the package from being accidentally published to
-# pub.dev using `flutter pub publish`. This is preferred for private packages.
+description: "A beautiful Flutter web application to discover and adopt dog breeds. Browse hundreds of breeds, search for your favorites, and save them for later!"
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.

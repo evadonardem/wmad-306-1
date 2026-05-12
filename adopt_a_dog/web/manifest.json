@@ -1,11 +1,11 @@
 {
-    "name": "adopt_a_dog",
-    "short_name": "adopt_a_dog",
+    "name": "Adopt-a-Dog - Find Your Perfect Companion",
+    "short_name": "Adopt-a-Dog",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#ffffff",
+    "theme_color": "#4CAF50",
+    "description": "Discover and adopt your perfect dog companion! Browse through various dog breeds and save your favorites to your personal list.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
