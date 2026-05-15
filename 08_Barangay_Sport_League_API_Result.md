@@ -11,6 +11,7 @@
 | Student | Core | Exercises | Bonus Points | Total Score | Deduction % | Final Score |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
 | Ancheta | 95 | 25 | 10 | 130 | 15% | 110.5 |
+| Bankin | 70 | 8 | 0 | 78 | 40% | 46.8 |
 | Botay | 60 | 15 | 0 | 75 | 60% | 30 |
 | Bustamante | 95 | 25 | 10 | 130 | 15% | 110.5 |
 | Dulnuan | 95 | 22 | 2 | 119 | 40% | 71.4 |
@@ -18,6 +19,8 @@
 | Rivera | 95 | 25 | 10 | 130 | 15% | 110.5 |
 | Sueno | 67 | 20 | 0 | 87 | 15% | 73.95 |
 | Teligo | 95 | 25 | 5 | 125 | 15% | 106.25 |
+| Timatim | 95 | 25 | 10 | 130 | 65% | 46 |
+| Tomin | 95 | 25 | 10 | 130 | 65% | 46 |
 
 ## Detailed Evaluations
 
@@ -42,6 +45,26 @@
 - **Bonus Justification**: Awarded full bonus for exceptional architectural quality, use of database transactions for data integrity in result/stat submission, and clean, professional code structure.
 - **Final Grade**: **130 / 120**
 - **Feedback**: Outstanding implementation. The API is robust, follows all requirements perfectly, and demonstrates a high level of engineering maturity.
+
+### barangay_sport_league_api_bankin
+- **Panel A Findings**: 
+    - Success: All 9 required migrations are present.
+    - Success: `player_team` pivot table correctly includes `jersey_number`.
+    - Success: All 8 models are implemented with correct Eloquent relationships, utilizing `withPivot('jersey_number')`.
+- **Panel B Findings**: 
+    - Success: Sanctum authentication and route protection correctly implemented.
+    - Success: `LeagueController` scopes queries to the authenticated user.
+    - Failure: Critical Security Flaw: `SeasonController`, `TeamController`, and `GameController` lack scoping to the authenticated user, allowing unauthorized access/modification of other users' data.
+    - Success: Basic game scheduling validation (same season, no self-play) is present.
+    - Success: Stats submission restricted to 'done' games.
+- **Panel C Findings**: 
+    - Success: Standings and Leaderboard endpoints are functional.
+    - Success: Ex 1 (Season Summary) is implemented.
+    - Partial Failure: Ex 2 (Game Validation) lacks order-independent duplicate check and date conflict validation.
+    - Failure: Ex 3 (Player Profile) is missing.
+- **Bonus Justification**: No bonus points awarded.
+- **Final Grade**: **78 / 120**
+- **Feedback**: Your core data model is correct, but you have a critical security vulnerability regarding resource scoping in several controllers. Additionally, ensure you implement all requirements for the Exercises, specifically the advanced game validation and the player profile endpoint.
 
 ### barangay_sport_league_api_botay
 - **Panel A Findings**: 
@@ -130,7 +153,6 @@
 - **Panel B Findings**: 
     - Success: Laravel Sanctum correctly implemented.
     - Success: Route protection properly wrapped in `auth:sanctum` middleware.
-    - { "comment": "This part was repeated in my output" }
     - Success: Strict scoping to the authenticated user enforced in `LeagueController`.
     - Success: `GameController@store` implements all required validations: same-season check, no self-play, duplicate matchup prevention, and date conflict detection.
     - Success: Stats submission restricted to games with a 'done' status.
@@ -185,3 +207,41 @@
 - **Bonus Justification**: +5 points awarded for superior code architecture and efficiency, specifically the effective use of eager loading (`with`) to prevent N+1 query problems.
 - **Final Grade**: **125 / 120**
 - **Feedback**: Exceptional work. Your implementation is clean, and the use of eager loading shows a strong understanding of performance optimization.
+
+### barangay_sport_league_api_timatim
+- **Panel A Findings**: 
+    - Success: All 9 migrations present. `player_team` pivot correctly implemented with `jersey_number` and composite primary key.
+    - Success: All 8 models correctly defined with appropriate Eloquent relationships. `Team` and `Player` models use `withPivot('jersey_number')`.
+- **Panel B Findings**: 
+    - Success: Sanctum authentication fully implemented in `AuthController.php`.
+    - Success: All protected routes correctly wrapped in `auth:sanctum` middleware.
+    - Success: Strict scoping to the authenticated user enforced across `LeagueController`, `SeasonController`, and `GameController`.
+    - Success: Game scheduling implements exhaustive validation: prevents self-play, ensures same-season teams, rejects order-independent duplicate matchups, and detects date conflicts.
+    - Success: Stats submission restricted to games with 'done' status.
+- **Panel C Findings**: 
+    - Success: Standings calculate W-L records and sort by wins. Leaderboard correctly retrieves top 10 players by points.
+    - Success: Ex 1 (Season Summary) fully implemented in `StandingsController::summary`.
+    - Success: Ex 2 (Game Validation) fully implemented in `GameController::store`.
+    - Success: Ex 3 (Player Profile) fully implemented in `PlayerController::profile` with career totals and personal best game.
+- **Bonus Justification**: +10 Points. Exceptional architectural quality: use of a dedicated `ApiResponder` trait for consistent responses, specialized Form Request classes for validation, and rigorous resource scoping throughout the API.
+- **Final Grade**: **130 / 120**
+- **Feedback**: Outstanding implementation. Your use of Laravel best practices, such as Form Requests and a response trait, demonstrates a high level of professional engineering.
+
+### barangay_sport_league_api_tomin
+- **Panel A Findings**: 
+    - Success: All 9 migrations implemented. `player_team` pivot is exceptionally robust, enforcing uniqueness for both player/team and team/jersey combinations.
+    - Success: All 8 models correctly defined. `Team` and `Player` models utilize `withPivot('jersey_number')`.
+- **Panel B Findings**: 
+    - Success: Sanctum authentication robustly implemented.
+    - Success: All protected routes strictly wrapped in `auth:sanctum` middleware.
+    - Success: Strict scoping to the authenticated user enforced across all controllers.
+    - Success: Game scheduling implements all required validations (same season, no self-play, duplicate matchups, and date conflicts).
+    - Success: Stats submission strictly restricted to games with a 'done' status.
+- **Panel C Findings**: 
+    - Success: Standings correctly calculated and sorted by wins. Leaderboard correctly aggregates top 10 players.
+    - Success: Ex 1 (Season Summary) fully implemented.
+    - Success: Ex 2 (Game Validation) fully implemented.
+    - Success: Ex 3 (Player Profile) fully implemented in `PlayerController::profile`.
+- **Bonus Justification**: +10 Points. Professional-grade implementation. The addition of database-level unique constraints for jersey numbers and the clean, decoupled architecture using `ApiResponder` and Form Requests are exemplary.
+- **Final Grade**: **130 / 120**
+- **Feedback**: This is a top-tier implementation. Your attention to data integrity at the database level and your commitment to a clean, maintainable architectural pattern are impressive.
