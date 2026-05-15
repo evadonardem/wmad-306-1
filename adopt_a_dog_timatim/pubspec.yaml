@@ -1,0 +1,39 @@
+name: adopt_a_dog
+description: "Dog adopter — find your forever friend."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # Networking
+  http: ^1.6.0
+
+  # State management
+  provider: ^6.1.2
+
+  # Persistence (favorites)
+  shared_preferences: ^2.5.4
+
+  # Image caching (smooth grid scroll, hero transitions stay sharp)
+  cached_network_image: ^3.4.1
+
+  # Typography
+  google_fonts: ^6.2.1
+
+  # Staggered grid entrance animations
+  flutter_staggered_animations: ^1.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
