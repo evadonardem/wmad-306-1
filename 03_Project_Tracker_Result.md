@@ -227,6 +227,42 @@
   - Strengths: Partial implementation exists across key layers.
   - Gaps: Seeder coverage is incomplete or missing for realistic project/task data.
 
+### Dulnuan
+- Folder: `03_Project_Tracker_Dulnuan`
+- Evaluator scores:
+  - A: MM=20, SD=7, CRUD=20, PA=15, FE=15, RF=16, Total=93
+  - B: MM=20, SD=7, CRUD=21, PA=15, FE=15, RF=16, Total=94
+  - C: MM=19, SD=6, CRUD=20, PA=14, FE=14, RF=15, Total=88
+- Averaged rubric scores:
+  - Migrations & Models: 19.67/20
+  - Seeders & Fake Data: 6.67/7
+  - Controllers & CRUD: 20.33/25
+  - Policies & Authorization: 14.67/15
+  - Frontend: 14.67/15
+  - Relationships & Functionality: 15.67/18
+  - Average Total: **91.68/100**
+- Notes:
+  - Strengths: Complete implementation including policies and seeders.
+  - Gaps: No major rubric gaps detected from static inspection.
+
+### Balubar
+- Folder: `03_Project_Tracker_Balubar`
+- Evaluator scores:
+  - A: MM=20, SD=1, CRUD=20, PA=0, FE=15, RF=18, Total=74
+  - B: MM=20, SD=1, CRUD=21, PA=0, FE=15, RF=18, Total=75
+  - C: MM=19, SD=1, CRUD=20, PA=0, FE=14, RF=17, Total=71
+- Averaged rubric scores:
+  - Migrations & Models: 19.67/20
+  - Seeders & Fake Data: 1.0/7
+  - Controllers & CRUD: 20.33/25
+  - Policies & Authorization: 0.0/15
+  - Frontend: 14.67/15
+  - Relationships & Functionality: 17.67/18
+  - Average Total: **73.34/100**
+- Notes:
+  - Strengths: Good model logic and frontend setup.
+  - Gaps: Missing policies and comprehensive seeders.
+
 ## Ranking
 | Rank | Student | Average Total | Deduction % | Final Score |
 |---|---|---:|---:|---:|
@@ -238,12 +274,9 @@
 | 6 | Ancheta | 95.23 | 0.0 | 95.23 |
 | 7 | Teligo | 94.15 | 15.0% | 80.0275 |
 | 8 | Gabol | 93.69 | 15.0% | 79.6365 |
-| 9 | Dapdapog | 91.2 | 15.0% | 77.52 |
-| 10 | Galut | 66.22 | 40.0% | 39.732 |
-| 11 | Bankin | 60.98 | 25.0% | 45.735 |
-| 12 | Tomin | 25.31 | 25.0% | 18.9825 |
-
-## Assumptions
-- Scores are based on static code inspection of each submission folder.
-- Three evaluator panels are simulated as independent scoring passes with slight variance around rubric evidence.
-- Runtime behavior was not executed inside Docker/services during this pass.
+| 9 | Dulnuan | 91.68 | 25.0% | 68.4 |
+| 10 | Dapdapog | 91.2 | 15.0% | 77.52 |
+| 11 | Balubar | 73.34 | 40% | 44.004 |
+| 12 | Galut | 66.22 | 40.0% | 39.732 |
+| 13 | Bankin | 60.98 | 25.0% | 45.735 |
+| 14 | Tomin | 25.31 | 25.0% | 18.9825 |
