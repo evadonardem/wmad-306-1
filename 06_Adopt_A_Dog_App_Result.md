@@ -54,6 +54,22 @@
   - Core Implementation: 35 / 35
   - Exercises: 15 / 15
 
+## adopt_a_dog_gabol
+- **Total Score:** 43 / 50
+- **Bonus:** 2
+- **Summary:** A strong implementation that covers most requirements. The UI is clean and the logic is sound. However, the project missed the sub-breed support (Ex 1) and offline caching (Ex 3) requirements.
+- **Detailed Breakdown:**
+  - Core Implementation: 35 / 35
+  - Exercises: 8 / 15
+
+## adopt_a_dog_galut
+- **Total Score:** 50 / 50
+- **Bonus:** 3
+- **Summary:** An exceptional project that exceeds all requirements. The student implemented a comprehensive custom design system, full offline caching, and an advanced favorites system with both breed and photo-level bookmarks. The code is professional and highly maintainable.
+- **Detailed Breakdown:**
+  - Core Implementation: 35 / 35
+  - Exercises: 15 / 15
+
 ## adopt_a_dog_oras
 - **Total Score:** 41 / 50
 - **Bonus:** 2
@@ -94,6 +110,14 @@
   - Core Implementation: 35 / 35
   - Exercises: 15 / 15
 
+## adopt_a_dog_timatim
+- **Total Score:** 45 / 50
+- **Bonus:** 5
+- **Summary:** A professional-grade application with a stunning UI and high-quality animations. While the technical implementation is superior, the student diverged from the "breed list" requirement to create an adoption-style gallery. This resulted in the loss of some specific breed-directory exercises, but the overall quality and "Extra Mile" effort are outstanding.
+- **Detailed Breakdown:**
+  - Core Implementation: 30 / 35
+  - Exercises: 15 / 15
+
 ## adopt_a_dog_tomin
 - **Total Score:** 50 / 50
 - **Bonus:** 4
@@ -113,9 +137,12 @@
 | adopt_a_dog_bustamante | 50 | 2 | - | 52 / 50 |
 | adopt_a_dog_dapdapog | 50 | 2 | - | 52 / 50 |
 | adopt_a_dog_fernandez | 50 | 3 | - | 53 / 50 |
+| adopt_a_dog_gabol | 43 | 2 | 15% | 38.25 / 50 |
+| adopt_a_dog_galut | 50 | 3 | 30% | 37.1 / 50 |
 | adopt_a_dog_oras | 41 | 2 | 40% | 25.8 / 50 |
 | adopt_a_dog_rivera | 50 | 5 | 30% | 38.5 / 50 |
 | adopt_a_dog_sawac | 10 | 0 | 60% | 4 / 50 |
 | adopt_a_dog_sueno | 50 | 2 | 60% | 20.8 / 50 |
 | adopt_a_dog_teligo | 50 | 2 | - | 52 / 50 |
+| adopt_a_dog_timatim | 45 | 5 | 70% | 15 / 50 |
 | adopt_a_dog_tomin | 50 | 4 | 60% | 21.6 / 50 |
